@@ -1887,3 +1887,54 @@ body.alarm-active {
   position: relative;
   z-index: 20;
 }
+
+
+/* V3.8 — one-time reminder alarm disclosure */
+.reminder-warning-dialog {
+  width: min(92vw, 470px);
+}
+
+.reminder-warning-content {
+  text-align: center;
+}
+
+.reminder-warning-icon {
+  display: grid;
+  place-items: center;
+  width: 74px;
+  height: 74px;
+  margin: 0 auto 14px;
+  border-radius: 24px;
+  background: color-mix(in srgb, var(--accent-2) 14%, var(--surface));
+  font-size: 2.5rem;
+}
+
+.reminder-warning-content h2 {
+  margin: 8px 0 10px;
+  font-size: 1.75rem;
+  letter-spacing: -.04em;
+}
+
+.reminder-warning-content p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.reminder-warning-content small {
+  display: block;
+  margin-top: 12px;
+  color: var(--muted);
+}
+
+.reminder-warning-content .dialog-actions {
+  justify-content: center;
+}
+
+.setting-note {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: .72rem;
+  font-weight: 600;
+}

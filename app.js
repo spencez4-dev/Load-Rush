@@ -26,6 +26,8 @@ const DEFAULTS = {
   lastFateMilestoneDate: '',
   discoveredEvents: [],
   reminders: [],
+  reminderAlarmEnabled: true,
+  reminderAlarmWarningSeen: false,
   lastRecapDate: ''
 };
 
@@ -228,6 +230,7 @@ let currentSummaryDate = todayKey();
 let pendingFateMilestone = null;
 let activeFateTimeout = null;
 let activeReminderId = null;
+let pendingReminderDraft = null;
 let alarmAudioContext = null;
 let alarmOscillators = [];
 let alarmPulseTimer = null;
@@ -529,6 +532,7 @@ function applyTheme() {
   $('themeBtn').textContent = state.theme === 'dark' ? '☀' : '☾';
 
   updateSwitch('soundToggle', state.sound);
+  updateSwitch('reminderAlarmToggle', state.reminderAlarmEnabled !== false);
   updateSwitch('particlesToggle', state.particles);
   updateSwitch('fateToggle', state.fateEnabled);
 }
@@ -805,13 +809,7 @@ function renderReminders() {
   });
 }
 
-function addReminder() {
-  const button = $('addReminderBtn');
-
-  if (button.disabled) {
-    return;
-  }
-
+function getReminderDraft() {
   const text = $('reminderTextInput').value.trim();
   const date = $('reminderDateInput').value;
   const time = $('reminderTimeInput').value;
@@ -819,21 +817,26 @@ function addReminder() {
   if (!text) {
     showToast('Enter what you need to remember');
     $('reminderTextInput').focus();
-    return;
+    return null;
   }
 
   if (!date || !time) {
     showToast('Choose a date and time');
-    return;
+    return null;
   }
 
   const timestamp = new Date(`${date}T${time}:00`).getTime();
 
   if (!Number.isFinite(timestamp)) {
     showToast('That date or time is invalid');
-    return;
+    return null;
   }
 
+  return { text, date, time };
+}
+
+function saveReminderDraft(draft) {
+  const button = $('addReminderBtn');
   button.disabled = true;
   button.textContent = 'Adding...';
 
@@ -851,9 +854,9 @@ function addReminder() {
 
     state.reminders.push({
       id,
-      text,
-      date,
-      time,
+      text: draft.text,
+      date: draft.date,
+      time: draft.time,
       createdAt: new Date().toISOString(),
       fired: false,
       dismissed: false
@@ -863,11 +866,9 @@ function addReminder() {
     renderReminders();
     showReminderTab('list');
 
-    // Reset for the next reminder while keeping the form ready.
     $('reminderTextInput').value = '';
     $('reminderDateInput').value = defaultReminderDate();
     $('reminderTimeInput').value = defaultReminderTime();
-    $('reminderTextInput').focus();
 
     showToast('Reminder armed');
   } catch (error) {
@@ -877,6 +878,25 @@ function addReminder() {
     button.disabled = false;
     button.textContent = 'Add reminder';
   }
+}
+
+function addReminder() {
+  const button = $('addReminderBtn');
+
+  if (button.disabled) {
+    return;
+  }
+
+  const draft = getReminderDraft();
+  if (!draft) return;
+
+  if (state.reminderAlarmEnabled !== false && !state.reminderAlarmWarningSeen) {
+    pendingReminderDraft = draft;
+    openDialog($('reminderAlarmWarningDialog'));
+    return;
+  }
+
+  saveReminderDraft(draft);
 }
 
 async function requestReminderNotifications() {
@@ -998,10 +1018,12 @@ function triggerReminderAlarm(reminder) {
   $('reminderAlarm').hidden = false;
   document.body.classList.add('alarm-active');
 
-  startReminderSiren();
+  if (state.reminderAlarmEnabled !== false) {
+    startReminderSiren();
+  }
   sendSystemReminder(reminder);
 
-  if ('vibrate' in navigator) {
+  if (state.reminderAlarmEnabled !== false && 'vibrate' in navigator) {
     navigator.vibrate([500, 180, 500, 180, 900, 250, 900]);
   }
 
@@ -1718,6 +1740,27 @@ function bindEvents() {
     applyTheme();
   });
 
+  $('reminderAlarmToggle').addEventListener('click', () => {
+    state.reminderAlarmEnabled = state.reminderAlarmEnabled === false;
+    saveState();
+    applyTheme();
+    showToast(state.reminderAlarmEnabled ? 'Reminder alarm enabled' : 'Reminder alarm muted');
+  });
+
+  $('cancelReminderWarningBtn').addEventListener('click', () => {
+    pendingReminderDraft = null;
+    closeDialog($('reminderAlarmWarningDialog'));
+  });
+
+  $('confirmReminderWarningBtn').addEventListener('click', () => {
+    const draft = pendingReminderDraft;
+    pendingReminderDraft = null;
+    state.reminderAlarmWarningSeen = true;
+    saveState();
+    closeDialog($('reminderAlarmWarningDialog'));
+    if (draft) saveReminderDraft(draft);
+  });
+
   $('soundStyleSelect').addEventListener('change', () => {
     state.soundStyle = $('soundStyleSelect').value;
     saveState();
@@ -1864,6 +1907,8 @@ async function registerServiceWorker() {
 async function initialize() {
   await clearLegacyAppCaches();
   state.reminders = Array.isArray(state.reminders) ? state.reminders : [];
+  state.reminderAlarmEnabled = state.reminderAlarmEnabled !== false;
+  state.reminderAlarmWarningSeen = state.reminderAlarmWarningSeen === true;
   bindEvents();
   bindReminderEventsSafely();
 

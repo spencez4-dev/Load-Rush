@@ -7,7 +7,7 @@
   <meta name="description" content="A game-like shipment load tracker with hourly road races, XP levels, unlockable rigs, goals, and timestamped updates.">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="styles.css?v=3.6.0">
+  <link rel="stylesheet" href="styles.css?v=3.8.0">
   <title>Let it Rip</title>
 </head>
 <body>
@@ -145,7 +145,7 @@
   <div id="fxLayer" class="fx-layer" aria-hidden="true"></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <div id="megaMessage" class="mega-message">CHECKERED FLAG!</div>
-  <div class="build-badge">LOAD RUSH · V3.6</div>
+  <div class="build-badge">LOAD RUSH · V3.8</div>
 
 
   <dialog id="fatePromptDialog" class="fate-dialog">
@@ -232,6 +232,21 @@
 
       <div class="dialog-actions">
         <button id="closeRemindersBtn" class="primary-button" type="button">Done</button>
+      </div>
+    </div>
+  </dialog>
+
+
+  <dialog id="reminderAlarmWarningDialog" class="reminder-warning-dialog">
+    <div class="dialog-content reminder-warning-content">
+      <div class="reminder-warning-icon">🔊</div>
+      <span class="section-kicker">LOUD ALARM ATTACHED</span>
+      <h2>This reminder will make noise.</h2>
+      <p>Load Rush reminders include a loud alarm designed to get your attention. You can turn the reminder alarm off anytime in Settings.</p>
+      <small>This message only appears once.</small>
+      <div class="dialog-actions">
+        <button id="cancelReminderWarningBtn" class="secondary-button" type="button">Cancel</button>
+        <button id="confirmReminderWarningBtn" class="primary-button" type="button">Create reminder</button>
       </div>
     </div>
   </dialog>
@@ -376,6 +391,11 @@
         <button id="soundToggle" class="switch" type="button" role="switch" aria-checked="true"></button>
       </div>
 
+      <div class="setting-row">
+        <span>Reminder alarm <small class="setting-note">Loud siren and vibration</small></span>
+        <button id="reminderAlarmToggle" class="switch" type="button" role="switch" aria-checked="true"></button>
+      </div>
+
       <label class="setting-row">
         <span>Sound style</span>
         <select id="soundStyleSelect">
@@ -423,6 +443,6 @@
     </div>
   </dialog>
 
-  <script src="app.js?v=3.6.0" defer></script>
+  <script src="app.js?v=3.8.0" defer></script>
 </body>
 </html>
