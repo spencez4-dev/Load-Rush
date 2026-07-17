@@ -29,22 +29,23 @@ const DEFAULTS = {
   reminderAlarmEnabled: true,
   reminderAlarmWarningSeen: false,
   brandTitle: 'Wayfinder Logistics',
+  seenUnlocks: [],
   lastRecapDate: ''
 };
 
 const RIGS = [
-  { id: 'starter-semi', icon: '🚛', name: 'Starter Semi', type: 'SEMI', rule: 'Unlocked from the start', unlocked: () => true },
-  { id: 'red-racer', icon: '🏎️', name: 'Redline Racer', type: 'RACE CAR', rule: 'Reach Level 3', unlocked: () => lifetimeLevel() >= 3 },
-  { id: 'box-truck', icon: '🚚', name: 'Box Truck Blitz', type: 'TRUCK', rule: 'Win 5 hourly races', unlocked: () => state.raceWins >= 5 },
-  { id: 'yellow-jacket', icon: '🚕', name: 'Yellow Jacket', type: 'STREET', rule: 'Reach Level 6', unlocked: () => lifetimeLevel() >= 6 },
-  { id: 'interceptor', icon: '🚓', name: 'Interceptor', type: 'PURSUIT', rule: 'Win 12 hourly races', unlocked: () => state.raceWins >= 12 },
-  { id: 'code-red', icon: '🚒', name: 'Code Red', type: 'HEAVY', rule: 'Reach Level 10', unlocked: () => lifetimeLevel() >= 10 },
-  { id: 'people-mover', icon: '🚌', name: 'People Mover', type: 'ODDBALL', rule: 'Track 500 lifetime net loads', unlocked: () => lifetimeXP() >= 500 },
-  { id: 'formula-freight', icon: '🏁', name: 'Formula Freight', type: 'RACE', rule: 'Win 25 hourly races', unlocked: () => state.raceWins >= 25 },
-  { id: 'mud-titan', icon: '🛻', name: 'Mud Titan', type: 'OFF-ROAD', rule: 'Reach Level 15', unlocked: () => lifetimeLevel() >= 15 },
-  { id: 'rocket-hauler', icon: '🚀', name: 'Rocket Hauler', type: 'LEGENDARY', rule: 'Track 1,000 lifetime net loads', unlocked: () => lifetimeXP() >= 1000 },
-  { id: 'alien-dispatch', icon: '🛸', name: 'Alien Dispatch', type: 'MYTHIC', rule: 'Reach Level 25', unlocked: () => lifetimeLevel() >= 25 },
-  { id: 'king-freight', icon: '👑', name: 'King of Freight', type: 'MYTHIC SEMI', rule: 'Win 50 hourly races', unlocked: () => state.raceWins >= 50 }
+  { id: 'starter-semi', icon: '🚛', name: 'Starter Semi', type: 'SEMI', rarity: 'COMMON', reward: 'Classic road glow', accent: '#7458ff', rule: 'Unlocked from the start', unlocked: () => true },
+  { id: 'red-racer', icon: '🏎️', name: 'Redline Racer', type: 'RACE CAR', rarity: 'UNCOMMON', reward: 'Red speed trail', accent: '#ef4444', rule: 'Reach Level 3', unlocked: () => lifetimeLevel() >= 3 },
+  { id: 'box-truck', icon: '🚚', name: 'Box Truck Blitz', type: 'TRUCK', rarity: 'UNCOMMON', reward: 'Cargo pulse effect', accent: '#f59e0b', rule: 'Win 5 hourly races', unlocked: () => state.raceWins >= 5 },
+  { id: 'yellow-jacket', icon: '🚕', name: 'Yellow Jacket', type: 'STREET', rarity: 'RARE', reward: 'Golden road trail', accent: '#eab308', rule: 'Reach Level 6', unlocked: () => lifetimeLevel() >= 6 },
+  { id: 'interceptor', icon: '🚓', name: 'Interceptor', type: 'PURSUIT', rarity: 'RARE', reward: 'Police light glow', accent: '#3b82f6', rule: 'Win 12 hourly races', unlocked: () => state.raceWins >= 12 },
+  { id: 'code-red', icon: '🚒', name: 'Code Red', type: 'HEAVY', rarity: 'EPIC', reward: 'Emergency flame trail', accent: '#dc2626', rule: 'Reach Level 10', unlocked: () => lifetimeLevel() >= 10 },
+  { id: 'people-mover', icon: '🚌', name: 'People Mover', type: 'ODDBALL', rarity: 'EPIC', reward: 'Party confetti trail', accent: '#8b5cf6', rule: 'Track 500 lifetime net loads', unlocked: () => lifetimeXP() >= 500 },
+  { id: 'formula-freight', icon: '🏁', name: 'Formula Freight', type: 'RACE', rarity: 'EPIC', reward: 'Checkered boost trail', accent: '#111827', rule: 'Win 25 hourly races', unlocked: () => state.raceWins >= 25 },
+  { id: 'mud-titan', icon: '🛻', name: 'Mud Titan', type: 'OFF-ROAD', rarity: 'LEGENDARY', reward: 'Dust storm trail', accent: '#92400e', rule: 'Reach Level 15', unlocked: () => lifetimeLevel() >= 15 },
+  { id: 'rocket-hauler', icon: '🚀', name: 'Rocket Hauler', type: 'LEGENDARY', rarity: 'LEGENDARY', reward: 'Rocket flame boost', accent: '#f97316', rule: 'Track 1,000 lifetime net loads', unlocked: () => lifetimeXP() >= 1000 },
+  { id: 'alien-dispatch', icon: '🛸', name: 'Alien Dispatch', type: 'MYTHIC', rarity: 'MYTHIC', reward: 'Cosmic neon trail', accent: '#22d3ee', rule: 'Reach Level 25', unlocked: () => lifetimeLevel() >= 25 },
+  { id: 'king-freight', icon: '👑', name: 'King of Freight', type: 'MYTHIC SEMI', rarity: 'MYTHIC', reward: 'Royal rainbow trail', accent: '#fbbf24', rule: 'Win 50 hourly races', unlocked: () => state.raceWins >= 50 }
 ];
 
 const FATE_EVENTS = [
@@ -347,6 +348,135 @@ function hourlyStreak() {
   return streak;
 }
 
+function comboStats(now = Date.now()) {
+  const windowMs = 3 * 60 * 1000;
+  const entries = todaysEntries().slice().sort((a, b) => a.time - b.time);
+  let current = 0;
+  let best = 0;
+  let lastPositiveTime = 0;
+
+  for (const entry of entries) {
+    if (entry.delta <= 0) {
+      current = 0;
+      lastPositiveTime = 0;
+      continue;
+    }
+
+    if (lastPositiveTime && entry.time - lastPositiveTime <= windowMs) {
+      current += 1;
+    } else {
+      current = 1;
+    }
+
+    lastPositiveTime = entry.time;
+    best = Math.max(best, current);
+  }
+
+  const active = lastPositiveTime && now - lastPositiveTime <= windowMs;
+  const remainingMs = active ? Math.max(0, windowMs - (now - lastPositiveTime)) : 0;
+  return {
+    current: active ? current : 0,
+    best,
+    remainingMs,
+    multiplier: current >= 10 ? 5 : current >= 5 ? 3 : current >= 3 ? 2 : current > 0 ? 1 : 0
+  };
+}
+
+function renderComboMeter() {
+  const meter = $('comboMeter');
+  if (!meter) return;
+
+  const stats = comboStats();
+  const seconds = Math.ceil(stats.remainingMs / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const remainder = seconds % 60;
+  const timeLabel = `${minutes}:${String(remainder).padStart(2, '0')}`;
+  const fill = stats.remainingMs > 0 ? (stats.remainingMs / (3 * 60 * 1000)) * 100 : 0;
+
+  $('comboValue').textContent = stats.current ? `${stats.current}x` : '0x';
+  $('comboLabel').textContent = stats.current >= 10 ? 'FREIGHT FRENZY' : stats.current >= 5 ? 'HOT STREAK' : stats.current >= 3 ? 'COMBO ACTIVE' : stats.current ? 'CHAIN STARTED' : 'COMBO READY';
+  $('comboHint').textContent = stats.current
+    ? `${timeLabel} to keep it alive · visual boost x${stats.multiplier}`
+    : `Add another load within 3:00 to build a streak · best today ${stats.best}x`;
+  $('comboFill').style.width = `${fill}%`;
+  meter.dataset.tier = stats.multiplier >= 5 ? '5' : stats.multiplier >= 3 ? '3' : stats.multiplier >= 2 ? '2' : '1';
+}
+
+function bestGhostHour(now = new Date()) {
+  const currentKey = currentHourKey(now);
+  const buckets = new Map();
+
+  for (const entry of state.log) {
+    const date = new Date(entry.time);
+    const key = currentHourKey(date);
+    if (key === currentKey) continue;
+    if (!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key).push(entry);
+  }
+
+  let best = null;
+  for (const [key, entries] of buckets) {
+    const total = Math.max(0, netTotal(entries));
+    if (!best || total > best.total) best = { key, entries, total };
+  }
+
+  if (!best || best.total <= 0) return null;
+
+  const elapsed = now.getMinutes() * 60 + now.getSeconds() + now.getMilliseconds() / 1000;
+  let ghostCount = 0;
+  const sorted = best.entries.slice().sort((a, b) => a.time - b.time);
+  for (const entry of sorted) {
+    const date = new Date(entry.time);
+    const offset = date.getMinutes() * 60 + date.getSeconds() + date.getMilliseconds() / 1000;
+    if (offset <= elapsed) ghostCount = Math.max(0, ghostCount + entry.delta);
+  }
+
+  return { count: ghostCount, total: best.total, key: best.key };
+}
+
+function renderGhostTruck() {
+  const ghost = $('ghostVehicle');
+  if (!ghost) return;
+
+  const data = bestGhostHour();
+  if (!data) {
+    ghost.hidden = true;
+    return;
+  }
+
+  const progress = Math.min(100, (data.count / Math.max(1, state.hourlyGoal)) * 100);
+  ghost.hidden = false;
+  ghost.style.right = `${progress}%`;
+  $('ghostVehicleIcon').textContent = selectedRig().icon;
+  ghost.title = `Best-hour ghost: ${data.count} loads at this point (${data.total} total)`;
+}
+
+function unlockedRigIds() {
+  return RIGS.filter(rig => rig.unlocked()).map(rig => rig.id);
+}
+
+function initializeUnlockTracking() {
+  if (!Array.isArray(state.seenUnlocks) || state.seenUnlocks.length === 0) {
+    state.seenUnlocks = unlockedRigIds();
+    saveState();
+  }
+}
+
+function announceNewUnlocks() {
+  const seen = new Set(Array.isArray(state.seenUnlocks) ? state.seenUnlocks : []);
+  const fresh = RIGS.filter(rig => rig.unlocked() && !seen.has(rig.id));
+  if (!fresh.length) return;
+
+  for (const rig of fresh) seen.add(rig.id);
+  state.seenUnlocks = [...seen];
+  saveState();
+
+  const rig = fresh[fresh.length - 1];
+  flashMegaMessage(`NEW RIG: ${rig.name.toUpperCase()}!`);
+  showToast(`${rig.rarity} unlock · ${rig.reward}`);
+  particleBurst($('mainCount'), 90, 2.2);
+}
+
 function selectedRig() {
   const candidate = RIGS.find(rig => rig.id === state.selectedRig);
 
@@ -409,6 +539,7 @@ function renderAll() {
   $('workMetric').textContent = formatDuration(today * state.minutesPerUpdate);
   $('bestHourMetric').textContent = `${bestHour()} loads`;
   $('streakMetric').textContent = hourlyStreak();
+  renderComboMeter();
 
   $('hourlyGoalLabel').textContent = state.hourlyGoal;
   $('raceProgressText').textContent = `${Math.min(state.hourlyGoal, hour)} / ${state.hourlyGoal}`;
@@ -416,6 +547,9 @@ function renderAll() {
   $('vehicle').style.right = `${hourlyProgress}%`;
   $('vehicle').textContent = rig.icon;
   $('vehicle').classList.toggle('finished', hour >= state.hourlyGoal);
+  document.documentElement.style.setProperty('--rig-accent', rig.accent || 'var(--accent)');
+  document.documentElement.dataset.rigRarity = (rig.rarity || 'COMMON').toLowerCase();
+  renderGhostTruck();
 
   if (hour >= state.hourlyGoal) {
     $('raceMessage').textContent = 'Checkered flag claimed. Hourly quest complete.';
@@ -504,10 +638,14 @@ function renderGarage() {
         data-rig-id="${rig.id}"
         ${isUnlocked ? '' : 'disabled'}
       >
-        <span class="rig-icon">${rig.icon}</span>
+        <span class="rig-card-top">
+          <span class="rig-icon">${rig.icon}</span>
+          <span class="rig-rarity rarity-${(rig.rarity || 'COMMON').toLowerCase()}">${rig.rarity || 'COMMON'}</span>
+        </span>
         <span class="rig-name">${rig.name}</span>
         <span class="rig-type">${rig.type}</span>
-        <span class="rig-rule">${rig.rule}</span>
+        <span class="rig-reward">✦ ${rig.reward || 'Cosmetic road effect'}</span>
+        <span class="rig-rule">${isUnlocked ? 'Unlocked' : rig.rule}</span>
       </button>
     `;
   }).join('');
@@ -1287,8 +1425,13 @@ function addLoad(delta) {
   playTone(delta > 0 ? 'plus' : 'minus');
 
   if (delta > 0) {
-    particleBurst($('plusBtn'));
+    const combo = comboStats();
+    particleBurst($('plusBtn'), combo.current >= 10 ? 70 : combo.current >= 5 ? 45 : undefined, combo.current >= 5 ? 1.8 : undefined);
+    if (combo.current === 3) showToast('Combo x3 · keep it moving');
+    if (combo.current === 5) flashMegaMessage('HOT STREAK!');
+    if (combo.current === 10) flashMegaMessage('FREIGHT FRENZY!');
     maybeAwardRace();
+    announceNewUnlocks();
 
     if (todayNetLoads() === state.dailyGoal) {
       flashMegaMessage('SHIFT GOAL CRUSHED!');
@@ -1395,6 +1538,8 @@ function tickClock() {
   const remaining = secondsUntilNextHour();
   countdownElement.textContent = formatCountdown(remaining);
   countdownElement.dataset.secondsRemaining = String(remaining);
+  renderComboMeter();
+  renderGhostTruck();
 }
 
 function startHourlyClock() {
@@ -1934,6 +2079,8 @@ async function initialize() {
   state.reminders = Array.isArray(state.reminders) ? state.reminders : [];
   state.reminderAlarmEnabled = state.reminderAlarmEnabled !== false;
   state.reminderAlarmWarningSeen = state.reminderAlarmWarningSeen === true;
+  state.seenUnlocks = Array.isArray(state.seenUnlocks) ? state.seenUnlocks : [];
+  initializeUnlockTracking();
   bindEvents();
   bindReminderEventsSafely();
 

@@ -1954,3 +1954,160 @@ body.alarm-active {
 .editable-brand-title:active {
   transform: scale(.985);
 }
+
+
+/* V4 gameplay pack: combo meter, ghost rival, and meaningful unlock cosmetics */
+:root { --rig-accent: var(--accent); }
+
+.combo-meter {
+  width: min(100%, 420px);
+  margin-top: 15px;
+  padding: 12px 13px;
+  border: 1px solid var(--border);
+  border-radius: 17px;
+  background: color-mix(in srgb, var(--surface-strong) 72%, transparent);
+  overflow: hidden;
+}
+
+.combo-copy {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.combo-copy span {
+  color: var(--accent);
+  font-size: .68rem;
+  font-weight: 950;
+  letter-spacing: .14em;
+}
+
+.combo-copy strong {
+  font-size: 1.25rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.combo-track {
+  height: 7px;
+  margin-top: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 9%, transparent);
+}
+
+.combo-fill {
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width .25s linear;
+}
+
+.combo-meter small {
+  display: block;
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: .72rem;
+}
+
+.combo-meter[data-tier="2"] { box-shadow: 0 0 22px color-mix(in srgb, var(--accent) 15%, transparent); }
+.combo-meter[data-tier="3"] { box-shadow: 0 0 30px color-mix(in srgb, var(--accent-2) 22%, transparent); }
+.combo-meter[data-tier="5"] {
+  animation: comboPulse .75s ease-in-out infinite alternate;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 14%, var(--surface-strong)), color-mix(in srgb, var(--accent-2) 12%, var(--surface-strong)));
+}
+
+@keyframes comboPulse {
+  from { transform: scale(1); box-shadow: 0 0 24px color-mix(in srgb, var(--accent) 18%, transparent); }
+  to { transform: scale(1.012); box-shadow: 0 0 42px color-mix(in srgb, var(--accent-2) 30%, transparent); }
+}
+
+.ghost-vehicle {
+  position: absolute;
+  right: 0%;
+  top: 24%;
+  z-index: 4;
+  display: grid;
+  justify-items: center;
+  transform: translate(50%, -50%);
+  transition: right .35s linear;
+  opacity: .38;
+  filter: grayscale(.35) drop-shadow(0 7px 8px rgba(0,0,0,.2));
+  pointer-events: none;
+}
+
+.ghost-vehicle[hidden] { display: none; }
+
+#ghostVehicleIcon {
+  font-size: 3.2rem;
+  line-height: 1;
+  animation: ghostFloat .7s ease-in-out infinite alternate;
+}
+
+.ghost-vehicle small {
+  margin-top: -3px;
+  padding: 3px 6px;
+  border-radius: 999px;
+  background: rgba(20,20,25,.68);
+  color: #fff;
+  font-size: .48rem;
+  font-weight: 950;
+  letter-spacing: .1em;
+  white-space: nowrap;
+}
+
+@keyframes ghostFloat {
+  from { transform: translateY(-2px); }
+  to { transform: translateY(2px); }
+}
+
+.race-fill {
+  background: linear-gradient(270deg, color-mix(in srgb, var(--rig-accent) 48%, transparent), color-mix(in srgb, var(--accent-2) 34%, transparent));
+}
+
+.vehicle {
+  filter: drop-shadow(0 10px 10px rgba(0,0,0,.25)) drop-shadow(0 0 12px color-mix(in srgb, var(--rig-accent) 34%, transparent));
+}
+
+.rig-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rig-rarity {
+  display: inline-flex;
+  padding: 4px 7px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-strong);
+  font-size: .57rem;
+  font-weight: 1000;
+  letter-spacing: .09em;
+}
+
+.rarity-uncommon { color: #168a56; }
+.rarity-rare { color: #2675d8; }
+.rarity-epic { color: #8c4bd7; }
+.rarity-legendary { color: #d97706; }
+.rarity-mythic { color: #db2777; box-shadow: 0 0 14px rgba(219,39,119,.18); }
+
+.rig-reward {
+  display: block;
+  margin-top: 9px;
+  color: var(--accent);
+  font-size: .76rem;
+  font-weight: 850;
+}
+
+.rig-card.selected {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rig-accent) 30%, transparent), 0 12px 28px color-mix(in srgb, var(--rig-accent) 16%, transparent);
+}
+
+@media (max-width: 720px) {
+  .combo-meter { margin-left: auto; margin-right: auto; text-align: left; }
+  .ghost-vehicle { top: 22%; }
+  #ghostVehicleIcon { font-size: 2.7rem; }
+}

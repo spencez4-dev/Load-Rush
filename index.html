@@ -7,7 +7,7 @@
   <meta name="description" content="A game-like shipment load tracker with hourly road races, XP levels, unlockable rigs, goals, and timestamped updates.">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="styles.css?v=3.8.0">
+  <link rel="stylesheet" href="styles.css?v=4.0.0">
   <title>Wayfinder Logistics</title>
 </head>
 <body>
@@ -34,6 +34,15 @@
         <div id="mainCount" class="main-count" aria-live="polite">0</div>
         <div class="main-caption">net loads tracked today</div>
         <div id="statusLine" class="status-line">Dispatch is quiet. Suspiciously quiet.</div>
+
+        <div id="comboMeter" class="combo-meter" aria-live="polite">
+          <div class="combo-copy">
+            <span id="comboLabel">COMBO READY</span>
+            <strong id="comboValue">0x</strong>
+          </div>
+          <div class="combo-track"><div id="comboFill" class="combo-fill"></div></div>
+          <small id="comboHint">Add another load within 3:00 to build a streak.</small>
+        </div>
       </div>
 
       <div class="counter-buttons">
@@ -51,7 +60,7 @@
           <strong id="bestHourMetric">0 loads</strong>
         </div>
         <div class="metric">
-          <span>Hourly streak</span>
+          <span>Win streak</span>
           <strong id="streakMetric">0</strong>
         </div>
       </div>
@@ -77,6 +86,10 @@
           <div class="lane-line lane-line-one"></div>
           <div class="lane-line lane-line-two"></div>
           <div id="raceFill" class="race-fill"></div>
+          <div id="ghostVehicle" class="ghost-vehicle" role="img" aria-label="Best hour ghost truck" hidden>
+            <span id="ghostVehicleIcon">🚛</span>
+            <small>BEST HOUR</small>
+          </div>
           <div id="vehicle" class="vehicle" role="img" aria-label="Race vehicle">🚛</div>
 
           <div class="finish-line finish-line-left">
@@ -145,7 +158,7 @@
   <div id="fxLayer" class="fx-layer" aria-hidden="true"></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <div id="megaMessage" class="mega-message">CHECKERED FLAG!</div>
-  <div class="build-badge">LOAD RUSH · V3.9</div>
+  <div class="build-badge">LOAD RUSH · V4.0 GAMEPLAY</div>
 
 
   <dialog id="fatePromptDialog" class="fate-dialog">
@@ -443,6 +456,6 @@
     </div>
   </dialog>
 
-  <script src="app.js?v=3.8.0" defer></script>
+  <script src="app.js?v=4.0.0" defer></script>
 </body>
 </html>
