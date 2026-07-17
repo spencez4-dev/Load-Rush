@@ -423,12 +423,36 @@ function bestGhostHour(now = new Date()) {
   if (!best || best.total <= 0) return null;
 
   const elapsed = now.getMinutes() * 60 + now.getSeconds() + now.getMilliseconds() / 1000;
-  let ghostCount = 0;
   const sorted = best.entries.slice().sort((a, b) => a.time - b.time);
+
+  // Build cumulative checkpoints from the best historical hour. The ghost then
+  // interpolates between checkpoints so it continuously cruises instead of
+  // appearing frozen and jumping only when an old load timestamp is crossed.
+  const checkpoints = [{ second: 0, count: 0 }];
+  let cumulative = 0;
+
   for (const entry of sorted) {
     const date = new Date(entry.time);
-    const offset = date.getMinutes() * 60 + date.getSeconds() + date.getMilliseconds() / 1000;
-    if (offset <= elapsed) ghostCount = Math.max(0, ghostCount + entry.delta);
+    const second = date.getMinutes() * 60 + date.getSeconds() + date.getMilliseconds() / 1000;
+    cumulative = Math.max(0, cumulative + entry.delta);
+    checkpoints.push({ second, count: cumulative });
+  }
+
+  // Hold the final historical score through the end of the hour.
+  checkpoints.push({ second: 3600, count: Math.max(0, cumulative) });
+
+  let ghostCount = checkpoints[checkpoints.length - 1].count;
+  for (let index = 1; index < checkpoints.length; index += 1) {
+    const previous = checkpoints[index - 1];
+    const next = checkpoints[index];
+    if (elapsed <= next.second) {
+      const span = Math.max(0.001, next.second - previous.second);
+      const phase = Math.max(0, Math.min(1, (elapsed - previous.second) / span));
+      // Smoothstep creates a natural acceleration and coast into each checkpoint.
+      const eased = phase * phase * (3 - 2 * phase);
+      ghostCount = previous.count + (next.count - previous.count) * eased;
+      break;
+    }
   }
 
   return { count: ghostCount, total: best.total, key: best.key };
@@ -448,7 +472,7 @@ function renderGhostTruck() {
   ghost.hidden = false;
   ghost.style.right = `${progress}%`;
   $('ghostVehicleIcon').textContent = selectedRig().icon;
-  ghost.title = `Best-hour ghost: ${data.count} loads at this point (${data.total} total)`;
+  ghost.title = `Best-hour ghost: ${data.count.toFixed(1)} loads at this point (${data.total} total)`;
 }
 
 function unlockedRigIds() {

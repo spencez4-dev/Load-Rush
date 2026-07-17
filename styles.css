@@ -2031,7 +2031,7 @@ body.alarm-active {
   display: grid;
   justify-items: center;
   transform: translate(50%, -50%);
-  transition: right .35s linear;
+  transition: right .28s linear;
   opacity: .38;
   filter: grayscale(.35) drop-shadow(0 7px 8px rgba(0,0,0,.2));
   pointer-events: none;
@@ -2110,4 +2110,25 @@ body.alarm-active {
   .combo-meter { margin-left: auto; margin-right: auto; text-align: left; }
   .ghost-vehicle { top: 22%; }
   #ghostVehicleIcon { font-size: 2.7rem; }
+}
+
+
+/* V4.1 ghost motion clarity */
+.ghost-vehicle::after {
+  content: "";
+  position: absolute;
+  right: 75%;
+  top: 44%;
+  width: 42px;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 58%, white));
+  opacity: .55;
+  filter: blur(.4px);
+  animation: ghostTrail 1s ease-in-out infinite alternate;
+}
+
+@keyframes ghostTrail {
+  from { transform: scaleX(.65); opacity: .28; }
+  to { transform: scaleX(1.12); opacity: .68; }
 }
