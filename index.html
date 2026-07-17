@@ -7,7 +7,7 @@
   <meta name="description" content="A game-like shipment load tracker with hourly road races, XP levels, unlockable rigs, goals, and timestamped updates.">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="styles.css?v=4.1.0">
+  <link rel="stylesheet" href="styles.css?v=4.2.0">
   <title>Wayfinder Logistics</title>
 </head>
 <body>
@@ -86,10 +86,6 @@
           <div class="lane-line lane-line-one"></div>
           <div class="lane-line lane-line-two"></div>
           <div id="raceFill" class="race-fill"></div>
-          <div id="ghostVehicle" class="ghost-vehicle" role="img" aria-label="Best hour ghost truck" hidden>
-            <span id="ghostVehicleIcon">🚛</span>
-            <small>BEST HOUR</small>
-          </div>
           <div id="vehicle" class="vehicle" role="img" aria-label="Race vehicle">🚛</div>
 
           <div class="finish-line finish-line-left">
@@ -158,7 +154,7 @@
   <div id="fxLayer" class="fx-layer" aria-hidden="true"></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <div id="megaMessage" class="mega-message">CHECKERED FLAG!</div>
-  <div class="build-badge">LOAD RUSH · V4.1 GHOST MOTION</div>
+  <div class="build-badge">LOAD RUSH · V4.2 NO GHOST</div>
 
 
   <dialog id="fatePromptDialog" class="fate-dialog">
@@ -456,6 +452,6 @@
     </div>
   </dialog>
 
-  <script src="app.js?v=4.1.0" defer></script>
+  <script src="app.js?v=4.2.0" defer></script>
 </body>
 </html>

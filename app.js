@@ -402,79 +402,6 @@ function renderComboMeter() {
   meter.dataset.tier = stats.multiplier >= 5 ? '5' : stats.multiplier >= 3 ? '3' : stats.multiplier >= 2 ? '2' : '1';
 }
 
-function bestGhostHour(now = new Date()) {
-  const currentKey = currentHourKey(now);
-  const buckets = new Map();
-
-  for (const entry of state.log) {
-    const date = new Date(entry.time);
-    const key = currentHourKey(date);
-    if (key === currentKey) continue;
-    if (!buckets.has(key)) buckets.set(key, []);
-    buckets.get(key).push(entry);
-  }
-
-  let best = null;
-  for (const [key, entries] of buckets) {
-    const total = Math.max(0, netTotal(entries));
-    if (!best || total > best.total) best = { key, entries, total };
-  }
-
-  if (!best || best.total <= 0) return null;
-
-  const elapsed = now.getMinutes() * 60 + now.getSeconds() + now.getMilliseconds() / 1000;
-  const sorted = best.entries.slice().sort((a, b) => a.time - b.time);
-
-  // Build cumulative checkpoints from the best historical hour. The ghost then
-  // interpolates between checkpoints so it continuously cruises instead of
-  // appearing frozen and jumping only when an old load timestamp is crossed.
-  const checkpoints = [{ second: 0, count: 0 }];
-  let cumulative = 0;
-
-  for (const entry of sorted) {
-    const date = new Date(entry.time);
-    const second = date.getMinutes() * 60 + date.getSeconds() + date.getMilliseconds() / 1000;
-    cumulative = Math.max(0, cumulative + entry.delta);
-    checkpoints.push({ second, count: cumulative });
-  }
-
-  // Hold the final historical score through the end of the hour.
-  checkpoints.push({ second: 3600, count: Math.max(0, cumulative) });
-
-  let ghostCount = checkpoints[checkpoints.length - 1].count;
-  for (let index = 1; index < checkpoints.length; index += 1) {
-    const previous = checkpoints[index - 1];
-    const next = checkpoints[index];
-    if (elapsed <= next.second) {
-      const span = Math.max(0.001, next.second - previous.second);
-      const phase = Math.max(0, Math.min(1, (elapsed - previous.second) / span));
-      // Smoothstep creates a natural acceleration and coast into each checkpoint.
-      const eased = phase * phase * (3 - 2 * phase);
-      ghostCount = previous.count + (next.count - previous.count) * eased;
-      break;
-    }
-  }
-
-  return { count: ghostCount, total: best.total, key: best.key };
-}
-
-function renderGhostTruck() {
-  const ghost = $('ghostVehicle');
-  if (!ghost) return;
-
-  const data = bestGhostHour();
-  if (!data) {
-    ghost.hidden = true;
-    return;
-  }
-
-  const progress = Math.min(100, (data.count / Math.max(1, state.hourlyGoal)) * 100);
-  ghost.hidden = false;
-  ghost.style.right = `${progress}%`;
-  $('ghostVehicleIcon').textContent = selectedRig().icon;
-  ghost.title = `Best-hour ghost: ${data.count.toFixed(1)} loads at this point (${data.total} total)`;
-}
-
 function unlockedRigIds() {
   return RIGS.filter(rig => rig.unlocked()).map(rig => rig.id);
 }
@@ -573,7 +500,6 @@ function renderAll() {
   $('vehicle').classList.toggle('finished', hour >= state.hourlyGoal);
   document.documentElement.style.setProperty('--rig-accent', rig.accent || 'var(--accent)');
   document.documentElement.dataset.rigRarity = (rig.rarity || 'COMMON').toLowerCase();
-  renderGhostTruck();
 
   if (hour >= state.hourlyGoal) {
     $('raceMessage').textContent = 'Checkered flag claimed. Hourly quest complete.';
@@ -1563,7 +1489,6 @@ function tickClock() {
   countdownElement.textContent = formatCountdown(remaining);
   countdownElement.dataset.secondsRemaining = String(remaining);
   renderComboMeter();
-  renderGhostTruck();
 }
 
 function startHourlyClock() {
