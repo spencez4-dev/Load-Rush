@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#efe9ff">
+  <meta name="description" content="A game-like shipment load tracker with hourly road races, XP levels, unlockable rigs, goals, and timestamped updates.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="styles.css?v=3.6.0">
+  <title>Let it Rip</title>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-kicker">WIN THE DAY</span>
+        <h1>Let it Rip.</h1>
+      </div>
+      <div class="top-actions">
+        <button id="remindersBtn" class="reminders-nav-button" type="button" aria-haspopup="dialog" aria-controls="remindersDialog">
+          <span>⏰</span>
+          <span>Reminders</span>
+          <b id="reminderBadge" hidden>0</b>
+        </button>
+        <button id="themeBtn" class="icon-button" type="button" aria-label="Toggle theme">☾</button>
+        <button id="settingsBtn" class="icon-button" type="button" aria-label="Open settings">⚙</button>
+      </div>
+    </header>
+
+    <section class="counter-card glass">
+      <div class="counter-copy">
+        <span class="pill">TODAY'S LOAD BOARD</span>
+        <div id="mainCount" class="main-count" aria-live="polite">0</div>
+        <div class="main-caption">net loads tracked today</div>
+        <div id="statusLine" class="status-line">Dispatch is quiet. Suspiciously quiet.</div>
+      </div>
+
+      <div class="counter-buttons">
+        <button id="minusBtn" class="count-button minus" type="button" aria-label="Remove one load">−</button>
+        <button id="plusBtn" class="count-button plus" type="button" aria-label="Track one load">+</button>
+      </div>
+
+      <div class="metric-row">
+        <div class="metric">
+          <span>Estimated work</span>
+          <strong id="workMetric">0 min</strong>
+        </div>
+        <div class="metric">
+          <span>Best hour</span>
+          <strong id="bestHourMetric">0 loads</strong>
+        </div>
+        <div class="metric">
+          <span>Hourly streak</span>
+          <strong id="streakMetric">0</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="race-card glass">
+      <div class="section-heading">
+        <div>
+          <span class="section-kicker">HOURLY QUEST</span>
+          <h2>Race to <span id="hourlyGoalLabel">20</span></h2>
+        </div>
+        <div id="countdown" class="countdown" title="Live time remaining in the current hour">59:59</div>
+      </div>
+
+      <div class="road-world">
+        <div class="sky-haze"></div>
+        <div class="city-silhouette city-back"></div>
+        <div class="city-silhouette city-front"></div>
+
+        <div class="road">
+          <div class="road-shoulder road-shoulder-top"></div>
+          <div class="road-shoulder road-shoulder-bottom"></div>
+          <div class="lane-line lane-line-one"></div>
+          <div class="lane-line lane-line-two"></div>
+          <div id="raceFill" class="race-fill"></div>
+          <div id="vehicle" class="vehicle" role="img" aria-label="Race vehicle">🚛</div>
+
+          <div class="finish-line finish-line-left">
+            <span class="finish-flag">🏁</span>
+          </div>
+          <div class="start-marker">START</div>
+        </div>
+
+        <div id="trophy" class="trophy">🏆</div>
+        <div id="fateScene" class="fate-scene" aria-hidden="true"></div>
+      </div>
+
+      <div class="race-footer">
+        <div>
+          <strong id="raceProgressText">0 / 20</strong>
+          <span id="raceMessage">Green flag. Let it rip.</span>
+        </div>
+        <button id="garageBtn" class="secondary-button" type="button">Garage</button>
+      </div>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="glass stat-card">
+        <span class="section-kicker">LIFETIME XP</span>
+        <div id="xpValue" class="big-stat">0</div>
+        <div class="progress-track"><div id="xpBar" class="progress-fill"></div></div>
+        <div id="levelLabel" class="small-copy">Level 1 · 0 / 100 XP</div>
+      </article>
+
+      <article class="glass stat-card">
+        <span class="section-kicker">DAILY GOAL</span>
+        <div class="goal-wrap">
+          <div id="goalRing" class="goal-ring"><span id="goalPercent">0%</span></div>
+          <div>
+            <strong id="goalText">0 / 150</strong>
+            <div class="small-copy">net loads today</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="glass stat-card">
+        <span class="section-kicker">RACE RECORD</span>
+        <div id="raceWinsValue" class="big-stat">0</div>
+        <div class="small-copy">hourly wins</div>
+        <div id="activeRigLabel" class="small-copy emphasis">Driving: Starter Semi</div>
+      </article>
+    </section>
+
+    <section class="glass log-card">
+      <div class="section-heading">
+        <div>
+          <span class="section-kicker">ACTIVITY</span>
+          <h2>Load Log</h2>
+        </div>
+        <div class="button-row">
+          <button id="insightsBtn" class="secondary-button" type="button">Insights</button>
+          <button id="summaryBtn" class="secondary-button" type="button">Day Recap</button>
+          <button id="undoBtn" class="secondary-button" type="button">Undo</button>
+          <button id="exportBtn" class="secondary-button" type="button">Export</button>
+        </div>
+      </div>
+      <div id="logList" class="log-list"></div>
+    </section>
+  </main>
+
+  <div id="fxLayer" class="fx-layer" aria-hidden="true"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="megaMessage" class="mega-message">CHECKERED FLAG!</div>
+  <div class="build-badge">LOAD RUSH · V3.6</div>
+
+
+  <dialog id="fatePromptDialog" class="fate-dialog">
+    <div class="dialog-content fate-dialog-content">
+      <span class="fate-dice-icon">🎲</span>
+      <span class="section-kicker">MILESTONE REACHED</span>
+      <h2 id="fatePromptTitle">10 loads tracked!</h2>
+      <p>Roll Freight Fate for a random road event, or skip it and keep moving.</p>
+
+      <div class="dialog-actions fate-actions">
+        <button id="skipFateBtn" class="secondary-button" type="button">Skip</button>
+        <button id="rollFateBtn" class="primary-button" type="button">🎲 Roll Freight Fate</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="fateResultDialog" class="fate-dialog">
+    <div class="dialog-content fate-dialog-content">
+      <div id="rollingDice" class="rolling-dice">🎲</div>
+      <span id="fateRarity" class="fate-rarity">COMMON</span>
+      <h2 id="fateEventName">Nitro Boost</h2>
+      <p id="fateEventDescription">Your rig hits the boost and disappears into the horizon.</p>
+
+      <div class="dialog-actions">
+        <button id="closeFateResultBtn" class="primary-button" type="button">Continue</button>
+      </div>
+    </div>
+  </dialog>
+
+
+  <dialog id="remindersDialog" class="wide-dialog reminders-dialog">
+    <div class="dialog-content">
+      <div class="section-heading">
+        <div>
+          <span class="section-kicker">DON'T FORGET</span>
+          <h2>Reminders</h2>
+        </div>
+        <button id="closeRemindersX" class="icon-button" type="button" aria-label="Close reminders">×</button>
+      </div>
+
+      <div id="reminderTabs" class="reminder-tabs" role="tablist" aria-label="Reminder sections">
+        <button id="viewRemindersTab" class="reminder-tab active" type="button" role="tab" aria-selected="true">Upcoming</button>
+        <button id="newReminderTab" class="reminder-tab" type="button" role="tab" aria-selected="false">Add new</button>
+      </div>
+
+      <div class="reminder-permission-strip">
+        <div>
+          <strong>Attention mode</strong>
+          <span>Full-screen alarm always works while the app is open. Browser notifications can also appear when the tab is in the background.</span>
+        </div>
+        <button id="enableNotificationsBtn" class="secondary-button" type="button">Enable notifications</button>
+      </div>
+
+      <div id="reminderFormPanel" class="reminder-form-panel" hidden>
+      <div class="reminder-form">
+        <label class="reminder-field reminder-message-field">
+          <span>What do you need to remember?</span>
+          <input id="reminderTextInput" type="text" maxlength="120" placeholder="Call this guy" autocomplete="off">
+        </label>
+
+        <label class="reminder-field">
+          <span>Date</span>
+          <input id="reminderDateInput" type="date">
+        </label>
+
+        <label class="reminder-field">
+          <span>Time</span>
+          <input id="reminderTimeInput" type="time">
+        </label>
+
+        <button id="addReminderBtn" class="primary-button reminder-add-button" type="button">Add reminder</button>
+      </div>
+
+      </div>
+
+      <div id="reminderListPanel">
+      <div class="reminder-list-heading">
+        <strong>Upcoming</strong>
+        <span id="reminderCountLabel">0 reminders</span>
+      </div>
+
+      <div id="reminderList" class="reminder-list"></div>
+      </div>
+
+      <div class="dialog-actions">
+        <button id="closeRemindersBtn" class="primary-button" type="button">Done</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="reminderAlarm" class="reminder-alarm" hidden aria-live="assertive" role="alertdialog" aria-modal="true">
+    <div class="alarm-strobe"></div>
+    <div class="alarm-panel">
+      <div class="alarm-icon">🚨</div>
+      <span class="alarm-kicker">REMINDER</span>
+      <h2 id="alarmReminderText">Call this guy</h2>
+      <div id="alarmReminderTime" class="alarm-time">08:30</div>
+      <p>This is your aggressively noticeable reminder.</p>
+      <button id="dismissAlarmBtn" class="alarm-dismiss-button" type="button">I GOT IT</button>
+    </div>
+  </div>
+
+  <dialog id="garageDialog">
+    <div class="dialog-content">
+      <div class="section-heading">
+        <div>
+          <span class="section-kicker">YOUR GARAGE</span>
+          <h2>Choose Your Rig</h2>
+        </div>
+        <button id="closeGarageX" class="icon-button" type="button" aria-label="Close garage">×</button>
+      </div>
+
+      <div class="garage-summary">
+        <div><span>Level</span><strong id="garageLevel">1</strong></div>
+        <div><span>Lifetime XP</span><strong id="garageXp">0</strong></div>
+        <div><span>Unlocked</span><strong id="garageUnlocked">1 / 12</strong></div>
+      </div>
+
+      <div id="garageGrid" class="garage-grid"></div>
+
+      <div class="fate-collection">
+        <div class="section-heading">
+          <div>
+            <span class="section-kicker">FREIGHT FATE</span>
+            <h2>Event Collection</h2>
+          </div>
+          <div id="eventCollectionCount" class="countdown">0 / 10</div>
+        </div>
+        <div id="eventCollectionGrid" class="event-collection-grid"></div>
+      </div>
+
+      <div class="dialog-actions">
+        <button id="closeGarageBtn" class="primary-button" type="button">Done</button>
+      </div>
+    </div>
+  </dialog>
+
+
+  <dialog id="insightsDialog" class="wide-dialog">
+    <div class="dialog-content">
+      <div class="section-heading">
+        <div>
+          <span class="section-kicker">PERFORMANCE</span>
+          <h2>Load Insights</h2>
+        </div>
+        <button id="closeInsightsX" class="icon-button" type="button" aria-label="Close insights">×</button>
+      </div>
+
+      <div class="period-tabs" role="tablist" aria-label="Chart period">
+        <button class="period-tab active" data-period="daily" type="button">Daily</button>
+        <button class="period-tab" data-period="weekly" type="button">Weekly</button>
+        <button class="period-tab" data-period="monthly" type="button">Monthly</button>
+      </div>
+
+      <div class="insight-metrics">
+        <div class="insight-chip"><span>Total</span><strong id="chartTotal">0</strong></div>
+        <div class="insight-chip"><span>Average</span><strong id="chartAverage">0</strong></div>
+        <div class="insight-chip"><span>Best period</span><strong id="chartBest">0</strong></div>
+      </div>
+
+      <div class="chart-shell">
+        <svg id="insightsChart" viewBox="0 0 760 300" role="img" aria-label="Load tracking history chart"></svg>
+      </div>
+      <div id="chartCaption" class="chart-caption">Your recent load activity.</div>
+
+      <div class="dialog-actions">
+        <button id="closeInsightsBtn" class="primary-button" type="button">Done</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="summaryDialog" class="summary-dialog">
+    <div class="dialog-content recap-content">
+      <button id="closeSummaryX" class="icon-button recap-close" type="button" aria-label="Close summary">×</button>
+      <span class="section-kicker">END OF DAY</span>
+      <h2 id="summaryTitle">Win the Day Recap</h2>
+      <div id="summaryDate" class="recap-date"></div>
+
+      <div class="recap-hero">
+        <div id="summaryLoads" class="recap-big">0</div>
+        <div>net loads tracked</div>
+      </div>
+
+      <div class="recap-grid">
+        <div><span>Estimated work</span><strong id="summaryWork">0 min</strong></div>
+        <div><span>Best hour</span><strong id="summaryBestHour">0</strong></div>
+        <div><span>Goal result</span><strong id="summaryGoal">0%</strong></div>
+        <div><span>XP earned</span><strong id="summaryXp">0 XP</strong></div>
+      </div>
+
+      <div id="summaryVerdict" class="recap-verdict">The board is ready.</div>
+      <div id="summaryHourlyBars" class="recap-hour-bars"></div>
+
+      <div class="dialog-actions">
+        <button id="shareSummaryBtn" class="secondary-button" type="button">Copy recap</button>
+        <button id="closeSummaryBtn" class="primary-button" type="button">Done</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="settingsDialog">
+    <div class="dialog-content">
+      <div class="section-heading">
+        <div>
+          <span class="section-kicker">SETTINGS</span>
+          <h2>Control Room</h2>
+        </div>
+        <button id="closeSettingsX" class="icon-button" type="button" aria-label="Close settings">×</button>
+      </div>
+
+      <label class="setting-row">
+        <span>Daily load goal</span>
+        <input id="dailyGoalInput" type="number" min="1" max="1000" step="1">
+      </label>
+
+      <label class="setting-row">
+        <span>Hourly race goal</span>
+        <input id="hourlyGoalInput" type="number" min="1" max="100" step="1">
+      </label>
+
+      <label class="setting-row">
+        <span>Minutes per update</span>
+        <input id="minutesInput" type="number" min="1" max="60" step="1">
+      </label>
+
+      <div class="setting-row">
+        <span>Sound effects</span>
+        <button id="soundToggle" class="switch" type="button" role="switch" aria-checked="true"></button>
+      </div>
+
+      <label class="setting-row">
+        <span>Sound style</span>
+        <select id="soundStyleSelect">
+          <option value="engine">Engine rev</option>
+          <option value="arcade">Arcade</option>
+          <option value="chime">Chime</option>
+          <option value="click">Clean click</option>
+        </select>
+      </label>
+
+      <div class="setting-row">
+        <span>Preview sound</span>
+        <button id="previewSoundBtn" class="secondary-button" type="button">Play</button>
+      </div>
+
+      <div class="setting-row">
+        <span>Particles</span>
+        <button id="particlesToggle" class="switch" type="button" role="switch" aria-checked="true"></button>
+      </div>
+
+      <div class="setting-row">
+        <span>Freight Fate</span>
+        <button id="fateToggle" class="switch" type="button" role="switch" aria-checked="true"></button>
+      </div>
+
+      <label class="setting-row">
+        <span>Fate frequency</span>
+        <select id="fateFrequencySelect">
+          <option value="10">Every 10 loads</option>
+          <option value="20">Every 20 loads</option>
+          <option value="50">Every 50 loads</option>
+        </select>
+      </label>
+
+      <div class="setting-row">
+        <span>Import backup</span>
+        <button id="importBtn" class="secondary-button" type="button">Choose file</button>
+        <input id="importInput" type="file" accept="application/json" hidden>
+      </div>
+
+      <div class="dialog-actions split">
+        <button id="resetBtn" class="danger-button" type="button">Reset all data</button>
+        <button id="saveSettingsBtn" class="primary-button" type="button">Save changes</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="app.js?v=3.6.0" defer></script>
+</body>
+</html>
