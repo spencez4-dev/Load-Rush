@@ -28,6 +28,7 @@ const DEFAULTS = {
   reminders: [],
   reminderAlarmEnabled: true,
   reminderAlarmWarningSeen: false,
+  brandTitle: 'Wayfinder Logistics',
   lastRecapDate: ''
 };
 
@@ -243,6 +244,30 @@ function saveState() {
   };
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(clean));
+}
+
+
+
+function renderBrandTitle() {
+  const brandTitle = $('brandTitle');
+  if (!brandTitle) return;
+
+  const value = String(state.brandTitle || 'Wayfinder Logistics').trim() || 'Wayfinder Logistics';
+  brandTitle.textContent = value;
+  document.title = value;
+}
+
+function editBrandTitle() {
+  const current = String(state.brandTitle || 'Wayfinder Logistics');
+  const next = window.prompt('Change the heading text:', current);
+
+  if (next === null) return;
+
+  const cleaned = next.trim().slice(0, 48);
+  state.brandTitle = cleaned || 'Wayfinder Logistics';
+  saveState();
+  renderBrandTitle();
+  showToast('Heading updated');
 }
 
 function todayKey(date = new Date()) {
@@ -1045,7 +1070,7 @@ function dismissReminderAlarm() {
   activeReminderId = null;
   $('reminderAlarm').hidden = true;
   document.body.classList.remove('alarm-active');
-  document.title = 'Let it Rip';
+  document.title = state.brandTitle || 'Wayfinder Logistics';
   stopReminderSiren();
 
   if ('vibrate' in navigator) {
@@ -1912,6 +1937,20 @@ async function initialize() {
   bindEvents();
   bindReminderEventsSafely();
 
+  const brandTitle = $('brandTitle');
+  if (brandTitle) {
+    brandTitle.addEventListener('click', editBrandTitle);
+    brandTitle.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        editBrandTitle();
+      }
+    });
+    brandTitle.setAttribute('tabindex', '0');
+    brandTitle.setAttribute('role', 'button');
+    brandTitle.setAttribute('aria-label', 'Change heading text');
+  }
+
   const remindersButton = $('remindersBtn');
   if (remindersButton) {
     remindersButton.onclick = event => {
@@ -1938,6 +1977,7 @@ async function initialize() {
     $('enableNotificationsBtn').disabled = true;
   }
 
+  renderBrandTitle();
   renderAll();
   renderReminders();
   startHourlyClock();

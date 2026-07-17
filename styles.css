@@ -1938,3 +1938,19 @@ body.alarm-active {
   font-size: .72rem;
   font-weight: 600;
 }
+
+
+/* V3.9 secret editable heading */
+.editable-brand-title {
+  cursor: pointer;
+  user-select: none;
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+.editable-brand-title:hover {
+  opacity: .86;
+}
+
+.editable-brand-title:active {
+  transform: scale(.985);
+}
