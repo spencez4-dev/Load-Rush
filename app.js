@@ -45,7 +45,8 @@ const RIGS = [
   { id: 'mud-titan', icon: '🛻', name: 'Mud Titan', type: 'OFF-ROAD', rarity: 'LEGENDARY', reward: 'Dust storm trail', accent: '#92400e', rule: 'Reach Level 15', unlocked: () => lifetimeLevel() >= 15 },
   { id: 'rocket-hauler', icon: '🚀', name: 'Rocket Hauler', type: 'LEGENDARY', rarity: 'LEGENDARY', reward: 'Rocket flame boost', accent: '#f97316', rule: 'Track 1,000 lifetime net loads', unlocked: () => lifetimeXP() >= 1000 },
   { id: 'alien-dispatch', icon: '🛸', name: 'Alien Dispatch', type: 'MYTHIC', rarity: 'MYTHIC', reward: 'Cosmic neon trail', accent: '#22d3ee', rule: 'Reach Level 25', unlocked: () => lifetimeLevel() >= 25 },
-  { id: 'king-freight', icon: '👑', name: 'King of Freight', type: 'MYTHIC SEMI', rarity: 'MYTHIC', reward: 'Royal rainbow trail', accent: '#fbbf24', rule: 'Win 50 hourly races', unlocked: () => state.raceWins >= 50 }
+  { id: 'king-freight', icon: '👑', name: 'King of Freight', type: 'MYTHIC SEMI', rarity: 'MYTHIC', reward: 'Royal rainbow trail', accent: '#fbbf24', rule: 'Win 50 hourly races', unlocked: () => state.raceWins >= 50 },
+  { id: 'kyle-byler', icon: '🏄‍♂️', name: 'Kyle Byler', type: 'SURFSIDE', rarity: 'SLOTTED', reward: 'Rocket flame boost', accent: '#f97316', rule: 'Reach Level 50', unlocked: () => lifetimelevel() >=50 }
 ];
 
 const FATE_EVENTS = [
