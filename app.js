@@ -11,7 +11,7 @@ const LEGACY_KEYS = [
 const DEFAULTS = {
   log: [],
   dailyGoal: 150,
-  hourlyGoal: 20,
+  hourlyGoal: 15,
   minutesPerUpdate: 5,
   raceWins: 0,
   completedHours: [],
@@ -621,7 +621,10 @@ function renderAll() {
   const level = lifetimeLevel();
   const levelDetails = currentLevelDetails();
   const levelProgress = levelDetails.percent;
-  const hourlyProgress = Math.min(100, (hour / Math.max(1, state.hourlyGoal)) * 100);
+  const raceSize = Math.max(1, Number(state.hourlyGoal) || 15);
+  const completedRacesThisHour = Math.floor(hour / raceSize);
+  const currentRaceLoads = hour % raceSize;
+  const hourlyProgress = (currentRaceLoads / raceSize) * 100;
   const dailyProgress = Math.min(100, Math.round((today / Math.max(1, state.dailyGoal)) * 100));
   const rig = selectedRig();
 
@@ -631,26 +634,28 @@ function renderAll() {
   $('streakMetric').textContent = hourlyStreak();
   renderComboMeter();
 
-  $('hourlyGoalLabel').textContent = state.hourlyGoal;
-  $('raceProgressText').textContent = `${Math.min(state.hourlyGoal, hour)} / ${state.hourlyGoal}`;
+  $('raceProgressText').textContent = `${currentRaceLoads} / ${raceSize}`;
   $('raceFill').style.width = `${hourlyProgress}%`;
   $('vehicle').style.right = `${hourlyProgress}%`;
+  $('vehicleTrail').style.right = `${hourlyProgress}%`;
   $('vehicle').textContent = rig.icon;
-  $('vehicle').classList.toggle('finished', hour >= state.hourlyGoal);
+  $('vehicle').classList.remove('finished');
   document.documentElement.style.setProperty('--rig-accent', rig.accent || 'var(--accent)');
   document.documentElement.dataset.rigRarity = (rig.rarity || 'COMMON').toLowerCase();
   renderGhostTruck();
 
-  if (hour >= state.hourlyGoal) {
-    $('raceMessage').textContent = 'Checkered flag claimed. Hourly quest complete.';
-  } else if (hour >= Math.ceil(state.hourlyGoal * .75)) {
-    $('raceMessage').textContent = `${state.hourlyGoal - hour} loads left — final lap.`;
-  } else if (hour >= Math.ceil(state.hourlyGoal * .4)) {
-    $('raceMessage').textContent = `${state.hourlyGoal - hour} loads left — gaining fast.`;
-  } else if (hour > 0) {
-    $('raceMessage').textContent = `${state.hourlyGoal - hour} loads left — engines are warming up.`;
+  const loadsLeftInRace = raceSize - currentRaceLoads;
+  const raceNumber = completedRacesThisHour + 1;
+  if (currentRaceLoads >= Math.ceil(raceSize * .75)) {
+    $('raceMessage').textContent = `${loadsLeftInRace} loads left in Race ${raceNumber} — final push.`;
+  } else if (currentRaceLoads >= Math.ceil(raceSize * .4)) {
+    $('raceMessage').textContent = `${loadsLeftInRace} loads left in Race ${raceNumber} — gaining fast.`;
+  } else if (currentRaceLoads > 0) {
+    $('raceMessage').textContent = `${loadsLeftInRace} loads left in Race ${raceNumber}.`;
+  } else if (completedRacesThisHour > 0) {
+    $('raceMessage').textContent = `Race ${completedRacesThisHour} won — Race ${raceNumber} is live.`;
   } else {
-    $('raceMessage').textContent = 'Green flag. Let it rip.';
+    $('raceMessage').textContent = `Beat the clock: every ${raceSize} loads earns a win and loot box.`;
   }
 
   $('xpValue').textContent = lifetime;
@@ -876,18 +881,25 @@ function celebrateRace() {
 function maybeAwardRace() {
   const hourKey = currentHourKey();
   const hour = hourNetLoads();
+  const raceSize = Math.max(1, Number(state.hourlyGoal) || 15);
+  const racesReached = Math.floor(hour / raceSize);
+  let racesAwarded = 0;
 
-  if (hour < state.hourlyGoal || state.completedHours.includes(hourKey)) {
-    return;
+  for (let raceNumber = 1; raceNumber <= racesReached; raceNumber += 1) {
+    const milestoneKey = `${hourKey}:race-${raceNumber}`;
+    if (state.completedHours.includes(milestoneKey)) continue;
+
+    state.completedHours.push(milestoneKey);
+    state.raceWins += 1;
+    state.crateTokens = (state.crateTokens || 0) + 1;
+    racesAwarded += 1;
   }
 
-  state.completedHours.push(hourKey);
-  state.raceWins += 1;
-  state.crateTokens = (state.crateTokens || 0) + 1;
-  saveState();
+  if (!racesAwarded) return;
 
+  saveState();
   celebrateRace();
-  showToast(`Hourly quest complete · +1 loot box · ${state.raceWins} total wins`);
+  showToast(`${racesAwarded > 1 ? `${racesAwarded} races won` : 'Race won'} · +${racesAwarded} loot box${racesAwarded === 1 ? '' : 'es'} · ${state.raceWins} total wins`);
 }
 
 
@@ -1533,7 +1545,7 @@ function tickClock() {
   if (key !== previousHourKey) {
     previousHourKey = key;
     renderAll();
-    showToast('New hour. Back to the starting line.');
+    showToast('New hour. Beat the clock starts fresh.');
   }
 
   const remaining = secondsUntilNextHour();
