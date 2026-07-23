@@ -1,7 +1,7 @@
 {
   "name": "Let it Rip: Load Rush",
   "short_name": "Load Rush",
-  "description": "Load Rush consolidated debug build with a reliable hourly countdown, reminders, daily Freight Fate milestones, and stale-cache cleanup.",
+  "description": "Load Rush productivity tracker with dispatch analytics, collectible trucks, continuous races, Freight Fate, and subtle truck exhaust animation.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
