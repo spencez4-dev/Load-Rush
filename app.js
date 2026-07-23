@@ -30,22 +30,30 @@ const DEFAULTS = {
   reminderAlarmWarningSeen: false,
   brandTitle: 'Wayfinder Logistics',
   seenUnlocks: [],
+  ownedRigs: ['starter-semi'],
+  crateTokens: 1,
+  openedCrates: 0,
   lastRecapDate: ''
 };
 
 const RIGS = [
-  { id: 'starter-semi', icon: '🚛', name: 'Starter Semi', type: 'SEMI', rarity: 'COMMON', reward: 'Classic road glow', accent: '#7458ff', rule: 'Unlocked from the start', unlocked: () => true },
-  { id: 'red-racer', icon: '🏎️', name: 'Redline Racer', type: 'RACE CAR', rarity: 'UNCOMMON', reward: 'Red speed trail', accent: '#ef4444', rule: 'Reach Level 3', unlocked: () => lifetimeLevel() >= 3 },
-  { id: 'box-truck', icon: '🚚', name: 'Box Truck Blitz', type: 'TRUCK', rarity: 'UNCOMMON', reward: 'Cargo pulse effect', accent: '#f59e0b', rule: 'Win 5 hourly races', unlocked: () => state.raceWins >= 5 },
-  { id: 'yellow-jacket', icon: '🚕', name: 'Yellow Jacket', type: 'STREET', rarity: 'RARE', reward: 'Golden road trail', accent: '#eab308', rule: 'Reach Level 6', unlocked: () => lifetimeLevel() >= 6 },
-  { id: 'interceptor', icon: '🚓', name: 'Interceptor', type: 'PURSUIT', rarity: 'RARE', reward: 'Police light glow', accent: '#3b82f6', rule: 'Win 12 hourly races', unlocked: () => state.raceWins >= 12 },
-  { id: 'code-red', icon: '🚒', name: 'Code Red', type: 'HEAVY', rarity: 'EPIC', reward: 'Emergency flame trail', accent: '#dc2626', rule: 'Reach Level 10', unlocked: () => lifetimeLevel() >= 10 },
-  { id: 'people-mover', icon: '🚌', name: 'People Mover', type: 'ODDBALL', rarity: 'EPIC', reward: 'Party confetti trail', accent: '#8b5cf6', rule: 'Track 500 lifetime net loads', unlocked: () => lifetimeXP() >= 500 },
-  { id: 'formula-freight', icon: '🏁', name: 'Formula Freight', type: 'RACE', rarity: 'EPIC', reward: 'Checkered boost trail', accent: '#111827', rule: 'Win 25 hourly races', unlocked: () => state.raceWins >= 25 },
-  { id: 'mud-titan', icon: '🛻', name: 'Mud Titan', type: 'OFF-ROAD', rarity: 'LEGENDARY', reward: 'Dust storm trail', accent: '#92400e', rule: 'Reach Level 15', unlocked: () => lifetimeLevel() >= 15 },
-  { id: 'rocket-hauler', icon: '🚀', name: 'Rocket Hauler', type: 'LEGENDARY', rarity: 'LEGENDARY', reward: 'Rocket flame boost', accent: '#f97316', rule: 'Track 1,000 lifetime net loads', unlocked: () => lifetimeXP() >= 1000 },
-  { id: 'alien-dispatch', icon: '🛸', name: 'Alien Dispatch', type: 'MYTHIC', rarity: 'MYTHIC', reward: 'Cosmic neon trail', accent: '#22d3ee', rule: 'Reach Level 25', unlocked: () => lifetimeLevel() >= 25 },
-  { id: 'king-freight', icon: '👑', name: 'King of Freight', type: 'MYTHIC SEMI', rarity: 'MYTHIC', reward: 'Royal rainbow trail', accent: '#fbbf24', rule: 'Win 50 hourly races', unlocked: () => state.raceWins >= 50 }
+  { id: 'starter-semi', icon: '🚛', name: 'Starter Semi', type: 'SEMI', rarity: 'COMMON', weight: 30, reward: 'Classic violet road glow', accent: '#7458ff', rule: 'Unlocked from the start', unlocked: () => true },
+  { id: 'box-truck', icon: '🚚', name: 'Box Truck Blitz', type: 'BOX TRUCK', rarity: 'COMMON', weight: 24, reward: 'Amber cargo pulse', accent: '#f59e0b', rule: 'Reach Level 2', unlocked: () => lifetimeLevel() >= 2 },
+  { id: 'pickup', icon: '🛻', name: 'Mud Runner', type: 'PICKUP', rarity: 'COMMON', weight: 21, reward: 'Dusty trail', accent: '#92400e', rule: 'Build a 5-update combo', unlocked: () => comboStats().best >= 5 },
+  { id: 'tractor', icon: '🚜', name: 'Field Hauler', type: 'HEAVY', rarity: 'UNCOMMON', weight: 16, reward: 'Fresh-cut green trail', accent: '#65a30d', rule: 'Reach Level 4', unlocked: () => lifetimeLevel() >= 4 },
+  { id: 'delivery-van', icon: '🚐', name: 'Last Mile Legend', type: 'VAN', rarity: 'UNCOMMON', weight: 15, reward: 'Blue delivery streak', accent: '#2563eb', rule: 'Track 250 lifetime XP', unlocked: () => lifetimeXP() >= 250 },
+  { id: 'taxi', icon: '🚕', name: 'Yellow Jacket', type: 'CITY', rarity: 'UNCOMMON', weight: 14, reward: 'Golden road trail', accent: '#eab308', rule: 'Win 3 hourly races', unlocked: () => state.raceWins >= 3 },
+  { id: 'fire-engine', icon: '🚒', name: 'Code Red', type: 'HEAVY', rarity: 'RARE', weight: 9, reward: 'Emergency flare trail', accent: '#dc2626', rule: 'Reach Level 7', unlocked: () => lifetimeLevel() >= 7 },
+  { id: 'ambulance', icon: '🚑', name: 'Priority Freight', type: 'EXPRESS', rarity: 'RARE', weight: 8, reward: 'Pulse-light glow', accent: '#ef4444', rule: 'Win 8 hourly races', unlocked: () => state.raceWins >= 8 },
+  { id: 'interceptor', icon: '🚓', name: 'Interceptor', type: 'PURSUIT', rarity: 'RARE', weight: 7, reward: 'Blue-red pursuit trail', accent: '#3b82f6', rule: 'Track 750 lifetime XP', unlocked: () => lifetimeXP() >= 750 },
+  { id: 'bus', icon: '🚌', name: 'People Mover', type: 'HEAVY', rarity: 'EPIC', weight: 4.5, reward: 'Confetti lane trail', accent: '#8b5cf6', rule: 'Reach Level 12', unlocked: () => lifetimeLevel() >= 12 },
+  { id: 'trolley', icon: '🚎', name: 'City Circuit', type: 'TRANSIT', rarity: 'EPIC', weight: 4, reward: 'Electric wire shimmer', accent: '#14b8a6', rule: 'Win 15 hourly races', unlocked: () => state.raceWins >= 15 },
+  { id: 'race-truck', icon: '🏎️', name: 'Redline Freight', type: 'RACE', rarity: 'EPIC', weight: 3.5, reward: 'Red speed streak', accent: '#ef4444', rule: 'Build a 10-update combo', unlocked: () => comboStats().best >= 10 },
+  { id: 'construction', icon: '🏗️', name: 'Heavy Lift', type: 'CONSTRUCTION', rarity: 'EPIC', weight: 3, reward: 'Industrial gold sparks', accent: '#f59e0b', rule: 'Track 1,500 lifetime XP', unlocked: () => lifetimeXP() >= 1500 },
+  { id: 'rocket', icon: '🚀', name: 'Rocket Hauler', type: 'MYTHIC', rarity: 'LEGENDARY', weight: 1.5, reward: 'Rocket flame boost', accent: '#f97316', rule: 'Reach Level 20', unlocked: () => lifetimeLevel() >= 20 },
+  { id: 'ufo', icon: '🛸', name: 'Alien Dispatch', type: 'MYTHIC', rarity: 'MYTHIC', weight: .6, reward: 'Cosmic neon wake', accent: '#22d3ee', rule: 'Win 35 hourly races', unlocked: () => state.raceWins >= 35 },
+  { id: 'crown', icon: '👑', name: 'King Freight', type: 'ROYAL', rarity: 'MYTHIC', weight: .35, reward: 'Royal rainbow wake', accent: '#fbbf24', rule: 'Reach Level 30', unlocked: () => lifetimeLevel() >= 30 },
+  { id: 'byler', icon: '🏄‍♂️', name: 'Byler', type: 'SURF TRUCK', rarity: 'SURF SIDE', weight: .06, reward: 'Ocean-wave road shimmer', accent: '#06b6d4', rule: 'Secret gameplay unlock or ultra-rare loot-box pull', unlocked: () => lifetimeXP() >= 5000 && state.raceWins >= 50 }
 ];
 
 const FATE_EVENTS = [
@@ -402,36 +410,91 @@ function renderComboMeter() {
   meter.dataset.tier = stats.multiplier >= 5 ? '5' : stats.multiplier >= 3 ? '3' : stats.multiplier >= 2 ? '2' : '1';
 }
 
-function unlockedRigIds() {
-  return RIGS.filter(rig => rig.unlocked()).map(rig => rig.id);
-}
+function bestGhostHour(now = new Date()) {
+  const currentKey = currentHourKey(now);
+  const buckets = new Map();
 
-function initializeUnlockTracking() {
-  if (!Array.isArray(state.seenUnlocks) || state.seenUnlocks.length === 0) {
-    state.seenUnlocks = unlockedRigIds();
-    saveState();
+  for (const entry of state.log) {
+    const date = new Date(entry.time);
+    const key = currentHourKey(date);
+    if (key === currentKey) continue;
+    if (!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key).push(entry);
   }
+
+  let best = null;
+  for (const [key, entries] of buckets) {
+    const total = Math.max(0, netTotal(entries));
+    if (!best || total > best.total) best = { key, entries, total };
+  }
+
+  if (!best || best.total <= 0) return null;
+
+  const elapsed = now.getMinutes() * 60 + now.getSeconds() + now.getMilliseconds() / 1000;
+  const sorted = best.entries.slice().sort((a, b) => a.time - b.time);
+
+  // Build cumulative checkpoints from the best historical hour. The ghost then
+  // interpolates between checkpoints so it continuously cruises instead of
+  // appearing frozen and jumping only when an old load timestamp is crossed.
+  const checkpoints = [{ second: 0, count: 0 }];
+  let cumulative = 0;
+
+  for (const entry of sorted) {
+    const date = new Date(entry.time);
+    const second = date.getMinutes() * 60 + date.getSeconds() + date.getMilliseconds() / 1000;
+    cumulative = Math.max(0, cumulative + entry.delta);
+    checkpoints.push({ second, count: cumulative });
+  }
+
+  // Hold the final historical score through the end of the hour.
+  checkpoints.push({ second: 3600, count: Math.max(0, cumulative) });
+
+  let ghostCount = checkpoints[checkpoints.length - 1].count;
+  for (let index = 1; index < checkpoints.length; index += 1) {
+    const previous = checkpoints[index - 1];
+    const next = checkpoints[index];
+    if (elapsed <= next.second) {
+      const span = Math.max(0.001, next.second - previous.second);
+      const phase = Math.max(0, Math.min(1, (elapsed - previous.second) / span));
+      // Smoothstep creates a natural acceleration and coast into each checkpoint.
+      const eased = phase * phase * (3 - 2 * phase);
+      ghostCount = previous.count + (next.count - previous.count) * eased;
+      break;
+    }
+  }
+
+  return { count: ghostCount, total: best.total, key: best.key };
 }
 
-function announceNewUnlocks() {
-  const seen = new Set(Array.isArray(state.seenUnlocks) ? state.seenUnlocks : []);
-  const fresh = RIGS.filter(rig => rig.unlocked() && !seen.has(rig.id));
-  if (!fresh.length) return;
+function renderGhostTruck() {
+  const ghost = $('ghostVehicle');
+  if (!ghost) return;
 
-  for (const rig of fresh) seen.add(rig.id);
-  state.seenUnlocks = [...seen];
-  saveState();
+  const data = bestGhostHour();
+  if (!data) {
+    ghost.hidden = true;
+    return;
+  }
 
-  const rig = fresh[fresh.length - 1];
-  flashMegaMessage(`NEW RIG: ${rig.name.toUpperCase()}!`);
-  showToast(`${rig.rarity} unlock · ${rig.reward}`);
-  particleBurst($('mainCount'), 90, 2.2);
+  const progress = Math.min(100, (data.count / Math.max(1, state.hourlyGoal)) * 100);
+  ghost.hidden = false;
+  ghost.style.right = `${progress}%`;
+  $('ghostVehicleIcon').textContent = selectedRig().icon;
+  ghost.title = `Best-hour ghost: ${data.count.toFixed(1)} loads at this point (${data.total} total)`;
 }
+
+function ownedRigIds() { const owned = new Set(Array.isArray(state.ownedRigs) ? state.ownedRigs : ['starter-semi']); owned.add('starter-semi'); return [...owned]; }
+function isRigOwned(rigId) { const rig = RIGS.find(item => item.id === rigId); return Boolean(rig && (ownedRigIds().includes(rigId) || rig.unlocked())); }
+function unlockedRigIds() { return RIGS.filter(rig => isRigOwned(rig.id)).map(rig => rig.id); }
+function initializeUnlockTracking() { state.ownedRigs = ownedRigIds(); if (!Number.isFinite(Number(state.crateTokens))) state.crateTokens = 1; if (!Number.isFinite(Number(state.openedCrates))) state.openedCrates = 0; if (!Array.isArray(state.seenUnlocks) || state.seenUnlocks.length === 0) state.seenUnlocks = unlockedRigIds(); if (!isRigOwned(state.selectedRig)) state.selectedRig = 'starter-semi'; saveState(); }
+function announceNewUnlocks() { const seen = new Set(Array.isArray(state.seenUnlocks) ? state.seenUnlocks : []); const fresh = RIGS.filter(rig => rig.unlocked() && !seen.has(rig.id)); if (!fresh.length) return; fresh.forEach(rig => seen.add(rig.id)); state.seenUnlocks = [...seen]; saveState(); const rig = fresh[fresh.length - 1]; flashMegaMessage(rig.id === 'byler' ? 'SURF SIDE: BYLER!' : `NEW TRUCK: ${rig.name.toUpperCase()}!`); showToast(`${rig.rarity} gameplay unlock · ${rig.reward}`); }
+function weightedCrateRig() { const locked = RIGS.filter(rig => !isRigOwned(rig.id)); if (!locked.length) return null; const total = locked.reduce((sum, rig) => sum + rig.weight, 0); let roll = Math.random() * total; for (const rig of locked) { roll -= rig.weight; if (roll <= 0) return rig; } return locked[locked.length - 1]; }
+function openTruckCrate() { if ((state.crateTokens || 0) < 1) { showToast('No loot boxes ready — gain a level to earn one'); return; } const rig = weightedCrateRig(); if (!rig) { showToast('Garage complete. Every truck is yours.'); return; } state.crateTokens -= 1; state.openedCrates = (state.openedCrates || 0) + 1; state.ownedRigs = [...new Set([...ownedRigIds(), rig.id])]; state.seenUnlocks = [...new Set([...(state.seenUnlocks || []), rig.id])]; saveState(); renderGarage(); flashMegaMessage(rig.id === 'byler' ? 'SURF SIDE: BYLER!' : `NEW TRUCK: ${rig.name.toUpperCase()}!`); showToast(`${rig.rarity} loot-box pull · ${rig.reward}`); particleBurst($('garageCrateBtn'), rig.id === 'byler' ? 130 : 85, rig.id === 'byler' ? 2.8 : 2); }
 
 function selectedRig() {
   const candidate = RIGS.find(rig => rig.id === state.selectedRig);
 
-  if (candidate && candidate.unlocked()) {
+  if (candidate && isRigOwned(candidate.id)) {
     return candidate;
   }
 
@@ -500,6 +563,7 @@ function renderAll() {
   $('vehicle').classList.toggle('finished', hour >= state.hourlyGoal);
   document.documentElement.style.setProperty('--rig-accent', rig.accent || 'var(--accent)');
   document.documentElement.dataset.rigRarity = (rig.rarity || 'COMMON').toLowerCase();
+  renderGhostTruck();
 
   if (hour >= state.hourlyGoal) {
     $('raceMessage').textContent = 'Checkered flag claimed. Hourly quest complete.';
@@ -570,68 +634,12 @@ function renderLog() {
 }
 
 function renderGarage() {
-  const unlocked = RIGS.filter(rig => rig.unlocked());
-  const active = selectedRig();
-
-  $('garageLevel').textContent = lifetimeLevel();
-  $('garageXp').textContent = lifetimeXP();
-  $('garageUnlocked').textContent = `${unlocked.length} / ${RIGS.length}`;
-
-  $('garageGrid').innerHTML = RIGS.map(rig => {
-    const isUnlocked = rig.unlocked();
-    const isSelected = active.id === rig.id;
-
-    return `
-      <button
-        class="rig-card ${isUnlocked ? 'unlocked' : ''} ${isSelected ? 'selected' : ''}"
-        type="button"
-        data-rig-id="${rig.id}"
-        ${isUnlocked ? '' : 'disabled'}
-      >
-        <span class="rig-card-top">
-          <span class="rig-icon">${rig.icon}</span>
-          <span class="rig-rarity rarity-${(rig.rarity || 'COMMON').toLowerCase()}">${rig.rarity || 'COMMON'}</span>
-        </span>
-        <span class="rig-name">${rig.name}</span>
-        <span class="rig-type">${rig.type}</span>
-        <span class="rig-reward">✦ ${rig.reward || 'Cosmetic road effect'}</span>
-        <span class="rig-rule">${isUnlocked ? 'Unlocked' : rig.rule}</span>
-      </button>
-    `;
-  }).join('');
-
-
-  const discovered = new Set(state.discoveredEvents || []);
-  $('eventCollectionCount').textContent = `${discovered.size} / ${FATE_EVENTS.length}`;
-
-  $('eventCollectionGrid').innerHTML = FATE_EVENTS.map(event => {
-    const found = discovered.has(event.id);
-
-    return `
-      <div class="event-card ${found ? 'discovered' : ''}">
-        <div class="event-icon">${found ? event.icon : '❔'}</div>
-        <div>
-          <strong>${found ? event.name : 'Undiscovered'}</strong>
-          <span>${found ? event.rarity : 'Keep rolling Freight Fate'}</span>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  document.querySelectorAll('[data-rig-id]').forEach(button => {
-    button.addEventListener('click', () => {
-      const rig = RIGS.find(item => item.id === button.dataset.rigId);
-
-      if (!rig || !rig.unlocked()) {
-        return;
-      }
-
-      state.selectedRig = rig.id;
-      saveState();
-      renderAll();
-      showToast(`${rig.name} selected`);
-    });
-  });
+  const unlocked = RIGS.filter(rig => isRigOwned(rig.id)); const active = selectedRig();
+  if ($('garageUnlocked')) $('garageUnlocked').textContent = `${unlocked.length} / ${RIGS.length} trucks`;
+  if ($('garageCrateCount')) $('garageCrateCount').textContent = state.crateTokens || 0;
+  if ($('garageCrateBtn')) $('garageCrateBtn').disabled = (state.crateTokens || 0) < 1 || unlocked.length === RIGS.length;
+  $('garageGrid').innerHTML = RIGS.map(rig => { const isUnlocked = isRigOwned(rig.id); const isSelected = active.id === rig.id; const rarityClass = rig.rarity.toLowerCase().replace(/\s+/g, '-'); return `<button class="rig-card ${isUnlocked ? 'unlocked' : ''} ${isSelected ? 'selected' : ''}" type="button" data-rig-id="${rig.id}" ${isUnlocked ? '' : 'disabled'}><span class="rig-card-top"><span class="rig-icon">${isUnlocked ? rig.icon : '❔'}</span><span class="rig-rarity rarity-${rarityClass}">${isUnlocked ? rig.rarity : 'LOCKED'}</span></span><span class="rig-name">${isUnlocked ? rig.name : 'Mystery Truck'}</span><span class="rig-type">${isUnlocked ? rig.type : 'COLLECTIBLE'}</span><span class="rig-reward">${isUnlocked ? `✦ ${rig.reward}` : rig.rule}</span><span class="rig-rule">${isSelected ? 'Equipped' : isUnlocked ? 'Tap to equip' : 'Gameplay unlock or loot-box pull'}</span></button>`; }).join('');
+  document.querySelectorAll('[data-rig-id]').forEach(button => button.addEventListener('click', () => { const rig = RIGS.find(item => item.id === button.dataset.rigId); if (!rig || !isRigOwned(rig.id)) return; state.selectedRig = rig.id; saveState(); renderAll(); renderGarage(); showToast(`${rig.name} equipped`); }));
 }
 
 function applyTheme() {
@@ -1347,54 +1355,12 @@ function skipFreightFate() {
 }
 
 function addLoad(delta) {
-  state.log.unshift({
-    delta,
-    time: Date.now()
-  });
-
-  const plusMessages = [
-    'Load secured.',
-    'Driver updated.',
-    'Another one on the board.',
-    'Dispatch magic.',
-    'Momentum acquired.'
-  ];
-
-  const minusMessages = [
-    'Load removed from every score.',
-    'All metrics corrected.',
-    'Board, XP, race, and time corrected.'
-  ];
-
-  const choices = delta > 0 ? plusMessages : minusMessages;
-  $('statusLine').textContent = choices[Math.floor(Math.random() * choices.length)];
-
-  saveState();
-  renderAll();
-  animateCount(delta);
-  playTone(delta > 0 ? 'plus' : 'minus');
-
-  if (delta > 0) {
-    const combo = comboStats();
-    particleBurst($('plusBtn'), combo.current >= 10 ? 70 : combo.current >= 5 ? 45 : undefined, combo.current >= 5 ? 1.8 : undefined);
-    if (combo.current === 3) showToast('Combo x3 · keep it moving');
-    if (combo.current === 5) flashMegaMessage('HOT STREAK!');
-    if (combo.current === 10) flashMegaMessage('FREIGHT FRENZY!');
-    maybeAwardRace();
-    announceNewUnlocks();
-
-    if (todayNetLoads() === state.dailyGoal) {
-      flashMegaMessage('SHIFT GOAL CRUSHED!');
-      particleBurst($('mainCount'), 100, 2.4);
-      showToast('Daily load goal complete');
-    }
-
-    if (shouldPromptFate()) {
-      setTimeout(promptFreightFate, 350);
-    }
-  } else {
-    showToast('Subtracted from every live metric');
-  }
+  const oldLevel = lifetimeLevel(); const entry = { delta, time: Date.now(), xp: delta }; state.log.unshift(entry);
+  const plusMessages = ['Load secured.','Driver updated.','Another one on the board.','Dispatch magic.','Momentum acquired.']; const minusMessages = ['Load removed from every score.','All metrics corrected.','Board, XP, race, and time corrected.']; const choices = delta > 0 ? plusMessages : minusMessages; $('statusLine').textContent = choices[Math.floor(Math.random() * choices.length)];
+  if (delta > 0) { const combo = comboStats(); entry.xp = Math.max(1, combo.multiplier || 1); }
+  const newLevel = lifetimeLevel(); if (delta > 0 && newLevel > oldLevel) { const boxesEarned = newLevel - oldLevel; state.crateTokens = (state.crateTokens || 0) + boxesEarned; showToast(`Level ${newLevel}! +${boxesEarned} loot box${boxesEarned === 1 ? '' : 'es'}`); }
+  saveState(); renderAll(); animateCount(delta); playTone(delta > 0 ? 'plus' : 'minus');
+  if (delta > 0) { const combo = comboStats(); particleBurst($('plusBtn'), combo.current >= 10 ? 70 : combo.current >= 5 ? 45 : undefined, combo.current >= 5 ? 1.8 : undefined); if (combo.current === 3) showToast('Combo active · 2× XP'); if (combo.current === 5) flashMegaMessage('HOT STREAK · 3× XP!'); if (combo.current === 10) flashMegaMessage('FREIGHT FRENZY · 5× XP!'); maybeAwardRace(); announceNewUnlocks(); if (todayNetLoads() === state.dailyGoal) { flashMegaMessage('SHIFT GOAL CRUSHED!'); particleBurst($('mainCount'), 100, 2.4); showToast('Daily load goal complete'); } if (shouldPromptFate()) setTimeout(promptFreightFate, 350); } else showToast('Subtracted from every live metric');
 }
 
 function undoLast() {
@@ -1489,6 +1455,7 @@ function tickClock() {
   countdownElement.textContent = formatCountdown(remaining);
   countdownElement.dataset.secondsRemaining = String(remaining);
   renderComboMeter();
+  renderGhostTruck();
 }
 
 function startHourlyClock() {
@@ -1666,7 +1633,8 @@ function showDaySummary(date = new Date()) {
   $('summaryWork').textContent = formatDuration(loads * state.minutesPerUpdate);
   $('summaryBestHour').textContent = `${best} loads`;
   $('summaryGoal').textContent = `${goalPercent}%`;
-  $('summaryXp').textContent = `${loads} XP`;
+  const dayXp = state.log.filter(entry => todayKey(new Date(entry.time)) === todayKey(selected)).reduce((sum, entry) => sum + (Number(entry.xp) || Number(entry.delta) || 0), 0);
+  $('summaryXp').textContent = `${Math.max(0, dayXp)} XP`;
 
   if (loads >= state.dailyGoal) {
     $('summaryVerdict').textContent = 'Day won. Goal crushed. The board never stood a chance.';
@@ -1826,6 +1794,8 @@ function bindEvents() {
     renderGarage();
     openDialog($('garageDialog'));
   });
+
+  if ($('garageCrateBtn')) $('garageCrateBtn').addEventListener('click', openTruckCrate);
 
   $('rollFateBtn').addEventListener('click', rollFreightFate);
   $('skipFateBtn').addEventListener('click', skipFreightFate);

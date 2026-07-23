@@ -7,7 +7,7 @@
   <meta name="description" content="A game-like shipment load tracker with hourly road races, XP levels, unlockable rigs, goals, and timestamped updates.">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="styles.css?v=4.2.0">
+  <link rel="stylesheet" href="styles.css?v=5.1.0">
   <title>Wayfinder Logistics</title>
 </head>
 <body>
@@ -77,6 +77,8 @@
 
       <div class="road-world">
         <div class="sky-haze"></div>
+        <div class="cloud cloud-one"></div><div class="cloud cloud-two"></div>
+        <div class="roadside roadside-left">🌲</div><div class="roadside roadside-right">🏢</div>
         <div class="city-silhouette city-back"></div>
         <div class="city-silhouette city-front"></div>
 
@@ -154,7 +156,7 @@
   <div id="fxLayer" class="fx-layer" aria-hidden="true"></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <div id="megaMessage" class="mega-message">CHECKERED FLAG!</div>
-  <div class="build-badge">LOAD RUSH · V4.2 NO GHOST</div>
+  <div class="build-badge">LOAD RUSH · V5.1 DUAL UNLOCKS</div>
 
 
   <dialog id="fatePromptDialog" class="fate-dialog">
@@ -282,20 +284,20 @@
         <button id="closeGarageX" class="icon-button" type="button" aria-label="Close garage">×</button>
       </div>
 
-      <div class="garage-summary">
-        <div><span>Level</span><strong id="garageLevel">1</strong></div>
-        <div><span>Lifetime XP</span><strong id="garageXp">0</strong></div>
-        <div><span>Unlocked</span><strong id="garageUnlocked">1 / 12</strong></div>
+      <div class="garage-hero">
+        <div>
+          <span class="section-kicker">TRUCK COLLECTION</span>
+          <strong id="garageUnlocked">1 / 13 trucks</strong>
+          <p>Collect rigs, equip your favorite, and chase the absurdly rare Surf Side pull.</p>
+        </div>
+        <button id="garageCrateBtn" class="crate-button" type="button">
+          <span class="crate-emoji">🎁</span>
+          <span>OPEN LOOT BOX</span>
+          <b><span id="garageCrateCount">0</span> ready</b>
+        </button>
       </div>
 
       <div id="garageGrid" class="garage-grid"></div>
-
-      <div class="fate-collection">
-        <div class="section-heading">
-          <div>
-            <span class="section-kicker">FREIGHT FATE</span>
-            <h2>Event Collection</h2>
-          </div>
           <div id="eventCollectionCount" class="countdown">0 / 10</div>
         </div>
         <div id="eventCollectionGrid" class="event-collection-grid"></div>
@@ -452,6 +454,6 @@
     </div>
   </dialog>
 
-  <script src="app.js?v=4.2.0" defer></script>
+  <script src="app.js?v=5.1.0" defer></script>
 </body>
 </html>

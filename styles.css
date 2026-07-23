@@ -2070,3 +2070,20 @@ body.alarm-active {
 @media (max-width: 720px) {
   .combo-meter { margin-left: auto; margin-right: auto; text-align: left; }
 }
+
+
+/* LOAD RUSH V5 — truck collection + polished track */
+.garage-hero{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;margin-top:16px;padding:18px;border:1px solid var(--border);border-radius:22px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 12%,var(--surface-strong)),color-mix(in srgb,var(--accent-2) 8%,var(--surface-strong)))}
+.garage-hero strong{display:block;margin-top:5px;font-size:1.5rem}.garage-hero p{margin:7px 0 0;color:var(--muted);max-width:520px}.crate-button{min-width:175px;border:0;border-radius:20px;padding:14px 18px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:white;box-shadow:0 16px 34px color-mix(in srgb,var(--accent) 28%,transparent);font-weight:950;cursor:pointer}.crate-button:disabled{opacity:.42;cursor:not-allowed}.crate-button span{display:block}.crate-button .crate-emoji{font-size:2rem;margin-bottom:4px}.crate-button b{display:block;font-size:.72rem;margin-top:5px;opacity:.85}
+.rig-reward{display:block;margin-top:7px;font-size:.74rem;color:var(--muted)}.rarity-surf-side{background:linear-gradient(90deg,#06b6d4,#38bdf8,#f0abfc)!important;color:#fff!important;box-shadow:0 0 18px rgba(56,189,248,.55)}
+.road-world{background:linear-gradient(to bottom,#9bd7ff 0 48%,#d7edf6 48% 51%,#8bbf69 51% 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.75),0 18px 40px rgba(26,39,62,.16)}
+[data-theme="dark"] .road-world{background:linear-gradient(to bottom,#17294a 0 48%,#31445b 48% 51%,#29442c 51% 100%)}
+.road{bottom:10%;height:116px;border-radius:18px;background:linear-gradient(180deg,#4c5059,#292c32 70%,#202329);border:1px solid rgba(255,255,255,.09);box-shadow:inset 0 12px 18px rgba(255,255,255,.04),inset 0 -16px 22px rgba(0,0,0,.3),0 16px 28px rgba(0,0,0,.22)}
+.road::before{content:"";position:absolute;inset:9px;border-radius:12px;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(255,255,255,.035),transparent)}
+.road-shoulder{height:6px;background:repeating-linear-gradient(90deg,#fff 0 24px,#ef4444 24px 48px);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.lane-line{height:3px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.3));background:repeating-linear-gradient(90deg,rgba(255,255,255,.94) 0 34px,transparent 34px 66px)}
+.city-silhouette{filter:blur(.2px);opacity:.32}.city-front{opacity:.42}.sky-haze{opacity:.82;filter:blur(2px)}
+.cloud{position:absolute;width:94px;height:24px;border-radius:999px;background:rgba(255,255,255,.72);filter:blur(.2px);box-shadow:24px -10px 0 4px rgba(255,255,255,.62),48px 0 0 -2px rgba(255,255,255,.58)}.cloud-one{left:9%;top:28px;transform:scale(.75)}.cloud-two{right:24%;top:60px;transform:scale(.5);opacity:.65}
+.roadside{position:absolute;z-index:2;bottom:49%;font-size:2.2rem;filter:drop-shadow(0 5px 4px rgba(0,0,0,.18))}.roadside-left{left:3%}.roadside-right{right:4%;font-size:2.6rem}.vehicle{filter:drop-shadow(0 8px 5px rgba(0,0,0,.33));transition:right .68s cubic-bezier(.2,.9,.2,1),transform .25s ease}
+.finish-line{filter:drop-shadow(0 5px 4px rgba(0,0,0,.25))}.start-marker{letter-spacing:.15em;background:rgba(17,24,39,.72);color:white;padding:4px 7px;border-radius:7px}
+@media(max-width:640px){.garage-hero{grid-template-columns:1fr}.crate-button{width:100%}.roadside{font-size:1.7rem}.roadside-right{font-size:2rem}}
