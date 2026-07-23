@@ -15,6 +15,7 @@ const DEFAULTS = {
   minutesPerUpdate: 5,
   raceWins: 0,
   completedHours: [],
+  hourlyRaceAwards: {},
   selectedRig: 'starter-semi',
   theme: 'light',
   sound: true,
@@ -54,6 +55,11 @@ const RIGS = [
   { id: 'rocket', icon: '🚀', name: 'Rocket Hauler', type: 'MYTHIC', rarity: 'LEGENDARY', weight: 1.5, reward: 'Rocket flame boost', accent: '#f97316', rule: 'Reach Level 80', unlocked: () => lifetimeLevel() >= 80 },
   { id: 'ufo', icon: '🛸', name: 'Alien Dispatch', type: 'MYTHIC', rarity: 'MYTHIC', weight: .6, reward: 'Cosmic neon wake', accent: '#22d3ee', rule: 'Complete 75 hourly quests', unlocked: () => state.raceWins >= 75 },
   { id: 'crown', icon: '👑', name: 'King Freight', type: 'ROYAL', rarity: 'MYTHIC', weight: .35, reward: 'Royal rainbow wake', accent: '#fbbf24', rule: 'Reach Level 125', unlocked: () => lifetimeLevel() >= 125 },
+  { id: 'sherm', icon: '🦑', name: 'Sherm', type: 'GARAGE ICON', rarity: 'BOUSE', weight: 2.2, reward: 'Ink-cloud violet trail', accent: '#7c3aed', rule: 'Reach Level 40', unlocked: () => lifetimeLevel() >= 40 },
+  { id: 'shaun-white', icon: '🏂', name: 'Shaun White', type: 'GARAGE ICON', rarity: 'BAG', weight: 1.8, reward: 'Powder-white speed trail', accent: '#e5e7eb', rule: 'Complete 45 races', unlocked: () => state.raceWins >= 45 },
+  { id: 'slotted-trotter', icon: '🏌️', name: 'Slotted Trotter', type: 'GARAGE ICON', rarity: 'TOUR STICK', weight: 1.25, reward: 'Fairway-green tracer', accent: '#16a34a', rule: 'Build a 40-update combo', unlocked: () => comboStats().best >= 40 },
+  { id: 'vinny', icon: '🐳', name: 'Vinny', type: 'GARAGE ICON', rarity: 'VINES', weight: .9, reward: 'Deep-blue ocean wake', accent: '#0284c7', rule: 'Earn 12,000 Lifetime XP', unlocked: () => lifetimeXP() >= 12000 },
+  { id: 'fromelts-boat', icon: '🚤', name: "Fromelt's Boat", type: 'GARAGE ICON', rarity: 'POWERS LAKE', weight: .55, reward: 'Lake-spray aqua trail', accent: '#0891b2', rule: 'Complete 100 races', unlocked: () => state.raceWins >= 100 },
   { id: 'byler', icon: '🏄‍♂️', name: 'Byler', type: 'SURF TRUCK', rarity: 'SURF SIDE', weight: .02, reward: 'Ocean-wave road shimmer', accent: '#06b6d4', rule: 'Reach Level 250 + complete 250 hourly quests', unlocked: () => lifetimeLevel() >= 250 && state.raceWins >= 250 }
 ];
 
@@ -535,35 +541,71 @@ function weightedCrateRig() {
 
 function openTruckCrate() {
   if ((state.crateTokens || 0) < 1) {
-    showToast('No loot boxes ready — complete an hourly quest to earn one');
+    showToast('No loot boxes ready — complete a race to earn one');
     return;
   }
+
+  closeDialog($('garageDialog'));
+  openDialog($('crateRevealDialog'));
+
+  const stage = $('crateRevealStage');
+  const icon = $('crateRevealIcon');
+  const rarity = $('crateRevealRarity');
+  const title = $('crateRevealTitle');
+  const description = $('crateRevealDescription');
+  const continueButton = $('closeCrateRevealBtn');
+
+  stage.classList.remove('revealed', 'jackpot');
+  stage.classList.add('opening');
+  icon.textContent = '🎁';
+  rarity.textContent = 'OPENING';
+  title.textContent = 'The crate is shaking...';
+  description.textContent = 'Something from the garage is about to drop.';
+  continueButton.disabled = true;
 
   state.crateTokens -= 1;
   state.openedCrates = (state.openedCrates || 0) + 1;
-
-  // Trucks remain true achievements: only 8% of boxes contain a new rig.
-  const rig = Math.random() < .08 ? weightedCrateRig() : null;
-  if (rig) {
-    state.ownedRigs = [...new Set([...ownedRigIds(), rig.id])];
-    state.seenUnlocks = [...new Set([...(state.seenUnlocks || []), rig.id])];
-    saveState();
-    renderAll();
-    flashMegaMessage(rig.id === 'byler' ? 'SURF SIDE: BYLER!' : `NEW TRUCK: ${rig.name.toUpperCase()}!`);
-    showToast(`${rig.rarity} jackpot pull · ${rig.reward}`);
-    particleBurst($('garageCrateBtn'), rig.id === 'byler' ? 130 : 85, rig.id === 'byler' ? 2.8 : 2);
-    return;
-  }
-
-  const roll = Math.random();
-  const xpReward = roll < .65 ? 25 : roll < .92 ? 50 : 100;
-  state.bonusXP = (Number(state.bonusXP) || 0) + xpReward;
   saveState();
   renderAll();
-  flashMegaMessage(`+${xpReward} XP!`);
-  showToast(`Loot box reward · +${xpReward} Lifetime XP`);
-  particleBurst($('garageCrateBtn'), 55, 1.5);
-  announceNewUnlocks();
+
+  setTimeout(() => {
+    // Trucks and garage icons remain achievements: only 8% of boxes contain a new collectible.
+    const rig = Math.random() < .08 ? weightedCrateRig() : null;
+
+    stage.classList.remove('opening');
+    stage.classList.add('revealed');
+
+    if (rig) {
+      state.ownedRigs = [...new Set([...ownedRigIds(), rig.id])];
+      state.seenUnlocks = [...new Set([...(state.seenUnlocks || []), rig.id])];
+      saveState();
+      renderAll();
+
+      stage.classList.add('jackpot');
+      icon.textContent = rig.icon;
+      rarity.textContent = rig.rarity;
+      title.textContent = rig.id === 'byler' ? 'SURF SIDE: BYLER!' : rig.name;
+      description.textContent = `${rig.reward} · Added to your garage.`;
+      particleBurst(stage, rig.id === 'byler' ? 130 : 90, rig.id === 'byler' ? 2.8 : 2);
+      playTone('plus', true);
+    } else {
+      const roll = Math.random();
+      const xpReward = roll < .65 ? 25 : roll < .92 ? 50 : 100;
+      state.bonusXP = (Number(state.bonusXP) || 0) + xpReward;
+      saveState();
+      renderAll();
+
+      icon.textContent = '⚡';
+      rarity.textContent = 'XP REWARD';
+      title.textContent = `+${xpReward} Lifetime XP`;
+      description.textContent = 'Your level progress just got a boost.';
+      particleBurst(stage, 60, 1.6);
+      playTone('plus', xpReward >= 100);
+      announceNewUnlocks();
+    }
+
+    continueButton.disabled = false;
+  }, 1500);
 }
 
 function selectedRig() {
@@ -621,7 +663,9 @@ function renderAll() {
   const level = lifetimeLevel();
   const levelDetails = currentLevelDetails();
   const levelProgress = levelDetails.percent;
-  const hourlyProgress = Math.min(100, (hour / Math.max(1, state.hourlyGoal)) * 100);
+  const completedRacesThisHour = Math.floor(hour / Math.max(1, state.hourlyGoal));
+  const currentRaceLoads = hour % Math.max(1, state.hourlyGoal);
+  const hourlyProgress = (currentRaceLoads / Math.max(1, state.hourlyGoal)) * 100;
   const dailyProgress = Math.min(100, Math.round((today / Math.max(1, state.dailyGoal)) * 100));
   const rig = selectedRig();
 
@@ -632,25 +676,27 @@ function renderAll() {
   renderComboMeter();
 
   $('hourlyGoalLabel').textContent = state.hourlyGoal;
-  $('raceProgressText').textContent = `${Math.min(state.hourlyGoal, hour)} / ${state.hourlyGoal}`;
+  $('raceProgressText').textContent = `${currentRaceLoads} / ${state.hourlyGoal}`;
   $('raceFill').style.width = `${hourlyProgress}%`;
   $('vehicle').style.right = `${hourlyProgress}%`;
   $('vehicle').textContent = rig.icon;
-  $('vehicle').classList.toggle('finished', hour >= state.hourlyGoal);
+  $('vehicle').classList.remove('finished');
   document.documentElement.style.setProperty('--rig-accent', rig.accent || 'var(--accent)');
   document.documentElement.dataset.rigRarity = (rig.rarity || 'COMMON').toLowerCase();
   renderGhostTruck();
 
-  if (hour >= state.hourlyGoal) {
-    $('raceMessage').textContent = 'Checkered flag claimed. Hourly quest complete.';
-  } else if (hour >= Math.ceil(state.hourlyGoal * .75)) {
-    $('raceMessage').textContent = `${state.hourlyGoal - hour} loads left — final lap.`;
-  } else if (hour >= Math.ceil(state.hourlyGoal * .4)) {
-    $('raceMessage').textContent = `${state.hourlyGoal - hour} loads left — gaining fast.`;
-  } else if (hour > 0) {
-    $('raceMessage').textContent = `${state.hourlyGoal - hour} loads left — engines are warming up.`;
+  const loadsLeftInRace = state.hourlyGoal - currentRaceLoads;
+  const raceLabel = `${completedRacesThisHour} ${completedRacesThisHour === 1 ? 'race' : 'races'} completed this hour`;
+  if (currentRaceLoads >= Math.ceil(state.hourlyGoal * .75)) {
+    $('raceMessage').textContent = `${loadsLeftInRace} loads left — final lap · ${raceLabel}.`;
+  } else if (currentRaceLoads >= Math.ceil(state.hourlyGoal * .4)) {
+    $('raceMessage').textContent = `${loadsLeftInRace} loads left — gaining fast · ${raceLabel}.`;
+  } else if (currentRaceLoads > 0) {
+    $('raceMessage').textContent = `${loadsLeftInRace} loads left — engines warming · ${raceLabel}.`;
+  } else if (completedRacesThisHour > 0) {
+    $('raceMessage').textContent = `New race started · ${raceLabel}.`;
   } else {
-    $('raceMessage').textContent = 'Green flag. Let it rip.';
+    $('raceMessage').textContent = 'Green flag. Beat the Clock.';
   }
 
   $('xpValue').textContent = lifetime;
@@ -875,19 +921,28 @@ function celebrateRace() {
 
 function maybeAwardRace() {
   const hourKey = currentHourKey();
-  const hour = hourNetLoads();
+  const completedRaces = Math.floor(hourNetLoads() / Math.max(1, state.hourlyGoal));
 
-  if (hour < state.hourlyGoal || state.completedHours.includes(hourKey)) {
-    return;
+  if (!state.hourlyRaceAwards || typeof state.hourlyRaceAwards !== 'object') {
+    state.hourlyRaceAwards = {};
   }
 
-  state.completedHours.push(hourKey);
-  state.raceWins += 1;
-  state.crateTokens = (state.crateTokens || 0) + 1;
+  const alreadyAwarded = Math.max(0, Number(state.hourlyRaceAwards[hourKey]) || 0);
+  const newWins = Math.max(0, completedRaces - alreadyAwarded);
+
+  if (newWins < 1) return;
+
+  state.hourlyRaceAwards[hourKey] = completedRaces;
+  state.raceWins += newWins;
+  state.crateTokens = (state.crateTokens || 0) + newWins;
+
+  // Keep only recent hour records so local storage never grows forever.
+  const recentKeys = Object.keys(state.hourlyRaceAwards).sort().slice(-72);
+  state.hourlyRaceAwards = Object.fromEntries(recentKeys.map(key => [key, state.hourlyRaceAwards[key]]));
   saveState();
 
   celebrateRace();
-  showToast(`Hourly quest complete · +1 loot box · ${state.raceWins} total wins`);
+  showToast(`${newWins} race${newWins === 1 ? '' : 's'} complete · +${newWins} loot box${newWins === 1 ? '' : 'es'} · ${state.raceWins} total wins`);
 }
 
 
@@ -1387,41 +1442,40 @@ function runFateScene(event) {
 
 function rollFreightFate() {
   closeDialog($('fatePromptDialog'));
-  openDialog($('fateResultDialog'));
 
-  const dice = $('rollingDice');
-  dice.classList.add('rolling');
-  $('fateRarity').textContent = 'ROLLING';
-  $('fateEventName').textContent = 'Freight Fate is deciding...';
-  $('fateEventDescription').textContent = 'No amount of dispatch training can prepare you for this.';
-  $('closeFateResultBtn').disabled = true;
+  const layer = $('fateScene');
+  clearFateScene();
 
-  let faces = ['⚀','⚁','⚂','⚃','⚄','⚅'];
+  const rolling = document.createElement('div');
+  rolling.className = 'fate-track-roll';
+  rolling.textContent = '🎲';
+  layer.appendChild(rolling);
+  flashMegaMessage('FREIGHT FATE...');
+
+  const faces = ['⚀','⚁','⚂','⚃','⚄','⚅'];
   let faceIndex = 0;
   const diceInterval = setInterval(() => {
-    dice.textContent = faces[faceIndex % faces.length];
+    rolling.textContent = faces[faceIndex % faces.length];
     faceIndex += 1;
   }, 110);
 
   setTimeout(() => {
     clearInterval(diceInterval);
+    rolling.remove();
     const event = weightedFateRoll();
-
-    dice.classList.remove('rolling');
-    dice.textContent = event.icon;
-    $('fateRarity').textContent = event.rarity;
-    $('fateEventName').textContent = event.name;
-    $('fateEventDescription').textContent = event.description;
-    $('closeFateResultBtn').disabled = false;
 
     if (!state.discoveredEvents.includes(event.id)) {
       state.discoveredEvents.push(event.id);
       saveState();
       showToast(`New Fate event discovered: ${event.name}`);
+    } else {
+      showToast(`${event.rarity} Freight Fate · ${event.name}`);
     }
 
     runFateScene(event);
+    flashMegaMessage(`${event.icon} ${event.name.toUpperCase()}!`);
     playTone('plus', event.rarity === 'EPIC' || event.rarity === 'LEGENDARY');
+    pendingFateMilestone = null;
   }, 1500);
 }
 
@@ -1884,9 +1938,11 @@ function bindEvents() {
 
   $('rollFateBtn').addEventListener('click', rollFreightFate);
   $('skipFateBtn').addEventListener('click', skipFreightFate);
-  $('closeFateResultBtn').addEventListener('click', () => {
-    closeDialog($('fateResultDialog'));
-    pendingFateMilestone = null;
+  if ($('closeFateResultBtn')) $('closeFateResultBtn').addEventListener('click', () => closeDialog($('fateResultDialog')));
+  $('closeCrateRevealBtn').addEventListener('click', () => {
+    closeDialog($('crateRevealDialog'));
+    renderGarage();
+    openDialog($('garageDialog'));
   });
 
   $('closeGarageBtn').addEventListener('click', () => closeDialog($('garageDialog')));
@@ -2042,6 +2098,10 @@ function bindEvents() {
 
       if ($('fateResultDialog').open) {
         closeDialog($('fateResultDialog'));
+      }
+
+      if ($('crateRevealDialog').open) {
+        closeDialog($('crateRevealDialog'));
       }
 
       if ($('remindersDialog').open) {

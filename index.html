@@ -153,7 +153,7 @@
   <div id="fxLayer" class="fx-layer" aria-hidden="true"></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <div id="megaMessage" class="mega-message">CHECKERED FLAG!</div>
-  <div class="build-badge">LOAD RUSH · V5.1 DUAL UNLOCKS</div>
+  <div class="build-badge">LOAD RUSH · V5.5 CONTINUOUS RACES</div>
 
 
   <dialog id="fatePromptDialog" class="fate-dialog">
@@ -183,6 +183,23 @@
     </div>
   </dialog>
 
+
+
+  <dialog id="crateRevealDialog" class="crate-reveal-dialog">
+    <div class="dialog-content crate-reveal-content">
+      <span class="section-kicker">LOOT BOX</span>
+      <div id="crateRevealStage" class="crate-reveal-stage">
+        <div class="crate-rays" aria-hidden="true"></div>
+        <div id="crateRevealIcon" class="crate-reveal-icon">🎁</div>
+      </div>
+      <span id="crateRevealRarity" class="crate-reveal-rarity">OPENING</span>
+      <h2 id="crateRevealTitle">The crate is shaking...</h2>
+      <p id="crateRevealDescription">Something from the garage is about to drop.</p>
+      <div class="dialog-actions">
+        <button id="closeCrateRevealBtn" class="primary-button" type="button" disabled>Back to Garage</button>
+      </div>
+    </div>
+  </dialog>
 
   <dialog id="remindersDialog" class="wide-dialog reminders-dialog">
     <div class="dialog-content">
@@ -276,16 +293,16 @@
       <div class="section-heading">
         <div>
           <span class="section-kicker">YOUR GARAGE</span>
-          <h2>Choose Your Rig</h2>
+          <h2>Choose Your Ride</h2>
         </div>
         <button id="closeGarageX" class="icon-button" type="button" aria-label="Close garage">×</button>
       </div>
 
       <div class="garage-hero">
         <div>
-          <span class="section-kicker">TRUCK COLLECTION</span>
-          <strong id="garageUnlocked">1 / 17 trucks</strong>
-          <p>See every truck, study its requirement, and earn the ones worth showing off.</p>
+          <span class="section-kicker">GARAGE COLLECTION</span>
+          <strong id="garageUnlocked">1 / 17 collectibles</strong>
+          <p>See every collectible, study its requirement, and earn the ones worth showing off.</p>
         </div>
         <button id="garageCrateBtn" class="crate-button" type="button">
           <span class="crate-emoji">🎁</span>
