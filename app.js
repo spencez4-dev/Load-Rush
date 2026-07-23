@@ -44,23 +44,23 @@ const RIGS = [
   { id: 'pickup', icon: '🛻', name: 'Mud Runner', type: 'PICKUP', rarity: 'COMMON', weight: 21, reward: 'Dusty trail', accent: '#92400e', rule: 'Build a 10-update combo', unlocked: () => comboStats().best >= 10 },
   { id: 'tractor', icon: '🚜', name: 'Field Hauler', type: 'HEAVY', rarity: 'UNCOMMON', weight: 16, reward: 'Fresh-cut green trail', accent: '#65a30d', rule: 'Reach Level 12', unlocked: () => lifetimeLevel() >= 12 },
   { id: 'delivery-van', icon: '🚐', name: 'Last Mile Legend', type: 'VAN', rarity: 'UNCOMMON', weight: 15, reward: 'Blue delivery streak', accent: '#2563eb', rule: 'Earn 1,000 Lifetime XP', unlocked: () => lifetimeXP() >= 1000 },
-  { id: 'taxi', icon: '🚕', name: 'Yellow Jacket', type: 'CITY', rarity: 'UNCOMMON', weight: 14, reward: 'Golden road trail', accent: '#eab308', rule: 'Complete 5 hourly quests', unlocked: () => state.raceWins >= 5 },
+  { id: 'taxi', icon: '🚕', name: 'Yellow Jacket', type: 'CITY', rarity: 'UNCOMMON', weight: 14, reward: 'Golden road trail', accent: '#eab308', rule: 'Win 5 races', unlocked: () => state.raceWins >= 5 },
   { id: 'fire-engine', icon: '🚒', name: 'Code Red', type: 'HEAVY', rarity: 'RARE', weight: 9, reward: 'Emergency flare trail', accent: '#dc2626', rule: 'Reach Level 25', unlocked: () => lifetimeLevel() >= 25 },
-  { id: 'ambulance', icon: '🚑', name: 'Priority Freight', type: 'EXPRESS', rarity: 'RARE', weight: 8, reward: 'Pulse-light glow', accent: '#ef4444', rule: 'Complete 15 hourly quests', unlocked: () => state.raceWins >= 15 },
+  { id: 'ambulance', icon: '🚑', name: 'Priority Freight', type: 'EXPRESS', rarity: 'RARE', weight: 8, reward: 'Pulse-light glow', accent: '#ef4444', rule: 'Win 15 races', unlocked: () => state.raceWins >= 15 },
   { id: 'interceptor', icon: '🚓', name: 'Interceptor', type: 'PURSUIT', rarity: 'RARE', weight: 7, reward: 'Blue-red pursuit trail', accent: '#3b82f6', rule: 'Earn 3,500 Lifetime XP', unlocked: () => lifetimeXP() >= 3500 },
   { id: 'bus', icon: '🚌', name: 'People Mover', type: 'HEAVY', rarity: 'EPIC', weight: 4.5, reward: 'Confetti lane trail', accent: '#8b5cf6', rule: 'Reach Level 50', unlocked: () => lifetimeLevel() >= 50 },
-  { id: 'trolley', icon: '🚎', name: 'City Circuit', type: 'TRANSIT', rarity: 'EPIC', weight: 4, reward: 'Electric wire shimmer', accent: '#14b8a6', rule: 'Complete 35 hourly quests', unlocked: () => state.raceWins >= 35 },
+  { id: 'trolley', icon: '🚎', name: 'City Circuit', type: 'TRANSIT', rarity: 'EPIC', weight: 4, reward: 'Electric wire shimmer', accent: '#14b8a6', rule: 'Win 35 races', unlocked: () => state.raceWins >= 35 },
   { id: 'race-truck', icon: '🏎️', name: 'Redline Freight', type: 'RACE', rarity: 'EPIC', weight: 3.5, reward: 'Red speed streak', accent: '#ef4444', rule: 'Build a 25-update combo', unlocked: () => comboStats().best >= 25 },
   { id: 'construction', icon: '🏗️', name: 'Heavy Lift', type: 'CONSTRUCTION', rarity: 'EPIC', weight: 3, reward: 'Industrial gold sparks', accent: '#f59e0b', rule: 'Earn 8,000 Lifetime XP', unlocked: () => lifetimeXP() >= 8000 },
   { id: 'rocket', icon: '🚀', name: 'Rocket Hauler', type: 'MYTHIC', rarity: 'LEGENDARY', weight: 1.5, reward: 'Rocket flame boost', accent: '#f97316', rule: 'Reach Level 80', unlocked: () => lifetimeLevel() >= 80 },
-  { id: 'ufo', icon: '🛸', name: 'Alien Dispatch', type: 'MYTHIC', rarity: 'MYTHIC', weight: .6, reward: 'Cosmic neon wake', accent: '#22d3ee', rule: 'Complete 75 hourly quests', unlocked: () => state.raceWins >= 75 },
+  { id: 'ufo', icon: '🛸', name: 'Alien Dispatch', type: 'MYTHIC', rarity: 'MYTHIC', weight: .6, reward: 'Cosmic neon wake', accent: '#22d3ee', rule: 'Win 75 races', unlocked: () => state.raceWins >= 75 },
   { id: 'crown', icon: '👑', name: 'King Freight', type: 'ROYAL', rarity: 'MYTHIC', weight: .35, reward: 'Royal rainbow wake', accent: '#fbbf24', rule: 'Reach Level 125', unlocked: () => lifetimeLevel() >= 125 },
   { id: 'sherm', icon: '🦑', name: 'Sherm', type: 'GARAGE ICON', rarity: 'BOUSE', weight: 2.2, reward: 'Ink-cloud violet trail', accent: '#7c3aed', rule: 'Reach Level 40', unlocked: () => lifetimeLevel() >= 40 },
   { id: 'shaun-white', icon: '🏂', name: 'Shaun White', type: 'GARAGE ICON', rarity: 'BAG', weight: 1.8, reward: 'Powder-white speed trail', accent: '#e5e7eb', rule: 'Complete 45 races', unlocked: () => state.raceWins >= 45 },
   { id: 'slotted-trotter', icon: '🏌️', name: 'Slotted Trotter', type: 'GARAGE ICON', rarity: 'TOUR STICK', weight: 1.25, reward: 'Fairway-green tracer', accent: '#16a34a', rule: 'Build a 40-update combo', unlocked: () => comboStats().best >= 40 },
   { id: 'vinny', icon: '🐳', name: 'Vinny', type: 'GARAGE ICON', rarity: 'VINES', weight: .9, reward: 'Deep-blue ocean wake', accent: '#0284c7', rule: 'Earn 12,000 Lifetime XP', unlocked: () => lifetimeXP() >= 12000 },
   { id: 'fromelts-boat', icon: '🚤', name: "Fromelt's Boat", type: 'GARAGE ICON', rarity: 'POWERS LAKE', weight: .55, reward: 'Lake-spray aqua trail', accent: '#0891b2', rule: 'Complete 100 races', unlocked: () => state.raceWins >= 100 },
-  { id: 'byler', icon: '🏄‍♂️', name: 'Bryler', type: 'SURF TRUCK', rarity: 'SURF SIDE', weight: .02, reward: 'Ocean-wave road shimmer', accent: '#06b6d4', rule: 'Reach Level 250 + complete 250 hourly quests', unlocked: () => lifetimeLevel() >= 250 && state.raceWins >= 250 }
+  { id: 'byler', icon: '🏄‍♂️', name: 'Bryler', type: 'SURF TRUCK', rarity: 'SURF SIDE', weight: .02, reward: 'Ocean-wave road shimmer', accent: '#06b6d4', rule: 'Reach Level 250 + win 250 races', unlocked: () => lifetimeLevel() >= 250 && state.raceWins >= 250 }
 ];
 
 const FATE_EVENTS = [
@@ -1372,10 +1372,9 @@ function promptFreightFate() {
   state.lastFateMilestoneDate = todayKey();
   saveState();
 
-  $('fatePromptTitle').textContent = `${loads} loads tracked!`;
-  openDialog($('fatePromptDialog'));
   particleBurst($('mainCount'), 38, 1.3);
   flashMegaMessage(`${loads} LOADS!`);
+  rollFreightFate();
 }
 
 function clearFateScene() {
@@ -1437,11 +1436,12 @@ function runFateScene(event) {
     particleBurst($('vehicle'), event.rarity === 'LEGENDARY' ? 100 : 65, 2);
   }
 
-  activeFateTimeout = setTimeout(clearFateScene, 5000);
+  activeFateTimeout = setTimeout(clearFateScene, 2600);
 }
 
 function rollFreightFate() {
-  closeDialog($('fatePromptDialog'));
+  if ($('fatePromptDialog')?.open) closeDialog($('fatePromptDialog'));
+  if ($('fateResultDialog')?.open) closeDialog($('fateResultDialog'));
 
   const layer = $('fateScene');
   clearFateScene();
@@ -1485,6 +1485,41 @@ function skipFreightFate() {
   showToast('Freight Fate skipped');
 }
 
+function showLoadMicroFeedback(entry) {
+  const button = $('plusBtn');
+  if (!button) return;
+  const bubble = document.createElement('span');
+  bubble.className = 'load-float';
+  bubble.textContent = `+${Math.max(1, Number(entry?.xp) || 1)} XP`;
+  button.appendChild(bubble);
+  setTimeout(() => bubble.remove(), 900);
+
+  const vehicle = $('vehicle');
+  const road = document.querySelector('.road');
+  vehicle?.classList.remove('vehicle-bump');
+  road?.classList.remove('road-pulse');
+  void vehicle?.offsetWidth;
+  vehicle?.classList.add('vehicle-bump');
+  road?.classList.add('road-pulse');
+  setTimeout(() => {
+    vehicle?.classList.remove('vehicle-bump');
+    road?.classList.remove('road-pulse');
+  }, 520);
+
+  if (road) {
+    const trail = document.createElement('span');
+    trail.className = 'truck-trail-puff';
+    const rect = vehicle?.getBoundingClientRect();
+    const roadRect = road.getBoundingClientRect();
+    if (rect && roadRect) {
+      trail.style.left = `${Math.max(8, rect.left - roadRect.left + 8)}px`;
+      trail.style.top = `${Math.max(8, rect.top - roadRect.top + rect.height * .62)}px`;
+    }
+    road.appendChild(trail);
+    setTimeout(() => trail.remove(), 650);
+  }
+}
+
 function addLoad(delta) {
   const oldLevel = lifetimeLevel();
   const entry = { delta, time: Date.now(), xp: delta };
@@ -1498,7 +1533,7 @@ function addLoad(delta) {
   if (delta > 0 && newLevel > oldLevel) {
     showToast(`Level ${newLevel}! Keep hauling toward the next truck.`);
   }
-  saveState(); renderAll(); animateCount(delta); playTone(delta > 0 ? 'plus' : 'minus');
+  saveState(); renderAll(); animateCount(delta); playTone(delta > 0 ? 'plus' : 'minus'); if (delta > 0) showLoadMicroFeedback(entry);
   if (delta > 0) { const combo = comboStats(); particleBurst($('plusBtn'), combo.current >= 10 ? 70 : combo.current >= 5 ? 45 : undefined, combo.current >= 5 ? 1.8 : undefined); if (combo.current === 3) showToast('Combo active · 2× XP'); if (combo.current === 5) flashMegaMessage('HOT STREAK · 3× XP!'); if (combo.current === 10) flashMegaMessage('FREIGHT FRENZY · 5× XP!'); maybeAwardRace(); announceNewUnlocks(); if (todayNetLoads() === state.dailyGoal) { flashMegaMessage('SHIFT GOAL CRUSHED!'); particleBurst($('mainCount'), 100, 2.4); showToast('Daily load goal complete'); } if (shouldPromptFate()) setTimeout(promptFreightFate, 350); } else showToast('Subtracted from every live metric');
 }
 
@@ -2093,8 +2128,8 @@ function bindReminderEventsSafely() {
 function bindEvents() {
   $('plusBtn').addEventListener('click', () => addLoad(1));
   $('minusBtn').addEventListener('click', () => addLoad(-1));
-  $('undoBtn').addEventListener('click', undoLast);
-  $('exportBtn').addEventListener('click', exportBackup);
+  $('undoBtn').addEventListener('click', () => { undoLast(); if ($('activityMenu')) $('activityMenu').open = false; });
+  $('exportBtn').addEventListener('click', () => { exportBackup(); if ($('activityMenu')) $('activityMenu').open = false; });
 
   $('insightsBtn').addEventListener('click', () => {
     renderInsights(activeChartPeriod);
@@ -2127,8 +2162,8 @@ function bindEvents() {
 
   if ($('garageCrateBtn')) $('garageCrateBtn').addEventListener('click', openTruckCrate);
 
-  $('rollFateBtn').addEventListener('click', rollFreightFate);
-  $('skipFateBtn').addEventListener('click', skipFreightFate);
+  if ($('rollFateBtn')) $('rollFateBtn').addEventListener('click', rollFreightFate);
+  if ($('skipFateBtn')) $('skipFateBtn').addEventListener('click', skipFreightFate);
   if ($('closeFateResultBtn')) $('closeFateResultBtn').addEventListener('click', () => closeDialog($('fateResultDialog')));
   $('closeCrateRevealBtn').addEventListener('click', () => {
     closeDialog($('crateRevealDialog'));
