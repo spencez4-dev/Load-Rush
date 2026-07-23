@@ -60,7 +60,7 @@ const RIGS = [
   { id: 'slotted-trotter', icon: '🏌️', name: 'Slotted Trotter', type: 'GARAGE ICON', rarity: 'TOUR STICK', weight: 1.25, reward: 'Fairway-green tracer', accent: '#16a34a', rule: 'Build a 40-update combo', unlocked: () => comboStats().best >= 40 },
   { id: 'vinny', icon: '🐳', name: 'Vinny', type: 'GARAGE ICON', rarity: 'VINES', weight: .9, reward: 'Deep-blue ocean wake', accent: '#0284c7', rule: 'Earn 12,000 Lifetime XP', unlocked: () => lifetimeXP() >= 12000 },
   { id: 'fromelts-boat', icon: '🚤', name: "Fromelt's Boat", type: 'GARAGE ICON', rarity: 'POWERS LAKE', weight: .55, reward: 'Lake-spray aqua trail', accent: '#0891b2', rule: 'Complete 100 races', unlocked: () => state.raceWins >= 100 },
-  { id: 'byler', icon: '🏄‍♂️', name: 'Byler', type: 'SURF TRUCK', rarity: 'SURF SIDE', weight: .02, reward: 'Ocean-wave road shimmer', accent: '#06b6d4', rule: 'Reach Level 250 + complete 250 hourly quests', unlocked: () => lifetimeLevel() >= 250 && state.raceWins >= 250 }
+  { id: 'byler', icon: '🏄‍♂️', name: 'Bryler', type: 'SURF TRUCK', rarity: 'SURF SIDE', weight: .02, reward: 'Ocean-wave road shimmer', accent: '#06b6d4', rule: 'Reach Level 250 + complete 250 hourly quests', unlocked: () => lifetimeLevel() >= 250 && state.raceWins >= 250 }
 ];
 
 const FATE_EVENTS = [
@@ -243,7 +243,7 @@ let previousHourKey = currentHourKey();
 let previousDayKey = todayKey();
 let hourlyClockInterval = null;
 let toastTimer = null;
-let activeChartPeriod = 'daily';
+let activeChartPeriod = 'shift';
 let currentSummaryDate = todayKey();
 let pendingFateMilestone = null;
 let activeFateTimeout = null;
@@ -1632,112 +1632,303 @@ function netForRange(start, end) {
   })));
 }
 
-function buildChartData(period) {
+function positiveUpdates() {
+  return state.log
+    .filter(entry => Number(entry.delta) > 0 && Number.isFinite(Number(entry.time)))
+    .map(entry => ({ ...entry, date: new Date(entry.time) }))
+    .sort((a, b) => a.time - b.time);
+}
+
+function isWeekday(date) {
+  const day = date.getDay();
+  return day >= 1 && day <= 5;
+}
+
+function isInsideWorkShift(date) {
+  if (!isWeekday(date)) return false;
+  const minutes = date.getHours() * 60 + date.getMinutes();
+  return minutes >= 7 * 60 && minutes < 15 * 60 + 30;
+}
+
+function formatMinutesCompact(value) {
+  if (!Number.isFinite(value)) return '—';
+  if (value < 1) return `${Math.max(1, Math.round(value * 60))} sec`;
+  if (value < 60) return `${Math.round(value)} min`;
+  const hours = Math.floor(value / 60);
+  const mins = Math.round(value % 60);
+  return `${hours}h ${mins}m`;
+}
+
+function median(values) {
+  if (!values.length) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
+}
+
+function shiftSlots() {
+  return [
+    { label: '7–8', start: 420, end: 480 },
+    { label: '8–9', start: 480, end: 540 },
+    { label: '9–10', start: 540, end: 600 },
+    { label: '10–11', start: 600, end: 660 },
+    { label: '11–12', start: 660, end: 720 },
+    { label: '12–1', start: 720, end: 780 },
+    { label: '1–2', start: 780, end: 840 },
+    { label: '2–3', start: 840, end: 900 },
+    { label: '3–3:30', start: 900, end: 930 }
+  ];
+}
+
+function workdayAnalytics() {
+  const updates = positiveUpdates().filter(entry => isInsideWorkShift(entry.date));
+  const days = new Set(updates.map(entry => todayKey(entry.date)));
+  const dayCount = Math.max(1, days.size);
+  const rows = shiftSlots().map(slot => {
+    const count = updates.filter(entry => {
+      const mins = entry.date.getHours() * 60 + entry.date.getMinutes();
+      return mins >= slot.start && mins < slot.end;
+    }).length;
+    return { label: slot.label, value: count, average: count / dayCount };
+  });
+  return { rows, total: updates.length, dayCount };
+}
+
+function updateGapAnalytics() {
+  const updates = positiveUpdates().filter(entry => isInsideWorkShift(entry.date));
+  const gaps = [];
+  for (let index = 1; index < updates.length; index += 1) {
+    const current = updates[index];
+    const previous = updates[index - 1];
+    if (todayKey(current.date) !== todayKey(previous.date)) continue;
+    const minutes = (current.time - previous.time) / 60000;
+    if (minutes > 0 && minutes <= 180) gaps.push(minutes);
+  }
+  const buckets = [
+    { label: '<1 min', min: 0, max: 1 },
+    { label: '1–3', min: 1, max: 3 },
+    { label: '3–5', min: 3, max: 5 },
+    { label: '5–10', min: 5, max: 10 },
+    { label: '10–20', min: 10, max: 20 },
+    { label: '20+ min', min: 20, max: Infinity }
+  ];
+  const rows = buckets.map(bucket => ({
+    label: bucket.label,
+    value: gaps.filter(gap => gap >= bucket.min && gap < bucket.max).length
+  }));
+  return {
+    rows,
+    gaps,
+    average: gaps.length ? gaps.reduce((sum, value) => sum + value, 0) / gaps.length : 0,
+    median: median(gaps),
+    fastest: gaps.length ? Math.min(...gaps) : 0,
+    slowest: gaps.length ? Math.max(...gaps) : 0
+  };
+}
+
+function trendAnalytics() {
   const now = new Date();
   const rows = [];
-
-  if (period === 'daily') {
-    for (let index = 13; index >= 0; index -= 1) {
-      const date = dateAtStart(now);
-      date.setDate(date.getDate() - index);
-      rows.push({
-        label: new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(date),
-        value: netForDate(date)
-      });
-    }
-  } else if (period === 'weekly') {
-    for (let index = 7; index >= 0; index -= 1) {
-      const end = dateAtStart(now);
-      end.setDate(end.getDate() - index * 7 + 1);
-      const start = new Date(end);
-      start.setDate(start.getDate() - 7);
-      rows.push({
-        label: new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(start),
-        value: netForRange(start, end)
-      });
-    }
-  } else {
-    for (let index = 11; index >= 0; index -= 1) {
-      const start = new Date(now.getFullYear(), now.getMonth() - index, 1);
-      const end = new Date(now.getFullYear(), now.getMonth() - index + 1, 1);
-      rows.push({
-        label: new Intl.DateTimeFormat(undefined, { month: 'short' }).format(start),
-        value: netForRange(start, end)
-      });
-    }
+  for (let index = 13; index >= 0; index -= 1) {
+    const date = dateAtStart(now);
+    date.setDate(date.getDate() - index);
+    rows.push({
+      label: new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(date),
+      value: netForDate(date),
+      weekday: isWeekday(date)
+    });
   }
-
   return rows;
+}
+
+function weekdayAnalytics() {
+  const updates = positiveUpdates().filter(entry => isInsideWorkShift(entry.date));
+  const names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+  return names.map((label, index) => {
+    const day = index + 1;
+    const matching = updates.filter(entry => entry.date.getDay() === day);
+    const dates = new Set(matching.map(entry => todayKey(entry.date)));
+    return { label, value: dates.size ? matching.length / dates.size : 0, raw: matching.length };
+  });
+}
+
+function detectSessions(date = new Date()) {
+  const key = todayKey(date);
+  const entries = positiveUpdates().filter(entry => todayKey(entry.date) === key && isInsideWorkShift(entry.date));
+  if (!entries.length) return [];
+  const sessions = [];
+  let active = { start: entries[0].date, end: entries[0].date, count: 1 };
+  entries.slice(1).forEach(entry => {
+    const gap = (entry.date - active.end) / 60000;
+    if (gap <= 20) {
+      active.end = entry.date;
+      active.count += 1;
+    } else {
+      sessions.push(active);
+      active = { start: entry.date, end: entry.date, count: 1 };
+    }
+  });
+  sessions.push(active);
+  return sessions.sort((a, b) => b.count - a.count);
+}
+
+function renderSessions() {
+  const container = $('sessionList');
+  const sessions = detectSessions();
+  if (!sessions.length) {
+    container.innerHTML = '<div class="analytics-empty">No work sessions recorded today yet.</div>';
+    return;
+  }
+  const formatter = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' });
+  container.innerHTML = sessions.slice(0, 3).map((session, index) => `
+    <div class="session-row">
+      <span>${index === 0 ? '🔥' : '•'} ${formatter.format(session.start)}–${formatter.format(session.end)}</span>
+      <strong>${session.count} loads</strong>
+    </div>
+  `).join('');
+}
+
+function renderBarChart(svg, rows, options = {}) {
+  const width = 760;
+  const height = 320;
+  const left = 52;
+  const right = 20;
+  const top = 24;
+  const bottom = 58;
+  const plotWidth = width - left - right;
+  const plotHeight = height - top - bottom;
+  const maxValue = Math.max(options.minimumMax || 5, ...rows.map(row => row.value));
+  const gap = 12;
+  const barWidth = Math.max(18, (plotWidth - gap * (rows.length - 1)) / rows.length);
+  let markup = '';
+  for (let step = 0; step <= 4; step += 1) {
+    const y = top + plotHeight / 4 * step;
+    const value = maxValue - maxValue / 4 * step;
+    markup += `<line class="chart-grid-line" x1="${left}" y1="${y}" x2="${width-right}" y2="${y}"></line>`;
+    markup += `<text class="chart-axis-label" x="${left-10}" y="${y+4}" text-anchor="end">${options.decimals ? value.toFixed(1) : Math.round(value)}</text>`;
+  }
+  rows.forEach((row, index) => {
+    const x = left + index * (barWidth + gap);
+    const barHeight = maxValue ? row.value / maxValue * plotHeight : 0;
+    const y = top + plotHeight - barHeight;
+    markup += `<rect class="analytics-bar" x="${x}" y="${y}" width="${barWidth}" height="${Math.max(2, barHeight)}" rx="8"></rect>`;
+    markup += `<text class="chart-value-label" x="${x + barWidth/2}" y="${Math.max(top + 12, y - 8)}" text-anchor="middle">${options.decimals ? row.value.toFixed(1) : Math.round(row.value)}</text>`;
+    markup += `<text class="chart-axis-label" x="${x + barWidth/2}" y="${height-25}" text-anchor="middle">${row.label}</text>`;
+  });
+  svg.innerHTML = markup;
+}
+
+function renderLineChart(svg, rows) {
+  const width = 760;
+  const height = 320;
+  const left = 52;
+  const right = 20;
+  const top = 24;
+  const bottom = 58;
+  const plotWidth = width - left - right;
+  const plotHeight = height - top - bottom;
+  const maxValue = Math.max(5, ...rows.map(row => row.value));
+  const pointGap = rows.length > 1 ? plotWidth / (rows.length - 1) : plotWidth;
+  const points = rows.map((row, index) => ({
+    ...row,
+    x: left + index * pointGap,
+    y: top + plotHeight - row.value / maxValue * plotHeight
+  }));
+  let markup = '';
+  for (let step = 0; step <= 4; step += 1) {
+    const y = top + plotHeight / 4 * step;
+    const value = Math.round(maxValue - maxValue / 4 * step);
+    markup += `<line class="chart-grid-line" x1="${left}" y1="${y}" x2="${width-right}" y2="${y}"></line>`;
+    markup += `<text class="chart-axis-label" x="${left-10}" y="${y+4}" text-anchor="end">${value}</text>`;
+  }
+  const linePoints = points.map(point => `${point.x},${point.y}`).join(' ');
+  const areaPoints = `${left},${top+plotHeight} ${linePoints} ${width-right},${top+plotHeight}`;
+  markup += `<polygon class="chart-area" points="${areaPoints}"></polygon>`;
+  markup += `<polyline class="chart-line" points="${linePoints}"></polyline>`;
+  points.forEach((point, index) => {
+    markup += `<circle class="chart-dot" cx="${point.x}" cy="${point.y}" r="5"></circle>`;
+    if (index % 2 === 0 || index === points.length - 1) {
+      markup += `<text class="chart-axis-label" x="${point.x}" y="${height-25}" text-anchor="middle">${point.label}</text>`;
+    }
+  });
+  svg.innerHTML = markup;
+}
+
+function setInsightMetric(index, label, value) {
+  const ids = ['Total', 'Average', 'Best', 'Extra'];
+  $(`chart${ids[index]}Label`).textContent = label;
+  $(`chart${ids[index]}`).textContent = value;
 }
 
 function renderInsights(period = activeChartPeriod) {
   activeChartPeriod = period;
-
   document.querySelectorAll('.period-tab').forEach(button => {
     button.classList.toggle('active', button.dataset.period === period);
   });
 
-  const rows = buildChartData(period);
-  const values = rows.map(row => row.value);
-  const total = values.reduce((sum, value) => sum + value, 0);
-  const average = rows.length ? Math.round(total / rows.length) : 0;
-  const best = Math.max(0, ...values);
-
-  $('chartTotal').textContent = total;
-  $('chartAverage').textContent = average;
-  $('chartBest').textContent = best;
-
   const svg = $('insightsChart');
-  const width = 760;
-  const height = 300;
-  const left = 48;
-  const right = 18;
-  const top = 20;
-  const bottom = 48;
-  const plotWidth = width - left - right;
-  const plotHeight = height - top - bottom;
-  const maxValue = Math.max(5, best);
-  const pointGap = rows.length > 1 ? plotWidth / (rows.length - 1) : plotWidth;
+  let narrative = '';
 
-  const points = rows.map((row, index) => {
-    const x = left + index * pointGap;
-    const y = top + plotHeight - (row.value / maxValue) * plotHeight;
-    return { ...row, x, y };
-  });
-
-  let markup = '';
-
-  for (let step = 0; step <= 4; step += 1) {
-    const y = top + (plotHeight / 4) * step;
-    const value = Math.round(maxValue - (maxValue / 4) * step);
-    markup += `<line class="chart-grid-line" x1="${left}" y1="${y}" x2="${width-right}" y2="${y}"></line>`;
-    markup += `<text class="chart-axis-label" x="${left-10}" y="${y+4}" text-anchor="end">${value}</text>`;
+  if (period === 'shift') {
+    const data = workdayAnalytics();
+    const rows = data.rows.map(row => ({ label: row.label, value: row.average }));
+    const strongest = rows.reduce((best, row) => row.value > best.value ? row : best, rows[0]);
+    const nonZero = rows.filter(row => row.value > 0);
+    const weakest = nonZero.length ? nonZero.reduce((low, row) => row.value < low.value ? row : low, nonZero[0]) : null;
+    setInsightMetric(0, 'Shift loads', data.total);
+    setInsightMetric(1, 'Avg per workday', data.dayCount ? (data.total / data.dayCount).toFixed(1) : '0');
+    setInsightMetric(2, 'Strongest hour', strongest && strongest.value ? strongest.label : '—');
+    setInsightMetric(3, 'Weakest active hour', weakest ? weakest.label : '—');
+    renderBarChart(svg, rows, { decimals: true, minimumMax: 2 });
+    $('chartCaption').textContent = `Average loads by work-hour across ${data.dayCount} recorded workday${data.dayCount === 1 ? '' : 's'} (7:00 AM–3:30 PM).`;
+    narrative = strongest && strongest.value
+      ? `Your strongest window is ${strongest.label}. ${weakest ? `Your lightest active window is ${weakest.label}.` : ''} Use this to protect your peak hours and spot where follow-ups tend to stall.`
+      : 'Not enough shift history yet. Once you log a few workdays, this will identify your strongest and weakest windows.';
+  } else if (period === 'pace') {
+    const data = updateGapAnalytics();
+    setInsightMetric(0, 'Measured gaps', data.gaps.length);
+    setInsightMetric(1, 'Average gap', formatMinutesCompact(data.average));
+    setInsightMetric(2, 'Typical gap', formatMinutesCompact(data.median));
+    setInsightMetric(3, 'Longest gap', formatMinutesCompact(data.slowest));
+    renderBarChart(svg, data.rows, { minimumMax: 3 });
+    $('chartCaption').textContent = 'Time between positive load updates during the same workday; overnight gaps and gaps over 3 hours are excluded.';
+    narrative = data.gaps.length
+      ? `Your typical update arrives every ${formatMinutesCompact(data.median)}. ${data.average > data.median * 1.5 ? 'A few long pauses are pulling the average upward.' : 'Your pace is fairly consistent.'}`
+      : 'Track several loads during a shift to unlock pace analysis.';
+  } else if (period === 'trend') {
+    const rows = trendAnalytics();
+    const total = rows.reduce((sum, row) => sum + row.value, 0);
+    const workRows = rows.filter(row => row.weekday);
+    const best = rows.reduce((winner, row) => row.value > winner.value ? row : winner, rows[0]);
+    const firstHalf = rows.slice(0, 7).reduce((sum, row) => sum + row.value, 0);
+    const secondHalf = rows.slice(7).reduce((sum, row) => sum + row.value, 0);
+    const change = firstHalf ? Math.round((secondHalf - firstHalf) / firstHalf * 100) : 0;
+    setInsightMetric(0, '14-day loads', total);
+    setInsightMetric(1, 'Avg workday', workRows.length ? (workRows.reduce((sum,row)=>sum+row.value,0)/workRows.length).toFixed(1) : '0');
+    setInsightMetric(2, 'Best day', best.value ? best.label : '—');
+    setInsightMetric(3, 'Week-over-week', firstHalf ? `${change >= 0 ? '+' : ''}${change}%` : '—');
+    renderLineChart(svg, rows);
+    $('chartCaption').textContent = 'Net loads recorded each day across the last two weeks.';
+    narrative = firstHalf
+      ? `Your latest seven days are ${Math.abs(change)}% ${change >= 0 ? 'ahead of' : 'behind'} the prior seven. ${best.value ? `${best.label} was the strongest day with ${best.value} loads.` : ''}`
+      : 'Two weeks of history will unlock a meaningful trend comparison.';
+  } else {
+    const rows = weekdayAnalytics();
+    const strongest = rows.reduce((best, row) => row.value > best.value ? row : best, rows[0]);
+    const weakest = rows.filter(row => row.value > 0).reduce((low, row) => !low || row.value < low.value ? row : low, null);
+    setInsightMetric(0, 'Weekday loads', rows.reduce((sum,row)=>sum+row.raw,0));
+    setInsightMetric(1, 'Best weekday avg', strongest.value.toFixed(1));
+    setInsightMetric(2, 'Strongest day', strongest.value ? strongest.label : '—');
+    setInsightMetric(3, 'Weakest day', weakest ? weakest.label : '—');
+    renderBarChart(svg, rows, { decimals: true, minimumMax: 2 });
+    $('chartCaption').textContent = 'Average loads per recorded Monday–Friday shift.';
+    narrative = strongest.value
+      ? `${strongest.label} is currently your strongest weekday. ${weakest ? `${weakest.label} is the softest.` : ''} This becomes more reliable as more weeks accumulate.`
+      : 'Log at least one full workweek to compare weekdays.';
   }
 
-  const linePoints = points.map(point => `${point.x},${point.y}`).join(' ');
-  const areaPoints = `${left},${top+plotHeight} ${linePoints} ${width-right},${top+plotHeight}`;
-
-  markup += `<polygon class="chart-area" points="${areaPoints}"></polygon>`;
-  markup += `<polyline class="chart-line" points="${linePoints}"></polyline>`;
-
-  points.forEach((point, index) => {
-    markup += `<circle class="chart-dot" cx="${point.x}" cy="${point.y}" r="5"></circle>`;
-
-    const showLabel = rows.length <= 8 || index % 2 === 0 || index === rows.length - 1;
-    if (showLabel) {
-      markup += `<text class="chart-axis-label" x="${point.x}" y="${height-18}" text-anchor="middle">${point.label}</text>`;
-    }
-  });
-
-  svg.innerHTML = markup;
-
-  const periodName = period === 'daily'
-    ? 'the last 14 days'
-    : period === 'weekly'
-      ? 'the last 8 weeks'
-      : 'the last 12 months';
-
-  $('chartCaption').textContent = `${total} net loads across ${periodName}.`;
+  $('analyticsNarrative').textContent = narrative;
+  renderSessions();
 }
 
 function hourlyTotalsForDate(date) {
