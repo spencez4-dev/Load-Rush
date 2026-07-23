@@ -70,7 +70,7 @@
       <div class="section-heading">
         <div>
           <span class="section-kicker">HOURLY QUEST</span>
-          <h2>Beat the Clock</h2>
+          <h2>Race to <span id="hourlyGoalLabel">20</span></h2>
         </div>
         <div id="countdown" class="countdown" title="Live time remaining in the current hour">59:59</div>
       </div>
@@ -86,8 +86,11 @@
           <div class="lane-line lane-line-one"></div>
           <div class="lane-line lane-line-two"></div>
           <div id="raceFill" class="race-fill"></div>
-          <div id="vehicleTrail" class="vehicle-trail" aria-hidden="true"></div>
           <div id="vehicle" class="vehicle" role="img" aria-label="Race vehicle">🚛</div>
+
+          <div class="finish-line finish-line-left">
+          </div>
+          <div class="start-marker">START</div>
         </div>
 
         <div id="trophy" class="trophy">🏆</div>
@@ -97,7 +100,7 @@
       <div class="race-footer">
         <div>
           <strong id="raceProgressText">0 / 20</strong>
-          <span id="raceMessage">Every 15 loads earns a race win.</span>
+          <span id="raceMessage">Green flag. Let it rip.</span>
         </div>
         <button id="garageBtn" class="secondary-button" type="button">Garage</button>
       </div>
@@ -382,7 +385,7 @@
       </label>
 
       <label class="setting-row">
-        <span>Loads per race</span>
+        <span>Hourly race goal</span>
         <input id="hourlyGoalInput" type="number" min="1" max="100" step="1">
       </label>
 

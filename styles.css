@@ -2072,7 +2072,23 @@ body.alarm-active {
 }
 
 
-/* LOAD RUSH V5 — truck collection */
+/* LOAD RUSH V5 — truck collection + polished track */
+.garage-hero{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;margin-top:16px;padding:18px;border:1px solid var(--border);border-radius:22px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 12%,var(--surface-strong)),color-mix(in srgb,var(--accent-2) 8%,var(--surface-strong)))}
+.garage-hero strong{display:block;margin-top:5px;font-size:1.5rem}.garage-hero p{margin:7px 0 0;color:var(--muted);max-width:520px}.crate-button{min-width:175px;border:0;border-radius:20px;padding:14px 18px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:white;box-shadow:0 16px 34px color-mix(in srgb,var(--accent) 28%,transparent);font-weight:950;cursor:pointer}.crate-button:disabled{opacity:.42;cursor:not-allowed}.crate-button span{display:block}.crate-button .crate-emoji{font-size:2rem;margin-bottom:4px}.crate-button b{display:block;font-size:.72rem;margin-top:5px;opacity:.85}
+.rig-reward{display:block;margin-top:7px;font-size:.74rem;color:var(--muted)}.rarity-surf-side{background:linear-gradient(90deg,#06b6d4,#38bdf8,#f0abfc)!important;color:#fff!important;box-shadow:0 0 18px rgba(56,189,248,.55)}
+.road-world{background:linear-gradient(to bottom,#9bd7ff 0 48%,#d7edf6 48% 51%,#8bbf69 51% 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.75),0 18px 40px rgba(26,39,62,.16)}
+[data-theme="dark"] .road-world{background:linear-gradient(to bottom,#17294a 0 48%,#31445b 48% 51%,#29442c 51% 100%)}
+.road{bottom:10%;height:116px;border-radius:18px;background:linear-gradient(180deg,#4c5059,#292c32 70%,#202329);border:1px solid rgba(255,255,255,.09);box-shadow:inset 0 12px 18px rgba(255,255,255,.04),inset 0 -16px 22px rgba(0,0,0,.3),0 16px 28px rgba(0,0,0,.22)}
+.road::before{content:"";position:absolute;inset:9px;border-radius:12px;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(255,255,255,.035),transparent)}
+.road-shoulder{height:6px;background:repeating-linear-gradient(90deg,#fff 0 24px,#ef4444 24px 48px);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.lane-line{height:3px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.3));background:repeating-linear-gradient(90deg,rgba(255,255,255,.94) 0 34px,transparent 34px 66px)}
+.city-silhouette{filter:blur(.2px);opacity:.32}.city-front{opacity:.42}.sky-haze{opacity:.82;filter:blur(2px)}
+.cloud{position:absolute;width:94px;height:24px;border-radius:999px;background:rgba(255,255,255,.72);filter:blur(.2px);box-shadow:24px -10px 0 4px rgba(255,255,255,.62),48px 0 0 -2px rgba(255,255,255,.58)}.cloud-one{left:9%;top:28px;transform:scale(.75)}.cloud-two{right:24%;top:60px;transform:scale(.5);opacity:.65}
+.roadside{position:absolute;z-index:2;bottom:49%;font-size:2.2rem;filter:drop-shadow(0 5px 4px rgba(0,0,0,.18))}.roadside-left{left:3%}.roadside-right{right:4%;font-size:2.6rem}.vehicle{filter:drop-shadow(0 8px 5px rgba(0,0,0,.33));transition:right .68s cubic-bezier(.2,.9,.2,1),transform .25s ease}
+.finish-line{filter:drop-shadow(0 5px 4px rgba(0,0,0,.25))}.start-marker{letter-spacing:.15em;background:rgba(17,24,39,.72);color:white;padding:4px 7px;border-radius:7px}
+@media(max-width:640px){.garage-hero{grid-template-columns:1fr}.crate-button{width:100%}.roadside{font-size:1.7rem}.roadside-right{font-size:2rem}}
+
+/* V5.4.3 — Garage/progression additions only. Original track styling retained. */
 .garage-hero{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;margin-top:16px;padding:18px;border:1px solid var(--border);border-radius:22px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 12%,var(--surface-strong)),color-mix(in srgb,var(--accent-2) 8%,var(--surface-strong)))}
 .garage-hero strong{display:block;margin-top:5px;font-size:1.5rem}.garage-hero p{margin:7px 0 0;color:var(--muted);max-width:520px}.crate-button{min-width:175px;border:0;border-radius:20px;padding:14px 18px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:white;box-shadow:0 16px 34px color-mix(in srgb,var(--accent) 28%,transparent);font-weight:950;cursor:pointer}.crate-button:disabled{opacity:.42;cursor:not-allowed}.crate-button span{display:block}.crate-button .crate-emoji{font-size:2rem;margin-bottom:4px}.crate-button b{display:block;font-size:.72rem;margin-top:5px;opacity:.85}
 .rig-reward{display:block;margin-top:7px;font-size:.74rem;color:var(--muted)}.rarity-surf-side{background:linear-gradient(90deg,#06b6d4,#38bdf8,#f0abfc)!important;color:#fff!important;box-shadow:0 0 18px rgba(56,189,248,.55)}
@@ -2080,173 +2096,3 @@ body.alarm-active {
 .rig-card.locked .rig-icon{opacity:.82}
 .rig-card.locked .rig-name{opacity:.92}
 @media(max-width:640px){.garage-hero{grid-template-columns:1fr}.crate-button{width:100%}}
-
-/* V5.4.1 — Clean Track pass */
-.road-world {
-  background: linear-gradient(to bottom, #7fc0f2 0 54%, #315b38 54% 100%);
-}
-
-[data-theme="dark"] .road-world {
-  background: linear-gradient(to bottom, #21395f 0 54%, #183e26 54% 100%);
-}
-
-/* Keep the scene calm and let the vehicle be the focus. */
-.city-silhouette,
-.sky-haze {
-  display: none;
-}
-
-.road {
-  left: 5%;
-  right: 5%;
-  bottom: 15%;
-  height: 104px;
-  overflow: hidden;
-  border: 2px solid rgba(255,255,255,.16);
-  border-radius: 18px;
-  background: linear-gradient(to bottom, #41444b, #2d3036);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 12px 24px rgba(0,0,0,.18);
-}
-
-[data-theme="dark"] .road {
-  background: linear-gradient(to bottom, #35383f, #22252a);
-}
-
-/* Remove the racetrack curb pattern. */
-.road-shoulder {
-  display: none;
-}
-
-/* One clean center divider instead of two busy lane rows. */
-.lane-line {
-  top: 50%;
-  bottom: auto;
-  left: 7%;
-  right: 7%;
-  height: 4px;
-  transform: translateY(-50%);
-  opacity: .72;
-  background: repeating-linear-gradient(
-    90deg,
-    rgba(255,255,255,.88) 0 34px,
-    transparent 34px 66px
-  );
-}
-
-.lane-line-two {
-  display: none;
-}
-
-/* Progress stays functional but no longer paints half the road. */
-.race-fill {
-  top: auto;
-  bottom: 0;
-  height: 4px;
-  border-radius: 0;
-  opacity: .9;
-  background: linear-gradient(90deg, var(--rig-accent), var(--accent-2));
-}
-
-.finish-line {
-  top: 0;
-  bottom: 0;
-}
-
-.start-marker {
-  bottom: 10px;
-}
-
-/* V5.4.2 — Beat the Clock continuous-road pass */
-.road-world {
-  background: linear-gradient(to bottom, #7fc0f2 0 54%, #315b38 54% 100%);
-}
-
-[data-theme="dark"] .road-world {
-  background: linear-gradient(to bottom, #21395f 0 54%, #183e26 54% 100%);
-}
-
-/* No destination, flag, building, or finish line — the road keeps going. */
-.finish-line,
-.finish-flag,
-.start-marker,
-.city-silhouette,
-.sky-haze {
-  display: none !important;
-}
-
-.road {
-  left: 4%;
-  right: 4%;
-  bottom: 15%;
-  height: 104px;
-  overflow: hidden;
-  border: 2px solid rgba(255,255,255,.16);
-  border-radius: 18px;
-  background: linear-gradient(to bottom, #41444b, #2d3036);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 12px 24px rgba(0,0,0,.18);
-}
-
-[data-theme="dark"] .road {
-  background: linear-gradient(to bottom, #35383f, #22252a);
-}
-
-/* The dashed lane subtly scrolls forever instead of ending at a marker. */
-.lane-line {
-  left: -5%;
-  right: -5%;
-  animation: roadStripeScroll 1.15s linear infinite;
-}
-
-@keyframes roadStripeScroll {
-  from { background-position-x: 0; }
-  to { background-position-x: -66px; }
-}
-
-/* Colored motion wake attached to the selected truck. */
-.vehicle-trail {
-  position: absolute;
-  top: 50%;
-  z-index: 4;
-  width: 118px;
-  height: 24px;
-  border-radius: 999px;
-  transform: translate(100%, -50%);
-  transform-origin: left center;
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--rig-accent) 64%, transparent),
-    color-mix(in srgb, var(--rig-accent) 20%, transparent) 55%,
-    transparent
-  );
-  filter: blur(7px);
-  opacity: .78;
-  transition: right .72s cubic-bezier(.2,.9,.2,1), opacity .2s ease;
-  pointer-events: none;
-}
-
-.vehicle-trail::after {
-  content: "";
-  position: absolute;
-  inset: 8px 8px 8px 0;
-  border-radius: inherit;
-  background: linear-gradient(90deg, var(--rig-accent), transparent);
-  opacity: .72;
-}
-
-.vehicle {
-  z-index: 5;
-}
-
-/* Thin lap meter only; never cover the road surface. */
-.race-fill {
-  top: auto;
-  bottom: 0;
-  height: 4px;
-  border-radius: 0;
-  opacity: .92;
-  background: linear-gradient(90deg, var(--rig-accent), var(--accent-2));
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .lane-line { animation: none; }
-}
