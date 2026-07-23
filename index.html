@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#efe9ff">
-  <meta name="description" content="A polished shipment load tracker with 15-load races, XP levels, unlockable rigs, goals, reminders, and workday analytics.">
+  <meta name="description" content="A game-like shipment load tracker with hourly road races, XP levels, unlockable rigs, goals, and timestamped updates.">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="styles.css?v=5.8.0">
+  <link rel="stylesheet" href="styles.css?v=5.7.0">
   <title>Wayfinder Logistics</title>
 </head>
 <body>
@@ -69,7 +69,7 @@
     <section class="race-card glass">
       <div class="section-heading">
         <div>
-          <span class="section-kicker">BEAT THE CLOCK</span>
+          <span class="section-kicker">HOURLY QUEST</span>
           <h2>Race to <span id="hourlyGoalLabel">20</span></h2>
         </div>
         <div id="countdown" class="countdown" title="Live time remaining in the current hour">59:59</div>
@@ -128,7 +128,7 @@
       <article class="glass stat-card">
         <span class="section-kicker">RACE RECORD</span>
         <div id="raceWinsValue" class="big-stat">0</div>
-        <div class="small-copy">race wins</div>
+        <div class="small-copy">hourly wins</div>
         <div id="activeRigLabel" class="small-copy emphasis">Driving: Starter Semi</div>
       </article>
     </section>
@@ -139,16 +139,11 @@
           <span class="section-kicker">ACTIVITY</span>
           <h2>Load Log</h2>
         </div>
-        <div class="button-row activity-actions">
-          <button id="insightsBtn" class="secondary-button" type="button">Analytics</button>
+        <div class="button-row">
+          <button id="insightsBtn" class="secondary-button" type="button">Insights</button>
           <button id="summaryBtn" class="secondary-button" type="button">Day Recap</button>
-          <details id="activityMenu" class="activity-menu">
-            <summary class="icon-button activity-menu-trigger" aria-label="More activity actions">•••</summary>
-            <div class="activity-menu-popover">
-              <button id="undoBtn" type="button">Undo last update</button>
-              <button id="exportBtn" type="button">Export backup</button>
-            </div>
-          </details>
+          <button id="undoBtn" class="secondary-button" type="button">Undo</button>
+          <button id="exportBtn" class="secondary-button" type="button">Export</button>
         </div>
       </div>
       <div id="logList" class="log-list"></div>
@@ -158,10 +153,10 @@
   <div id="fxLayer" class="fx-layer" aria-hidden="true"></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <div id="megaMessage" class="mega-message">CHECKERED FLAG!</div>
-  <div class="build-badge">LOAD RUSH · V5.8 FULL APP POLISH</div>
+  <div class="build-badge">LOAD RUSH · V5.7.1 ORIGINAL + SMOKE</div>
 
 
-  <dialog id="fatePromptDialog" class="fate-dialog legacy-fate-dialog" aria-hidden="true">
+  <dialog id="fatePromptDialog" class="fate-dialog">
     <div class="dialog-content fate-dialog-content">
       <span class="fate-dice-icon">🎲</span>
       <span class="section-kicker">MILESTONE REACHED</span>
@@ -175,7 +170,7 @@
     </div>
   </dialog>
 
-  <dialog id="fateResultDialog" class="fate-dialog legacy-fate-dialog" aria-hidden="true">
+  <dialog id="fateResultDialog" class="fate-dialog">
     <div class="dialog-content fate-dialog-content">
       <div id="rollingDice" class="rolling-dice">🎲</div>
       <span id="fateRarity" class="fate-rarity">COMMON</span>
@@ -334,7 +329,7 @@
       <div class="section-heading">
         <div>
           <span class="section-kicker">PERFORMANCE</span>
-          <h2>Analytics</h2>
+          <h2>Load Insights</h2>
         </div>
         <button id="closeInsightsX" class="icon-button" type="button" aria-label="Close insights">×</button>
       </div>

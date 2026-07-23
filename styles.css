@@ -2265,80 +2265,7 @@ body.alarm-active {
 }
 
 
-/* V5.8 — Full app polish */
-:root {
-  --polish-radius: 22px;
-  --polish-shadow: 0 14px 36px rgba(62, 49, 90, .10);
-}
-
-.glass {
-  border-radius: var(--polish-radius);
-  box-shadow: var(--polish-shadow);
-}
-
-.counter-card {
-  position: relative;
-  border-color: color-mix(in srgb, var(--accent) 24%, var(--line));
-}
-
-.counter-buttons {
-  align-items: center;
-  gap: 14px;
-}
-
-.count-button.plus {
-  width: 112px;
-  height: 112px;
-  font-size: 4.2rem;
-  position: relative;
-  overflow: visible;
-  box-shadow: 0 14px 30px color-mix(in srgb, var(--accent) 26%, transparent);
-}
-
-.count-button.minus {
-  width: 58px;
-  height: 58px;
-  font-size: 2rem;
-  opacity: .68;
-  box-shadow: none;
-}
-
-.count-button.minus:hover { opacity: 1; }
-
-.load-float {
-  position: absolute;
-  left: 50%;
-  top: 5%;
-  transform: translate(-50%, 0);
-  pointer-events: none;
-  white-space: nowrap;
-  font-size: .86rem;
-  font-weight: 900;
-  color: var(--accent);
-  text-shadow: 0 1px 0 var(--panel);
-  animation: loadFloatUp .85s cubic-bezier(.2,.8,.2,1) forwards;
-}
-
-@keyframes loadFloatUp {
-  0% { opacity: 0; transform: translate(-50%, 10px) scale(.86); }
-  18% { opacity: 1; }
-  100% { opacity: 0; transform: translate(-50%, -72px) scale(1.05); }
-}
-
-.vehicle-bump { animation: vehicleBump .48s cubic-bezier(.22,.9,.25,1); }
-@keyframes vehicleBump {
-  0%,100% { transform: translateY(0) rotate(0); }
-  35% { transform: translateY(-7px) rotate(-2deg); }
-  65% { transform: translateY(2px) rotate(1deg); }
-}
-
-.road-pulse { animation: roadPulse .45s ease-out; }
-@keyframes roadPulse {
-  0% { filter: brightness(1); }
-  35% { filter: brightness(1.08); }
-  100% { filter: brightness(1); }
-}
-
+/* V5.7.1 — Original app with truck smoke retained */
 .truck-trail-puff {
   position: absolute;
   width: 18px;
@@ -2349,94 +2276,12 @@ body.alarm-active {
   z-index: 6;
   animation: trailPuff .62s ease-out forwards;
 }
+
 @keyframes trailPuff {
-  from { opacity: .75; transform: translate(0,0) scale(.7); }
-  to { opacity: 0; transform: translate(42px,-2px) scale(2.25); }
-}
-
-.activity-actions { align-items: center; }
-.activity-menu { position: relative; }
-.activity-menu > summary { list-style: none; }
-.activity-menu > summary::-webkit-details-marker { display: none; }
-.activity-menu-trigger { min-width: 42px; }
-.activity-menu-popover {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 8px);
-  z-index: 50;
-  min-width: 190px;
-  padding: 8px;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: var(--panel);
-  box-shadow: 0 14px 38px rgba(0,0,0,.14);
-}
-.activity-menu-popover button {
-  width: 100%;
-  border: 0;
-  border-radius: 11px;
-  background: transparent;
-  color: var(--text);
-  padding: 10px 12px;
-  text-align: left;
-  font: inherit;
-  font-weight: 800;
-  cursor: pointer;
-}
-.activity-menu-popover button:hover { background: var(--soft); }
-
-.dialog-content { padding: clamp(20px, 4vw, 30px); }
-dialog { border-radius: 24px; }
-.legacy-fate-dialog { display: none !important; }
-
-.metric { opacity: .88; }
-.metric strong { letter-spacing: -.02em; }
-.section-kicker { letter-spacing: .11em; }
-.small-copy { line-height: 1.45; }
-
-.build-badge {
-  opacity: .55;
-  font-size: .68rem;
-  box-shadow: none;
-}
-
-.log-list:empty::before {
-  content: 'No updates yet. Your next tracked load will appear here.';
-  display: block;
-  padding: 28px 10px;
-  color: var(--muted);
-  text-align: center;
-}
-
-.analytics-panel,
-.analytics-chart-shell {
-  border-radius: 18px;
-}
-.analytics-bar { animation-duration: .36s; }
-
-button, summary { -webkit-tap-highlight-color: transparent; }
-button:active, summary:active { transform: translateY(1px); }
-
-@media (max-width: 640px) {
-  .topbar { gap: 12px; }
-  .top-actions { gap: 7px; }
-  .reminders-nav-button span:last-of-type { display: none; }
-  .counter-buttons { justify-content: center; }
-  .count-button.plus { width: 102px; height: 102px; }
-  .count-button.minus { width: 52px; height: 52px; }
-  .activity-actions { width: 100%; display: grid; grid-template-columns: 1fr 1fr auto; }
-  .activity-actions .secondary-button { width: 100%; }
-  .activity-menu-popover { right: 0; }
-  dialog { width: min(94vw, 720px); }
-  .dialog-content { padding: 20px; }
-  .build-badge { position: static; margin: 10px auto 18px; width: max-content; }
+  from { opacity: .75; transform: translate(0, 0) scale(.7); }
+  to { opacity: 0; transform: translate(42px, -2px) scale(2.25); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    scroll-behavior: auto !important;
-    animation-duration: .01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: .01ms !important;
-  }
+  .truck-trail-puff { animation-duration: .01ms; }
 }
