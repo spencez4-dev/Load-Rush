@@ -1,24 +1,47 @@
-# Load Rush — V5.7.2 Clean Master
+# Load Rush — Time Zone Calculator Tab
 
-This is the cleaned source-of-truth build. The visible app is unchanged from V5.7.1, including the small truck smoke effect.
+This package adds a separate **Time Zone Calculator** tab to the current Load Rush app without changing any existing game or save-state logic.
 
-## Project files
+## Install
 
-- `index.html` — app structure
-- `styles.css` — all styling and animations
-- `app.js` — game logic, storage, analytics, and UI behavior
-- `manifest.webmanifest` — PWA metadata
-- `sw.js` — service worker and stale-cache cleanup
-- `icon-192.png` and `icon-512.png` — app icons
+1. Upload `timezone-calculator.js` to the root of your Load Rush GitHub repository.
+2. Open `index.html`.
+3. Find the existing line near the bottom:
 
-## Cleanup performed
+```html
+<script src="app.js?v=5.7.2" defer></script>
+```
 
-- Removed nested historical builds
-- Removed old version-specific README files
-- Removed macOS `__MACOSX` metadata
-- Kept one canonical copy of every runtime file
-- Updated cache-busting query strings to V5.7.2
-- Preserved existing localStorage keys and saved-data compatibility
-- Preserved the truck exhaust/smoke animation
+4. Put this line directly underneath it:
 
-Upload these files directly to the root of the GitHub Pages repository.
+```html
+<script src="timezone-calculator.js?v=1.0.0" defer></script>
+```
+
+The bottom of `index.html` should look like:
+
+```html
+<script src="app.js?v=5.7.2" defer></script>
+<script src="timezone-calculator.js?v=1.0.0" defer></script>
+</body>
+</html>
+```
+
+5. Commit the changes. GitHub Pages should redeploy automatically.
+
+## What it adds
+
+- A **Time Zone Calculator** button in the Load Rush top navigation
+- A separate full-page tab that preserves the existing header
+- City search using Open-Meteo's free geocoding endpoint
+- Live local clock with seconds
+- IANA timezone name
+- Current UTC offset, including daylight-saving changes
+- Difference from the user's local time
+- Recent city searches saved locally
+- Responsive mobile layout
+- Styling that follows Load Rush's existing light/dark theme
+
+## Why this is an add-on file
+
+The calculator is intentionally isolated from `app.js`. That means it does not alter Load Rush's load totals, XP, races, reminders, garage, settings, or saved localStorage state.
