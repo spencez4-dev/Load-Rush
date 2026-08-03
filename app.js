@@ -17,6 +17,7 @@ const DEFAULTS = {
   completedHours: [],
   hourlyRaceAwards: {},
   selectedRig: 'starter-semi',
+  selectedRoute: 'classic',
   theme: 'light',
   sound: true,
   soundStyle: 'engine',
@@ -61,6 +62,105 @@ const RIGS = [
   { id: 'vinny', icon: '🐳', name: 'Vinny', type: 'GARAGE ICON', rarity: 'VINES', weight: .9, reward: 'Deep-blue ocean wake', accent: '#0284c7', rule: 'Earn 12,000 Lifetime XP', unlocked: () => lifetimeXP() >= 12000 },
   { id: 'fromelts-boat', icon: '🚤', name: "Fromelt's Boat", type: 'GARAGE ICON', rarity: 'POWERS LAKE', weight: .55, reward: 'Lake-spray aqua trail', accent: '#0891b2', rule: 'Complete 100 races', unlocked: () => state.raceWins >= 100 },
   { id: 'byler', icon: '🏄‍♂️', name: 'Bryler', type: 'SURF TRUCK', rarity: 'SURF SIDE', weight: .02, reward: 'Ocean-wave road shimmer', accent: '#06b6d4', rule: 'Reach Level 250 + complete 250 hourly quests', unlocked: () => lifetimeLevel() >= 250 && state.raceWins >= 250 }
+];
+
+const ROUTES = [
+  {
+    id: 'classic',
+    name: 'Classic Run',
+    subtitle: 'The original Load Rush route',
+    rule: 'Unlocked from the start',
+    unlocked: () => true,
+    scene: () => `
+      <svg viewBox="0 0 1000 270" preserveAspectRatio="none" role="img" aria-label="Classic open-road landscape">
+        <defs>
+          <linearGradient id="classicSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fd2ff"/><stop offset="1" stop-color="#dff3ff"/></linearGradient>
+        </defs>
+        <rect width="1000" height="270" fill="url(#classicSky)"/>
+        <circle class="route-sun" cx="850" cy="55" r="34" fill="#ffe59a" opacity=".9"/>
+        <path d="M0 148 C160 118 290 132 430 112 C620 84 760 130 1000 92 L1000 270 L0 270Z" fill="#7dad67"/>
+        <path d="M0 168 C180 140 350 174 510 143 C700 108 840 161 1000 126 L1000 270 L0 270Z" fill="#5f9555"/>
+      </svg>`
+  },
+  {
+    id: 'alpine',
+    name: 'Alpine Freight',
+    subtitle: 'Snowbanks and mountain air',
+    rule: 'Reach Level 10',
+    unlocked: () => lifetimeLevel() >= 10,
+    scene: () => `
+      <svg viewBox="0 0 1000 270" preserveAspectRatio="none" role="img" aria-label="Snow-capped mountain route">
+        <defs><linearGradient id="alpineSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#79b9e8"/><stop offset="1" stop-color="#eaf6ff"/></linearGradient></defs>
+        <rect width="1000" height="270" fill="url(#alpineSky)"/>
+        <path d="M0 170 L120 62 L215 142 L340 38 L470 158 L620 48 L760 150 L865 75 L1000 170 L1000 270 L0 270Z" fill="#8ca6bd"/>
+        <path d="M82 97 L120 62 L153 103 L133 96 L120 81 L108 99Z M302 79 L340 38 L379 84 L358 74 L341 57 L326 78Z M584 85 L620 48 L660 91 L640 82 L622 66 L607 84Z M835 105 L865 75 L897 108 L879 102 L866 90 L855 104Z" fill="#f7fbff"/>
+        <path d="M0 176 C190 145 350 180 520 150 C720 116 860 166 1000 140 L1000 270 L0 270Z" fill="#dfeef6"/>
+        <g class="route-snow" fill="#fff" opacity=".85"><circle cx="90" cy="55" r="4"/><circle cx="210" cy="92" r="3"/><circle cx="420" cy="58" r="4"/><circle cx="575" cy="104" r="3"/><circle cx="760" cy="60" r="4"/><circle cx="920" cy="96" r="3"/></g>
+      </svg>`
+  },
+  {
+    id: 'lakeshore',
+    name: 'Lakeshore',
+    subtitle: 'Sunset water and sandy shoulders',
+    rule: 'Complete 10 races',
+    unlocked: () => state.raceWins >= 10,
+    scene: () => `
+      <svg viewBox="0 0 1000 270" preserveAspectRatio="none" role="img" aria-label="Lakeshore route at sunset">
+        <defs><linearGradient id="lakeSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6a77f"/><stop offset=".58" stop-color="#ffd7a3"/><stop offset="1" stop-color="#8bcbd7"/></linearGradient></defs>
+        <rect width="1000" height="270" fill="url(#lakeSky)"/>
+        <circle class="route-sun" cx="820" cy="68" r="42" fill="#fff1b2" opacity=".95"/>
+        <rect y="145" width="1000" height="125" fill="#58aebb"/>
+        <g class="route-waves" fill="none" stroke="#d8f4f3" stroke-width="5" opacity=".8"><path d="M0 174 Q45 160 90 174 T180 174 T270 174 T360 174 T450 174 T540 174 T630 174 T720 174 T810 174 T900 174 T990 174"/><path d="M0 205 Q55 192 110 205 T220 205 T330 205 T440 205 T550 205 T660 205 T770 205 T880 205 T990 205"/></g>
+        <path d="M0 214 C180 191 320 220 480 202 C660 181 825 220 1000 196 L1000 270 L0 270Z" fill="#e9c783"/>
+      </svg>`
+  },
+  {
+    id: 'pine-pass',
+    name: 'Pine Pass',
+    subtitle: 'Evergreens, fog, and mountain asphalt',
+    rule: 'Reach Level 20',
+    unlocked: () => lifetimeLevel() >= 20,
+    scene: () => `
+      <svg viewBox="0 0 1000 270" preserveAspectRatio="none" role="img" aria-label="Forest and mountain route">
+        <defs><linearGradient id="pineSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7bb7ca"/><stop offset="1" stop-color="#d9ece8"/></linearGradient></defs>
+        <rect width="1000" height="270" fill="url(#pineSky)"/>
+        <path d="M0 160 L145 72 L260 148 L405 52 L560 155 L720 70 L860 150 L1000 88 L1000 270 L0 270Z" fill="#557c72" opacity=".72"/>
+        <g class="pine-trees" fill="#214f3d"><path d="M70 198 l34-84 34 84z"/><rect x="100" y="185" width="8" height="35"/><path d="M195 206 l40-102 40 102z"/><rect x="231" y="188" width="8" height="36"/><path d="M760 202 l37-94 37 94z"/><rect x="793" y="188" width="8" height="34"/><path d="M875 208 l43-109 43 109z"/><rect x="914" y="190" width="8" height="38"/></g>
+        <path d="M0 198 C180 176 330 205 510 181 C690 158 840 204 1000 176 L1000 270 L0 270Z" fill="#3d6950"/>
+        <path class="route-mist" d="M0 142 C180 118 320 158 500 128 C675 100 835 145 1000 118" fill="none" stroke="#eaf5f2" stroke-width="20" opacity=".22"/>
+      </svg>`
+  },
+  {
+    id: 'city',
+    name: 'Cityscape',
+    subtitle: 'Glass towers and early-shift lights',
+    rule: 'Earn 2,500 Lifetime XP',
+    unlocked: () => lifetimeXP() >= 2500,
+    scene: () => `
+      <svg viewBox="0 0 1000 270" preserveAspectRatio="none" role="img" aria-label="Modern city skyline route">
+        <defs><linearGradient id="citySky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#213b65"/><stop offset="1" stop-color="#7aa1bf"/></linearGradient></defs>
+        <rect width="1000" height="270" fill="url(#citySky)"/>
+        <g class="city-buildings" fill="#24364c"><rect x="30" y="88" width="95" height="145" rx="4"/><rect x="145" y="45" width="110" height="188" rx="5"/><rect x="278" y="104" width="90" height="129" rx="4"/><rect x="390" y="26" width="126" height="207" rx="5"/><rect x="542" y="78" width="100" height="155" rx="4"/><rect x="668" y="54" width="132" height="179" rx="5"/><rect x="824" y="98" width="142" height="135" rx="4"/></g>
+        <g class="city-windows" fill="#ffd98a" opacity=".72"><path d="M52 110h18v12H52zm34 0h18v12H86zm80-40h20v13h-20zm39 0h20v13h-20zm209-13h21v14h-21zm43 0h21v14h-21zm235 25h20v13h-20zm42 0h20v13h-20zm120 39h20v13h-20zm42 0h20v13h-20z"/></g>
+        <rect y="218" width="1000" height="52" fill="#394b58"/>
+      </svg>`
+  },
+  {
+    id: 'desert',
+    name: 'Desert Run',
+    subtitle: 'Faded pavement and open horizon',
+    rule: 'Complete 30 races',
+    unlocked: () => state.raceWins >= 30,
+    scene: () => `
+      <svg viewBox="0 0 1000 270" preserveAspectRatio="none" role="img" aria-label="Desert highway route">
+        <defs><linearGradient id="desertSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2a25e"/><stop offset="1" stop-color="#ffe0a4"/></linearGradient></defs>
+        <rect width="1000" height="270" fill="url(#desertSky)"/>
+        <circle class="route-sun" cx="825" cy="58" r="39" fill="#fff0a6" opacity=".93"/>
+        <path d="M0 171 L130 126 L245 157 L380 104 L520 158 L690 118 L840 158 L1000 119 L1000 270 L0 270Z" fill="#bb6844" opacity=".82"/>
+        <path d="M0 196 C190 170 335 207 510 183 C705 156 840 205 1000 177 L1000 270 L0 270Z" fill="#d99b5b"/>
+        <g class="desert-brush" fill="#705836"><path d="M130 198h7v-38h8v14h9v7h-17v17z"/><path d="M870 198h7v-46h8v17h9v7h-17v22z"/></g>
+      </svg>`
+  }
 ];
 
 const FATE_EVENTS = [
@@ -525,7 +625,7 @@ function renderGhostTruck() {
 function ownedRigIds() { const owned = new Set(Array.isArray(state.ownedRigs) ? state.ownedRigs : ['starter-semi']); owned.add('starter-semi'); return [...owned]; }
 function isRigOwned(rigId) { const rig = RIGS.find(item => item.id === rigId); return Boolean(rig && (ownedRigIds().includes(rigId) || rig.unlocked())); }
 function unlockedRigIds() { return RIGS.filter(rig => isRigOwned(rig.id)).map(rig => rig.id); }
-function initializeUnlockTracking() { state.ownedRigs = ownedRigIds(); if (!Number.isFinite(Number(state.crateTokens))) state.crateTokens = 0; if (!Number.isFinite(Number(state.bonusXP))) state.bonusXP = 0; if (!Number.isFinite(Number(state.openedCrates))) state.openedCrates = 0; if (!Array.isArray(state.seenUnlocks) || state.seenUnlocks.length === 0) state.seenUnlocks = unlockedRigIds(); if (!isRigOwned(state.selectedRig)) state.selectedRig = 'starter-semi'; saveState(); }
+function initializeUnlockTracking() { state.ownedRigs = ownedRigIds(); if (!Number.isFinite(Number(state.crateTokens))) state.crateTokens = 0; if (!Number.isFinite(Number(state.bonusXP))) state.bonusXP = 0; if (!Number.isFinite(Number(state.openedCrates))) state.openedCrates = 0; if (!Array.isArray(state.seenUnlocks) || state.seenUnlocks.length === 0) state.seenUnlocks = unlockedRigIds(); if (!isRigOwned(state.selectedRig)) state.selectedRig = 'starter-semi'; if (!ROUTES.some(route => route.id === state.selectedRoute && route.unlocked())) state.selectedRoute = 'classic'; saveState(); }
 function announceNewUnlocks() { const seen = new Set(Array.isArray(state.seenUnlocks) ? state.seenUnlocks : []); const fresh = RIGS.filter(rig => rig.unlocked() && !seen.has(rig.id)); if (!fresh.length) return; fresh.forEach(rig => seen.add(rig.id)); state.seenUnlocks = [...seen]; saveState(); const rig = fresh[fresh.length - 1]; flashMegaMessage(rig.id === 'byler' ? 'SURF SIDE: BYLER!' : `NEW TRUCK: ${rig.name.toUpperCase()}!`); showToast(`${rig.rarity} gameplay unlock · ${rig.reward}`); }
 function weightedCrateRig() {
   const locked = RIGS.filter(rig => !isRigOwned(rig.id));
@@ -651,6 +751,22 @@ function formatDuration(minutes) {
     : `${remainder} min`;
 }
 
+function selectedRoute() {
+  const route = ROUTES.find(item => item.id === state.selectedRoute);
+  if (route && route.unlocked()) return route;
+  state.selectedRoute = 'classic';
+  return ROUTES[0];
+}
+
+function renderRouteScene() {
+  const route = selectedRoute();
+  const world = document.querySelector('.road-world');
+  const scene = $('routeScene');
+  if (!world || !scene) return;
+  world.dataset.route = route.id;
+  scene.innerHTML = route.scene();
+}
+
 function renderAll() {
   if (state.lastFateMilestoneDate && state.lastFateMilestoneDate !== todayKey()) {
     state.lastFateMilestone = 0;
@@ -668,6 +784,7 @@ function renderAll() {
   const hourlyProgress = (currentRaceLoads / Math.max(1, state.hourlyGoal)) * 100;
   const dailyProgress = Math.min(100, Math.round((today / Math.max(1, state.dailyGoal)) * 100));
   const rig = selectedRig();
+  renderRouteScene();
 
   $('mainCount').textContent = today;
   $('workMetric').textContent = formatDuration(today * state.minutesPerUpdate);
@@ -755,14 +872,71 @@ function renderLog() {
     .join('');
 }
 
+function setGarageTab(tab) {
+  const fleetActive = tab !== 'routes';
+  $('fleetTabBtn')?.classList.toggle('active', fleetActive);
+  $('routesTabBtn')?.classList.toggle('active', !fleetActive);
+  $('fleetTabBtn')?.setAttribute('aria-selected', String(fleetActive));
+  $('routesTabBtn')?.setAttribute('aria-selected', String(!fleetActive));
+  if ($('garageGrid')) $('garageGrid').hidden = !fleetActive;
+  if ($('routeGrid')) $('routeGrid').hidden = fleetActive;
+}
+
+function routePreview(route) {
+  return `<div class="route-preview" data-preview-route="${route.id}">${route.scene()}</div>`;
+}
+
+function renderRoutes() {
+  const active = selectedRoute();
+  const grid = $('routeGrid');
+  if (!grid) return;
+  grid.innerHTML = ROUTES.map(route => {
+    const unlocked = route.unlocked();
+    const selected = route.id === active.id;
+    return `<button class="route-card ${unlocked ? 'unlocked' : 'locked'} ${selected ? 'selected' : ''}" type="button" data-route-id="${route.id}" ${unlocked ? '' : 'disabled'}>
+      ${routePreview(route)}
+      <span class="route-card-copy">
+        <strong>${route.name}</strong>
+        <small>${route.subtitle}</small>
+        <b>${selected ? 'Active route' : unlocked ? 'Tap to equip' : route.rule}</b>
+      </span>
+    </button>`;
+  }).join('');
+  document.querySelectorAll('[data-route-id]').forEach(button => button.addEventListener('click', () => {
+    const route = ROUTES.find(item => item.id === button.dataset.routeId);
+    if (!route || !route.unlocked()) return;
+    state.selectedRoute = route.id;
+    saveState();
+    renderAll();
+    renderRoutes();
+    showToast(`${route.name} equipped`);
+  }));
+}
+
 function renderGarage() {
-  const unlocked = RIGS.filter(rig => isRigOwned(rig.id)); const active = selectedRig();
-  if ($('garageUnlocked')) $('garageUnlocked').textContent = `${unlocked.length} / ${RIGS.length} trucks`;
+  const unlocked = RIGS.filter(rig => isRigOwned(rig.id));
+  const active = selectedRig();
+  if ($('garageUnlocked')) $('garageUnlocked').textContent = `${unlocked.length} / ${RIGS.length} trucks · ${ROUTES.filter(route => route.unlocked()).length} / ${ROUTES.length} routes`;
   if ($('garageCrateCount')) $('garageCrateCount').textContent = state.crateTokens || 0;
   if ($('garageCrateBtn')) $('garageCrateBtn').disabled = (state.crateTokens || 0) < 1 || unlocked.length === RIGS.length;
-  $('garageGrid').innerHTML = RIGS.map(rig => { const isUnlocked = isRigOwned(rig.id); const isSelected = active.id === rig.id; const rarityClass = rig.rarity.toLowerCase().replace(/\s+/g, '-'); return `<button class="rig-card ${isUnlocked ? 'unlocked' : 'locked'} ${isSelected ? 'selected' : ''}" type="button" data-rig-id="${rig.id}" ${isUnlocked ? '' : 'disabled'}><span class="rig-card-top"><span class="rig-icon">${rig.icon}</span><span class="rig-rarity rarity-${rarityClass}">${rig.rarity}</span></span><span class="rig-name">${rig.name}</span><span class="rig-type">${rig.type}</span><span class="rig-reward">${isUnlocked ? `✦ ${rig.reward}` : `🔒 ${rig.rule}`}</span><span class="rig-rule">${isSelected ? 'Equipped' : isUnlocked ? 'Tap to equip' : 'Locked — earn it through the listed achievement'}</span></button>`; }).join('');
-  document.querySelectorAll('[data-rig-id]').forEach(button => button.addEventListener('click', () => { const rig = RIGS.find(item => item.id === button.dataset.rigId); if (!rig || !isRigOwned(rig.id)) return; state.selectedRig = rig.id; saveState(); renderAll(); renderGarage(); showToast(`${rig.name} equipped`); }));
+  $('garageGrid').innerHTML = RIGS.map(rig => {
+    const isUnlocked = isRigOwned(rig.id);
+    const isSelected = active.id === rig.id;
+    const rarityClass = rig.rarity.toLowerCase().replace(/\s+/g, '-');
+    return `<button class="rig-card ${isUnlocked ? 'unlocked' : 'locked'} ${isSelected ? 'selected' : ''}" type="button" data-rig-id="${rig.id}" ${isUnlocked ? '' : 'disabled'}><span class="rig-card-top"><span class="rig-icon">${rig.icon}</span><span class="rig-rarity rarity-${rarityClass}">${rig.rarity}</span></span><span class="rig-name">${rig.name}</span><span class="rig-type">${rig.type}</span><span class="rig-reward">${isUnlocked ? `✦ ${rig.reward}` : `🔒 ${rig.rule}`}</span><span class="rig-rule">${isSelected ? 'Equipped' : isUnlocked ? 'Tap to equip' : 'Locked — earn it through the listed achievement'}</span></button>`;
+  }).join('');
+  document.querySelectorAll('[data-rig-id]').forEach(button => button.addEventListener('click', () => {
+    const rig = RIGS.find(item => item.id === button.dataset.rigId);
+    if (!rig || !isRigOwned(rig.id)) return;
+    state.selectedRig = rig.id;
+    saveState();
+    renderAll();
+    renderGarage();
+    showToast(`${rig.name} equipped`);
+  }));
+  renderRoutes();
 }
+
 
 function applyTheme() {
   document.documentElement.dataset.theme = state.theme;
@@ -1491,7 +1665,7 @@ function showTruckSmoke() {
   if (!road || !vehicle) return;
 
   const puff = document.createElement('span');
-  puff.className = 'truck-trail-puff';
+  puff.className = `truck-trail-puff trail-${selectedRoute().id}`;
   const vehicleRect = vehicle.getBoundingClientRect();
   const roadRect = road.getBoundingClientRect();
   puff.style.left = `${Math.max(8, vehicleRect.left - roadRect.left + 8)}px`;
@@ -2137,10 +2311,13 @@ function bindEvents() {
 
   $('garageBtn').addEventListener('click', () => {
     renderGarage();
+    setGarageTab('fleet');
     openDialog($('garageDialog'));
   });
 
   if ($('garageCrateBtn')) $('garageCrateBtn').addEventListener('click', openTruckCrate);
+  $('fleetTabBtn')?.addEventListener('click', () => setGarageTab('fleet'));
+  $('routesTabBtn')?.addEventListener('click', () => setGarageTab('routes'));
 
   $('rollFateBtn').addEventListener('click', rollFreightFate);
   $('skipFateBtn').addEventListener('click', skipFreightFate);

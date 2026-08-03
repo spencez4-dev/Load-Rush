@@ -7,7 +7,7 @@
   <meta name="description" content="A game-like shipment load tracker with hourly road races, XP levels, unlockable rigs, goals, and timestamped updates.">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="styles.css?v=5.7.2">
+  <link rel="stylesheet" href="styles.css?v=5.9.0">
   <title>Wayfinder Logistics</title>
 </head>
 <body>
@@ -75,7 +75,8 @@
         <div id="countdown" class="countdown" title="Live time remaining in the current hour">59:59</div>
       </div>
 
-      <div class="road-world">
+      <div class="road-world" data-route="classic">
+        <div id="routeScene" class="route-scene" aria-hidden="true"></div>
         <div class="sky-haze"></div>
         <div class="city-silhouette city-back"></div>
         <div class="city-silhouette city-front"></div>
@@ -153,7 +154,7 @@
   <div id="fxLayer" class="fx-layer" aria-hidden="true"></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <div id="megaMessage" class="mega-message">CHECKERED FLAG!</div>
-  <div class="build-badge">LOAD RUSH · V5.7.2 CLEAN MASTER</div>
+  <div class="build-badge">LOAD RUSH · V5.9 SVG ROUTES</div>
 
 
   <dialog id="fatePromptDialog" class="fate-dialog">
@@ -311,7 +312,13 @@
         </button>
       </div>
 
+      <div class="garage-tabs" role="tablist" aria-label="Garage sections">
+        <button id="fleetTabBtn" class="garage-tab active" type="button" role="tab" aria-selected="true">Fleet</button>
+        <button id="routesTabBtn" class="garage-tab" type="button" role="tab" aria-selected="false">Routes</button>
+      </div>
+
       <div id="garageGrid" class="garage-grid"></div>
+      <div id="routeGrid" class="route-grid" hidden></div>
           <div id="eventCollectionCount" class="countdown">0 / 10</div>
         </div>
         <div id="eventCollectionGrid" class="event-collection-grid"></div>
@@ -481,7 +488,7 @@
     </div>
   </dialog>
 
-  <script src="app.js?v=5.7.2" defer></script>
+  <script src="app.js?v=5.9.0" defer></script>
   <script src="timezone-calculator.js?v=1.0.1" defer></script>
 </body>
 </html>

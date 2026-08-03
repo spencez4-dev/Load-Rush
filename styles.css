@@ -2285,3 +2285,149 @@ body.alarm-active {
 @media (prefers-reduced-motion: reduce) {
   .truck-trail-puff { animation-duration: .01ms; }
 }
+
+
+/* V5.9 — SVG Route Worlds */
+.route-scene {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: inherit;
+}
+.route-scene svg { width: 100%; height: 100%; display: block; }
+.road-world .sky-haze,
+.road-world .city-silhouette { display: none; }
+.road-world .road { z-index: 3; }
+.road-world .trophy,
+.road-world .fate-scene { z-index: 8; }
+
+.route-sun { animation: routeSunFloat 8s ease-in-out infinite alternate; }
+.route-waves { animation: routeWaveDrift 5s ease-in-out infinite alternate; }
+.route-snow { animation: routeSnowFall 4s linear infinite; }
+.route-mist { animation: routeMist 9s ease-in-out infinite alternate; }
+.pine-trees { transform-origin: center bottom; animation: routeTreeSway 5s ease-in-out infinite alternate; }
+.city-windows { animation: routeWindows 4s ease-in-out infinite alternate; }
+@keyframes routeSunFloat { to { transform: translateY(4px); } }
+@keyframes routeWaveDrift { to { transform: translateX(-16px); } }
+@keyframes routeSnowFall { to { transform: translate(18px, 28px); opacity: .45; } }
+@keyframes routeMist { to { transform: translateX(50px); opacity: .35; } }
+@keyframes routeTreeSway { to { transform: skewX(.7deg); } }
+@keyframes routeWindows { 50% { opacity: .48; } }
+
+/* Environment-specific flat road materials — still one right-to-left progress bar. */
+.road-world[data-route="classic"] .road {
+  background: linear-gradient(180deg,#4c5059,#292c32 70%,#202329);
+}
+.road-world[data-route="alpine"] .road {
+  background: linear-gradient(180deg,#697684,#46515d 72%,#38434e);
+  box-shadow: inset 0 9px 15px rgba(255,255,255,.12), inset 0 -15px 20px rgba(16,29,40,.28), 0 16px 28px rgba(25,46,64,.24);
+}
+.road-world[data-route="alpine"] .road-shoulder {
+  background: linear-gradient(90deg,#f8fcff,#d7e8f2 45%,#f8fcff);
+  height: 9px;
+}
+.road-world[data-route="lakeshore"] .road {
+  background: linear-gradient(180deg,#737a7c,#545b5d 72%,#454b4e);
+}
+.road-world[data-route="lakeshore"] .road-shoulder {
+  background: linear-gradient(90deg,#e7c47d,#f1d89f 55%,#dcb66c);
+  height: 8px;
+}
+.road-world[data-route="pine-pass"] .road {
+  background: linear-gradient(180deg,#3e4447,#272c2e 72%,#202527);
+}
+.road-world[data-route="pine-pass"] .road-shoulder {
+  background: linear-gradient(90deg,#3c684e,#6e7751 45%,#315843);
+  height: 8px;
+}
+.road-world[data-route="pine-pass"] .lane-line {
+  background: repeating-linear-gradient(90deg,#f1c64c 0 38px,transparent 38px 70px);
+}
+.road-world[data-route="city"] .road {
+  background: linear-gradient(180deg,#303740,#1e242b 70%,#171c22);
+}
+.road-world[data-route="city"] .road-shoulder {
+  background: linear-gradient(180deg,#aab2bb,#707984);
+  height: 8px;
+}
+.road-world[data-route="city"] .lane-line { opacity: .95; }
+.road-world[data-route="desert"] .road {
+  background: linear-gradient(180deg,#706861,#514b46 72%,#423d39);
+}
+.road-world[data-route="desert"] .road::after {
+  content:""; position:absolute; inset:15px 9%; pointer-events:none; opacity:.18;
+  background: linear-gradient(112deg,transparent 0 28%,#17120f 29% 30%,transparent 31% 61%,#17120f 62% 63%,transparent 64%);
+}
+.road-world[data-route="desert"] .road-shoulder {
+  background: linear-gradient(90deg,#d39a5a,#edbd79 55%,#c98549);
+  height: 8px;
+}
+
+.garage-tabs {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 8px;
+  margin: 16px 0 12px;
+  padding: 5px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: color-mix(in srgb,var(--surface-strong) 68%,transparent);
+}
+.garage-tab {
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 900;
+  cursor: pointer;
+}
+.garage-tab.active {
+  background: var(--surface-strong);
+  color: var(--text);
+  box-shadow: 0 6px 18px rgba(0,0,0,.08);
+}
+.route-grid {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 12px;
+}
+.route-grid[hidden] { display: none; }
+.route-card {
+  display: grid;
+  grid-template-rows: 142px auto;
+  overflow: hidden;
+  padding: 0;
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface-strong);
+  color: var(--text);
+  cursor: pointer;
+  transition: transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+.route-card:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(0,0,0,.1); }
+.route-card.selected { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb,var(--accent) 17%,transparent); }
+.route-card.locked { opacity: .62; cursor: not-allowed; }
+.route-preview { position:relative; overflow:hidden; background:#9bd7ff; }
+.route-preview svg { width:100%; height:100%; display:block; }
+.route-card-copy { display:grid; gap:4px; padding:14px; }
+.route-card-copy strong { font-size:1rem; }
+.route-card-copy small { color:var(--muted); line-height:1.35; }
+.route-card-copy b { margin-top:5px; color:var(--accent); font-size:.76rem; }
+
+.truck-trail-puff.trail-alpine { background: rgba(242,249,255,.92); }
+.truck-trail-puff.trail-lakeshore { background: rgba(113,211,226,.78); }
+.truck-trail-puff.trail-pine-pass { background: rgba(143,170,119,.7); }
+.truck-trail-puff.trail-city { background: rgba(185,205,225,.62); }
+.truck-trail-puff.trail-desert { background: rgba(216,161,91,.82); }
+
+@media (max-width: 640px) {
+  .route-grid { grid-template-columns: 1fr; }
+  .route-card { grid-template-rows: 128px auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .route-scene * { animation-duration:.01ms !important; animation-iteration-count:1 !important; }
+}
