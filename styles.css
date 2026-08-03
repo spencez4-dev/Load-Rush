@@ -2334,3 +2334,23 @@ body.alarm-active {
 .route-svg .route-far{transform-origin:center;opacity:.7}
 .road-world[data-route]:not([data-route="classic"]) .road{box-shadow:inset 0 8px 14px rgba(255,255,255,.025),inset 0 -14px 20px rgba(0,0,0,.18),0 12px 24px rgba(0,0,0,.14)}
 [data-theme="dark"] .route-svg{filter:saturate(.82) brightness(.82) contrast(.98)}
+
+
+/* V6.2 quiet routes — road-first hierarchy */
+.route-svg{filter:saturate(.82) contrast(.94) brightness(.98)}
+.route-svg .route-far{opacity:.52}
+[data-theme="dark"] .route-svg{filter:saturate(.74) brightness(.74) contrast(.96)}
+.road-world{isolation:isolate}
+.road-world .road{z-index:3}
+.road-world .vehicle{z-index:7}
+.route-scene{z-index:0}
+.road-world[data-route="pine"] .road,
+.road-world[data-route="lakeshore"] .road,
+.road-world[data-route="alpine"] .road,
+.road-world[data-route="city"] .road,
+.road-world[data-route="desert"] .road,
+.road-world[data-route="aurora"] .road{
+  box-shadow:inset 0 7px 12px rgba(255,255,255,.025),inset 0 -12px 18px rgba(0,0,0,.18),0 12px 22px rgba(0,0,0,.13)
+}
+.route-card-art .route-svg{filter:saturate(.86) contrast(.95)}
+[data-theme="dark"] .route-card-art .route-svg{filter:saturate(.76) brightness(.78) contrast(.97)}
