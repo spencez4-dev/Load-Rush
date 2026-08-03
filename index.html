@@ -7,7 +7,7 @@
   <meta name="description" content="A game-like shipment load tracker with hourly road races, XP levels, unlockable rigs, goals, and timestamped updates.">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="styles.css?v=6.2.0-quiet-routes">
+  <link rel="stylesheet" href="styles.css?v=6.3.0-original-restore">
   <title>Wayfinder Logistics</title>
 </head>
 <body>
@@ -75,8 +75,10 @@
         <div id="countdown" class="countdown" title="Live time remaining in the current hour">59:59</div>
       </div>
 
-      <div class="road-world" data-route="classic">
-        <div id="routeScene" class="route-scene" aria-hidden="true"></div>
+      <div class="road-world">
+        <div class="sky-haze"></div>
+        <div class="city-silhouette city-back"></div>
+        <div class="city-silhouette city-front"></div>
 
         <div class="road">
           <div class="road-shoulder road-shoulder-top"></div>
@@ -151,7 +153,7 @@
   <div id="fxLayer" class="fx-layer" aria-hidden="true"></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <div id="megaMessage" class="mega-message">CHECKERED FLAG!</div>
-  <div class="build-badge">LOAD RUSH · V6.2 QUIET ROUTES</div>
+  <div class="build-badge">LOAD RUSH · V6.3 ORIGINAL RESTORE</div>
 
 
   <dialog id="fatePromptDialog" class="fate-dialog">
@@ -310,15 +312,10 @@
       </div>
 
       <div id="garageGrid" class="garage-grid"></div>
-
-      <div class="garage-section-heading">
-        <div>
-          <span class="section-kicker">LANDSCAPES</span>
-          <h3>Routes</h3>
-          <p>Complete long-haul challenges to unlock new roads. Landscapes respond to light and dark mode.</p>
+          <div id="eventCollectionCount" class="countdown">0 / 10</div>
         </div>
+        <div id="eventCollectionGrid" class="event-collection-grid"></div>
       </div>
-      <div id="routeGrid" class="route-grid"></div>
 
       <div class="dialog-actions">
         <button id="closeGarageBtn" class="primary-button" type="button">Done</button>
@@ -484,7 +481,6 @@
     </div>
   </dialog>
 
-  <script src="app.js?v=6.2.0-quiet-routes" defer></script>
-  <script src="timezone-calculator.js?v=1.0.1" defer></script>
+  <script src="app.js?v=6.3.0-original-restore" defer></script>
 </body>
 </html>
