@@ -788,34 +788,78 @@ function routeSvgMarkup(routeId, compact = false) {
   const vb = compact ? '0 0 720 180' : '0 0 920 250';
   const w = compact ? 720 : 920;
   const h = compact ? 180 : 250;
-  const horizon = compact ? 112 : 158;
-  const blur = compact ? 1.6 : 2.4;
-  const common = `<defs>
-    <filter id="soft-${routeId}-${compact ? 'p' : 'm'}"><feGaussianBlur stdDeviation="${blur}"/></filter>
-    <filter id="glow-${routeId}-${compact ? 'p' : 'm'}"><feGaussianBlur stdDeviation="${compact ? 7 : 11}"/></filter>
-    <linearGradient id="sky-day-${routeId}" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#8dcdf4"/><stop offset="1" stop-color="#d9eaf2"/></linearGradient>
-    <linearGradient id="sky-night-${routeId}" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#101b39"/><stop offset="1" stop-color="#273858"/></linearGradient>
+  const horizon = compact ? 108 : 150;
+  const suffix = `${routeId}-${compact ? 'p' : 'm'}`;
+
+  const defs = `<defs>
+    <filter id="far-soft-${suffix}"><feGaussianBlur stdDeviation="${compact ? 0.8 : 1.2}"/></filter>
+    <filter id="orb-glow-${suffix}"><feGaussianBlur stdDeviation="${compact ? 7 : 10}"/></filter>
+    <linearGradient id="day-sky-${suffix}" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#9fc9e3"/><stop offset="1" stop-color="#d9e5ea"/></linearGradient>
+    <linearGradient id="night-sky-${suffix}" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#10172d"/><stop offset="1" stop-color="#25334b"/></linearGradient>
+    <linearGradient id="sunset-sky-${suffix}" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#eaa27f"/><stop offset="1" stop-color="#f4c9a8"/></linearGradient>
   </defs>`;
 
-  const sun = `<g class="route-day route-far" filter="url(#soft-${routeId}-${compact ? 'p' : 'm'})"><circle cx="${w * .82}" cy="${h * .20}" r="${compact ? 24 : 34}" fill="#fff0a8" opacity=".92"/><circle cx="${w * .82}" cy="${h * .20}" r="${compact ? 46 : 66}" fill="#ffe89a" opacity=".22" filter="url(#glow-${routeId}-${compact ? 'p' : 'm'})"/></g>`;
-  const moon = `<g class="route-night route-far" filter="url(#soft-${routeId}-${compact ? 'p' : 'm'})"><circle cx="${w * .82}" cy="${h * .20}" r="${compact ? 19 : 27}" fill="#e8edff" opacity=".9"/><circle cx="${w * .82}" cy="${h * .20}" r="${compact ? 38 : 56}" fill="#b8c7ff" opacity=".18" filter="url(#glow-${routeId}-${compact ? 'p' : 'm'})"/></g>`;
-  let art = '';
-  if (routeId === 'classic') {
-    art = `<rect width="${w}" height="${h}" class="route-day" fill="url(#sky-day-${routeId})"/><rect width="${w}" height="${h}" class="route-night" fill="url(#sky-night-${routeId})"/>${sun}${moon}<g class="route-far" opacity=".38" filter="url(#soft-${routeId}-${compact ? 'p' : 'm'})"><path d="M0 ${horizon}V${h*.47}H${w*.09}V${h*.32}H${w*.18}V${h*.51}H${w*.28}V${h*.28}H${w*.39}V${h*.50}H${w*.52}V${h*.34}H${w*.64}V${h*.49}H${w*.77}V${h*.25}H${w*.87}V${horizon}Z" fill="#26354d"/></g><rect y="${horizon}" width="${w}" height="${h-horizon}" fill="#315d3d"/>`;
-  } else if (routeId === 'lakeshore') {
-    art = `<rect width="${w}" height="${h}" class="route-day" fill="#f7b083"/><rect width="${w}" height="${h}" class="route-night" fill="#111f42"/>${sun}${moon}<g class="route-far" filter="url(#soft-${routeId}-${compact ? 'p' : 'm'})"><rect y="${h*.34}" width="${w}" height="${h*.33}" class="route-day" fill="#49a8c2"/><rect y="${h*.34}" width="${w}" height="${h*.33}" class="route-night" fill="#183d60"/><path d="M0 ${h*.43} Q${w*.08} ${h*.36} ${w*.16} ${h*.43}T${w*.32} ${h*.43}T${w*.48} ${h*.43}T${w*.64} ${h*.43}T${w*.80} ${h*.43}T${w} ${h*.43}" fill="none" stroke="#d7f4f7" stroke-width="${compact?4:6}" opacity=".75" class="wave-line"/><path d="M0 ${h*.53} Q${w*.10} ${h*.46} ${w*.20} ${h*.53}T${w*.40} ${h*.53}T${w*.60} ${h*.53}T${w*.80} ${h*.53}T${w} ${h*.53}" fill="none" stroke="#b9edf2" stroke-width="${compact?3:5}" opacity=".55" class="wave-line wave-line-two"/></g><path d="M0 ${h*.64} Q${w*.22} ${h*.58} ${w*.42} ${h*.66}T${w*.75} ${h*.61}T${w} ${h*.65}V${h}H0Z" fill="#d8bd78"/>`;
-  } else if (routeId === 'pine' || routeId === 'alpine' || routeId === 'aurora') {
-    const snowy = routeId !== 'pine';
-    const nightOnly = routeId === 'aurora';
-    art = `<rect width="${w}" height="${h}" class="route-day" fill="${nightOnly ? '#14203e' : '#8ec6e8'}"/><rect width="${w}" height="${h}" class="route-night" fill="#0d1730"/>${nightOnly ? '' : sun}${moon}<g class="route-far" filter="url(#soft-${routeId}-${compact ? 'p' : 'm'})"><path d="M0 ${horizon} L${w*.16} ${h*.27} L${w*.28} ${h*.56} L${w*.43} ${h*.16} L${w*.58} ${h*.55} L${w*.73} ${h*.25} L${w} ${horizon}Z" fill="${snowy ? '#b9cad7' : '#6f8995'}"/><path d="M${w*.11} ${h*.34} L${w*.16} ${h*.27} L${w*.21} ${h*.39} M${w*.36} ${h*.28} L${w*.43} ${h*.16} L${w*.49} ${h*.31} M${w*.68} ${h*.33} L${w*.73} ${h*.25} L${w*.78} ${h*.35}" fill="none" stroke="#eef7fb" stroke-width="${compact?8:13}" opacity=".82"/></g>${routeId==='aurora'?`<g class="route-night aurora-ribbons" filter="url(#soft-${routeId}-${compact ? 'p' : 'm'})"><path d="M0 ${h*.16} Q${w*.18} ${h*.02} ${w*.36} ${h*.17}T${w*.72} ${h*.11}T${w} ${h*.18}" fill="none" stroke="#55e7aa" stroke-width="${compact?12:18}" opacity=".58"/><path d="M0 ${h*.23} Q${w*.20} ${h*.10} ${w*.40} ${h*.22}T${w*.80} ${h*.18}T${w} ${h*.25}" fill="none" stroke="#8d68ff" stroke-width="${compact?8:13}" opacity=".34"/></g>`:''}<g class="route-mid" opacity=".95">${Array.from({length:10},(_,i)=>{const x=(i+.2)*w/10; const base=horizon+18+(i%3)*4; const ht=compact?42+(i%3)*10:60+(i%3)*14; return `<path d="M${x} ${base} l${compact?16:22} -${ht} l${compact?16:22} ${ht}Z" fill="${snowy?'#274b50':'#214b39'}"/><path d="M${x+8} ${base-ht*.42} l${compact?8:11} -${ht*.34} l${compact?8:11} ${ht*.34}Z" fill="${snowy?'#dce9e8':'#2d6849'}"/>`;}).join('')}</g><rect y="${horizon}" width="${w}" height="${h-horizon}" fill="${snowy?'#dce8ea':'#315c3c'}"/>`;
-  } else if (routeId === 'city') {
-    art = `<rect width="${w}" height="${h}" class="route-day" fill="#9ec7dd"/><rect width="${w}" height="${h}" class="route-night" fill="#111a34"/>${sun}${moon}<g class="route-far" filter="url(#soft-${routeId}-${compact ? 'p' : 'm'})">${Array.from({length:13},(_,i)=>{const bw=w/13*.72; const x=i*w/13; const bh=(compact?45:65)+(i%5)*(compact?12:17); return `<rect x="${x}" y="${horizon-bh}" width="${bw}" height="${bh}" fill="#26384c"/><g class="route-night">${Array.from({length:3},(_,r)=>Array.from({length:2},(_,c)=>`<rect x="${x+8+c*16}" y="${horizon-bh+10+r*18}" width="5" height="7" fill="#ffd978" opacity=".8"/>`).join('')).join('')}</g>`}).join('')}</g><rect y="${horizon}" width="${w}" height="${h-horizon}" fill="#3a4b55"/><g class="route-night train-strip"><rect x="0" y="${horizon-18}" width="${w*.20}" height="8" rx="4" fill="#f0d36e" opacity=".7"/></g>`;
-  } else if (routeId === 'desert') {
-    art = `<rect width="${w}" height="${h}" class="route-day" fill="#e8a16d"/><rect width="${w}" height="${h}" class="route-night" fill="#18213e"/>${sun}${moon}<g class="route-far" filter="url(#soft-${routeId}-${compact ? 'p' : 'm'})"><path d="M0 ${horizon} Q${w*.18} ${h*.38} ${w*.34} ${horizon}T${w*.68} ${h*.50}T${w} ${horizon}V${h}H0Z" fill="#a95e3d"/><path d="M${w*.16} ${horizon} v-${compact?45:65} h${compact?18:26} v-${compact?20:30} h${compact?11:16} v${compact?20:30} h${compact?18:26} v${compact?45:65}Z M${w*.78} ${horizon} v-${compact?35:52} h${compact?15:22} v-${compact?16:24} h${compact?9:14} v${compact?16:24} h${compact?15:22} v${compact?35:52}Z" fill="#315c45"/></g><rect y="${horizon}" width="${w}" height="${h-horizon}" fill="#b97848"/><g class="heat-haze" opacity=".18"><path d="M0 ${h*.40} Q${w*.15} ${h*.35} ${w*.30} ${h*.40}T${w*.60} ${h*.40}T${w*.90} ${h*.40}" fill="none" stroke="#fff" stroke-width="${compact?5:8}"/></g>`;
-  }
-  return `<svg class="route-svg ${compact ? 'route-svg-preview' : ''}" viewBox="${vb}" preserveAspectRatio="none" aria-hidden="true">${common}${art}</svg>`;
-}
+  const sun = `<g class="route-day" opacity=".78"><circle cx="${w*.82}" cy="${h*.23}" r="${compact?13:18}" fill="#fff0b0"/><circle cx="${w*.82}" cy="${h*.23}" r="${compact?27:38}" fill="#ffe7a0" opacity=".18" filter="url(#orb-glow-${suffix})"/></g>`;
+  const moon = `<g class="route-night" opacity=".8"><circle cx="${w*.82}" cy="${h*.23}" r="${compact?11:15}" fill="#e6ebff"/><circle cx="${w*.82}" cy="${h*.23}" r="${compact?23:32}" fill="#b9c6ff" opacity=".14" filter="url(#orb-glow-${suffix})"/></g>`;
 
+  const baseSky = `<rect width="${w}" height="${h}" class="route-day" fill="url(#day-sky-${suffix})"/><rect width="${w}" height="${h}" class="route-night" fill="url(#night-sky-${suffix})"/>`;
+  let art = '';
+
+  if (routeId === 'classic') {
+    art = `${baseSky}${sun}${moon}
+      <g class="route-far" opacity=".24" filter="url(#far-soft-${suffix})">
+        <path d="M0 ${horizon}V${h*.54}H${w*.10}V${h*.44}H${w*.18}V${h*.56}H${w*.30}V${h*.42}H${w*.39}V${h*.55}H${w*.52}V${h*.46}H${w*.63}V${h*.55}H${w*.76}V${h*.40}H${w*.86}V${horizon}Z" fill="#304158"/>
+      </g>
+      <rect y="${horizon}" width="${w}" height="${h-horizon}" fill="#3a6245"/>`;
+  } else if (routeId === 'pine') {
+    art = `${baseSky}${sun}${moon}
+      <g class="route-far" opacity=".56" filter="url(#far-soft-${suffix})">
+        <path d="M0 ${horizon} L${w*.18} ${h*.43} L${w*.31} ${horizon} L${w*.48} ${h*.36} L${w*.63} ${horizon} L${w*.80} ${h*.45} L${w} ${horizon}Z" fill="#718896"/>
+        <path d="M${w*.43} ${h*.40} L${w*.48} ${h*.36} L${w*.53} ${h*.42}" fill="none" stroke="#edf4f6" stroke-width="${compact?4:6}" opacity=".7"/>
+      </g>
+      <g opacity=".78">${Array.from({length:8},(_,i)=>{const x=(i+.35)*w/8;const base=horizon+3;const ht=(compact?19:27)+(i%2)*5;return `<path d="M${x} ${base} l${compact?7:10} -${ht} l${compact?7:10} ${ht}Z" fill="#315744"/>`;}).join('')}</g>
+      <rect y="${horizon}" width="${w}" height="${h-horizon}" fill="#365d43"/>`;
+  } else if (routeId === 'lakeshore') {
+    art = `<rect width="${w}" height="${h}" class="route-day" fill="url(#sunset-sky-${suffix})"/><rect width="${w}" height="${h}" class="route-night" fill="#111b38"/>${sun}${moon}
+      <g class="route-far" filter="url(#far-soft-${suffix})">
+        <rect y="${h*.31}" width="${w}" height="${h*.28}" class="route-day" fill="#5ca8bc"/>
+        <rect y="${h*.31}" width="${w}" height="${h*.28}" class="route-night" fill="#183751"/>
+        <path class="wave-line" d="M0 ${h*.43} Q${w*.12} ${h*.39} ${w*.24} ${h*.43}T${w*.48} ${h*.43}T${w*.72} ${h*.43}T${w} ${h*.43}" fill="none" stroke="#d9f1f3" stroke-width="${compact?2.5:4}" opacity=".62"/>
+      </g>
+      <path d="M0 ${h*.58} Q${w*.22} ${h*.54} ${w*.42} ${h*.59}T${w*.72} ${h*.56}T${w} ${h*.59}V${h}H0Z" fill="#cfb274"/>
+      <g opacity=".45"><path d="M0 ${h*.61} Q${w*.18} ${h*.58} ${w*.36} ${h*.62}T${w*.72} ${h*.61}T${w} ${h*.62}" fill="none" stroke="#7d6a42" stroke-width="${compact?3:5}"/></g>`;
+  } else if (routeId === 'alpine') {
+    art = `${baseSky}${sun}${moon}
+      <g class="route-far" opacity=".6" filter="url(#far-soft-${suffix})">
+        <path d="M0 ${horizon} L${w*.20} ${h*.45} L${w*.33} ${horizon} L${w*.50} ${h*.36} L${w*.66} ${horizon} L${w*.82} ${h*.44} L${w} ${horizon}Z" fill="#9aadb8"/>
+        <path d="M${w*.44} ${h*.41} L${w*.50} ${h*.36} L${w*.56} ${h*.42}" fill="none" stroke="#eef6f8" stroke-width="${compact?5:8}" opacity=".8"/>
+      </g>
+      <rect y="${horizon}" width="${w}" height="${h-horizon}" fill="#d5e1e4"/>
+      <g opacity=".7">${Array.from({length:7},(_,i)=>{const x=(i+.5)*w/7;const base=horizon+4;const ht=(compact?18:25)+(i%3)*3;return `<path d="M${x} ${base} l${compact?7:9} -${ht} l${compact?7:9} ${ht}Z" fill="#35575b"/>`;}).join('')}</g>`;
+  } else if (routeId === 'city') {
+    art = `${baseSky}${sun}${moon}
+      <g class="route-far" opacity=".48" filter="url(#far-soft-${suffix})">
+        ${Array.from({length:12},(_,i)=>{const bw=w/12*.58;const x=i*w/12;const bh=(compact?23:32)+(i%4)*(compact?5:8);return `<rect x="${x}" y="${horizon-bh}" width="${bw}" height="${bh}" rx="2" fill="#304054"/><g class="route-night"><rect x="${x+8}" y="${horizon-bh+8}" width="4" height="5" fill="#f3d37a" opacity=".75"/></g>`}).join('')}
+      </g>
+      <rect y="${horizon}" width="${w}" height="${h-horizon}" fill="#46555e"/>
+      <g class="route-night train-strip" opacity=".35"><rect x="0" y="${horizon-12}" width="${w*.16}" height="5" rx="3" fill="#f0d46f"/></g>`;
+  } else if (routeId === 'desert') {
+    art = `<rect width="${w}" height="${h}" class="route-day" fill="url(#sunset-sky-${suffix})"/><rect width="${w}" height="${h}" class="route-night" fill="#171d35"/>${sun}${moon}
+      <g class="route-far" opacity=".56" filter="url(#far-soft-${suffix})">
+        <path d="M0 ${horizon} Q${w*.18} ${h*.48} ${w*.34} ${horizon}T${w*.68} ${h*.52}T${w} ${horizon}V${h}H0Z" fill="#a76648"/>
+        <path d="M${w*.22} ${horizon} v-${compact?22:31} h${compact?7:10} v-${compact?8:12} h${compact?5:7} v${compact?8:12} h${compact?7:10} v${compact?22:31}Z M${w*.76} ${horizon} v-${compact?18:25} h${compact?6:9} v-${compact?7:10} h${compact?4:6} v${compact?7:10} h${compact?6:9} v${compact?18:25}Z" fill="#526749"/>
+      </g>
+      <rect y="${horizon}" width="${w}" height="${h-horizon}" fill="#b67a50"/>
+      <g class="heat-haze" opacity=".09"><path d="M0 ${h*.48} Q${w*.18} ${h*.45} ${w*.36} ${h*.48}T${w*.72} ${h*.48}T${w} ${h*.48}" fill="none" stroke="#fff" stroke-width="${compact?3:5}"/></g>`;
+  } else if (routeId === 'aurora') {
+    art = `<rect width="${w}" height="${h}" fill="#0f1830"/>${moon}
+      <g class="route-night aurora-ribbons" opacity=".36" filter="url(#far-soft-${suffix})"><path d="M0 ${h*.18} Q${w*.20} ${h*.07} ${w*.40} ${h*.18}T${w*.80} ${h*.13}T${w} ${h*.19}" fill="none" stroke="#65dba6" stroke-width="${compact?7:10}"/><path d="M0 ${h*.23} Q${w*.22} ${h*.14} ${w*.44} ${h*.23}T${w*.82} ${h*.18}T${w} ${h*.24}" fill="none" stroke="#8a72df" stroke-width="${compact?4:6}"/></g>
+      <g class="route-far" opacity=".5" filter="url(#far-soft-${suffix})"><path d="M0 ${horizon} L${w*.23} ${h*.47} L${w*.38} ${horizon} L${w*.56} ${h*.42} L${w*.74} ${horizon} L${w*.86} ${h*.46} L${w} ${horizon}Z" fill="#647481"/></g>
+      <rect y="${horizon}" width="${w}" height="${h-horizon}" fill="#d6e0e4"/>`;
+  }
+
+  return `<svg class="route-svg ${compact ? 'route-svg-preview' : ''}" viewBox="${vb}" preserveAspectRatio="none" aria-hidden="true">${defs}${art}</svg>`;
+}
 function renderRouteScene() {
   const route = selectedRoute();
   const world = document.querySelector('.road-world');
