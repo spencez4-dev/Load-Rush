@@ -705,7 +705,7 @@ function renderAll() {
   $('hourlyGoalLabel').textContent = state.hourlyGoal;
   $('raceProgressText').textContent = `${currentRaceLoads} / ${state.hourlyGoal}`;
   $('raceFill').style.width = `${hourlyProgress}%`;
-  $('vehicle').style.right = `${hourlyProgress}%`;
+  $('vehicle').style.right = `${3 + (hourlyProgress * 0.91)}%`;
   $('vehicle').textContent = rig.icon;
   $('vehicle').classList.remove('finished');
   document.documentElement.style.setProperty('--rig-accent', rig.accent || 'var(--accent)');

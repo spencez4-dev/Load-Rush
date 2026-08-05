@@ -344,7 +344,7 @@ input:focus-visible {
   bottom: 9%;
   height: 112px;
   overflow: visible;
-  border-radius: 22px;
+  border-radius: 14px;
   background:
     linear-gradient(to bottom, #3a3d45 0 100%);
   box-shadow:
@@ -2768,7 +2768,7 @@ body.alarm-active {
 
 .road-world .road {
   overflow: hidden;
-  border-radius: 30px;
+  border-radius: 20px;
   border-color: rgba(255,255,255,.16);
 }
 .road-world .road::before {
@@ -2781,7 +2781,7 @@ body.alarm-active {
 .road-world .road::after {
   left: 3%;
   right: 3%;
-  border-radius: 0 0 24px 24px;
+  border-radius: 0 0 16px 16px;
 }
 .road-world .road-shoulder {
   left: 0;
@@ -2809,17 +2809,19 @@ body.alarm-active {
   left: 0;
   top: 0;
   bottom: 0;
-  width: 18px;
-  border-radius: 30px 0 0 30px;
+  width: 32px;
+  border-radius: 20px 0 0 20px;
   overflow: hidden;
-  background:
-    conic-gradient(from 90deg at 50% 12.5%,#f7f7f4 0 25%,#15181d 0 50%,#f7f7f4 0 75%,#15181d 0) 0 0 / 18px 18px;
-  box-shadow: inset -2px 0 0 rgba(0,0,0,.18), 2px 0 6px rgba(0,0,0,.2);
+  background-color: #f7f7f4;
+  background-image: repeating-conic-gradient(#15181d 0 25%, #f7f7f4 0 50%);
+  background-size: 16px 16px;
+  background-position: 0 0;
+  box-shadow: inset -2px 0 0 rgba(0,0,0,.22), 2px 0 6px rgba(0,0,0,.2);
 }
 .road-world .race-fill {
   top: 7px;
   bottom: 7px;
-  border-radius: 22px;
+  border-radius: 14px;
 }
 .road-world .start-marker {
   right: 15px;
@@ -2828,6 +2830,18 @@ body.alarm-active {
 }
 
 @media (max-width: 640px) {
-  .road-world .road { border-radius: 24px; }
-  .road-world .finish-line { border-radius: 24px 0 0 24px; }
+  .road-world .road { border-radius: 17px; }
+  .road-world .road::before { border-radius: 11px; }
+  .road-world .finish-line { border-radius: 17px 0 0 17px; }
+}
+
+/* V7.2 — safer track geometry and racer bounds */
+.road-world .vehicle { transform: translate(0, -50%); }
+@keyframes vehicleBounce {
+  from { transform: translate(0, -55%) rotate(-1deg); }
+  to { transform: translate(0, -46%) rotate(1deg); }
+}
+@keyframes victoryVehicle {
+  from { transform: translate(0, -56%) rotate(-5deg) scale(1); }
+  to { transform: translate(0, -66%) rotate(5deg) scale(1.12); }
 }

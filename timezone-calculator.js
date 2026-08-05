@@ -614,10 +614,10 @@
 
       const time = new Intl.DateTimeFormat('en-US', {
         timeZone: activePlace.timezone,
-        hour: 'numeric',
+        hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
-        hour12: true
+        hour12: false
       }).format(now);
 
       const date = new Intl.DateTimeFormat('en-US', {
@@ -631,16 +631,24 @@
       const detentionCheckAt = new Date(now.getTime() + 90 * 60 * 1000);
       const detentionTime = new Intl.DateTimeFormat('en-US', {
         timeZone: activePlace.timezone,
-        hour: 'numeric',
+        hour: '2-digit',
         minute: '2-digit',
-        hour12: true
+        hour12: false
       }).format(detentionCheckAt);
 
-      const formatClockTime = value => {
-        if (!value || !/^\d{2}:\d{2}$/.test(value)) return '';
-        const [hours, minutes] = value.split(':').map(Number);
-        const anchor = new Date(2000, 0, 1, hours, minutes);
-        return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).format(anchor);
+      const normalizeMilitaryTime = value => String(value || '').replace(/\D/g, '').slice(0, 4);
+      const isValidMilitaryTime = value => {
+        if (!/^\d{4}$/.test(value)) return false;
+        const hours = Number(value.slice(0, 2));
+        const minutes = Number(value.slice(2));
+        return hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59;
+      };
+      const addDetentionWindow = value => {
+        if (!isValidMilitaryTime(value)) return '';
+        const hours = Number(value.slice(0, 2));
+        const minutes = Number(value.slice(2));
+        const totalMinutes = (hours * 60 + minutes + 90) % 1440;
+        return `${String(Math.floor(totalMinutes / 60)).padStart(2, '0')}${String(totalMinutes % 60).padStart(2, '0')}`;
       };
 
       const placeLine = [activePlace.admin1, activePlace.country].filter(Boolean).join(', ');
@@ -668,11 +676,11 @@
             <div class="timezone-detail timezone-custom-detention">
               <span>Calculate from driver arrival</span>
               <div class="timezone-arrival-row">
-                <input id="timezoneArrivalTime" type="time" aria-label="Driver arrival time" value="${escapeHtml(arrivalTimeValue)}">
-                <button id="timezoneArrivalCalculate" class="primary-button" type="button">Add 1h 30m</button>
+                <input id="timezoneArrivalTime" type="text" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="1030" aria-label="Driver arrival time in 24-hour military format" value="${escapeHtml(arrivalTimeValue)}">
+                <button id="timezoneArrivalCalculate" class="primary-button" type="button">Add 0130</button>
               </div>
-              <strong id="timezoneCustomResult" class="timezone-custom-result">${customDetentionValue ? escapeHtml(formatClockTime(customDetentionValue)) : 'Enter arrival time'}</strong>
-              <small>Uses the driver's actual onsite arrival time—not the current clock.</small>
+              <strong id="timezoneCustomResult" class="timezone-custom-result">${customDetentionValue ? escapeHtml(customDetentionValue) : 'Enter 4-digit time'}</strong>
+              <small>Enter four digits in 24-hour time, such as 1030 or 2215.</small>
             </div>
             <div class="timezone-detail">
               <span>Time zone</span>
@@ -691,26 +699,31 @@
       const liveDetentionButton = document.getElementById('timezoneLiveDetention');
 
       const calculateArrival = () => {
-        const value = arrivalInput?.value || '';
-        if (!/^\d{2}:\d{2}$/.test(value)) {
-          arrivalInput?.focus();
+        const value = normalizeMilitaryTime(arrivalInput?.value);
+        arrivalTimeValue = value;
+        if (arrivalInput) arrivalInput.value = value;
+        const result = document.getElementById('timezoneCustomResult');
+        if (!isValidMilitaryTime(value)) {
+          customDetentionValue = '';
+          if (result) result.textContent = value.length === 4 ? 'Invalid time' : 'Enter 4-digit time';
           return;
         }
-        arrivalTimeValue = value;
-        const [hours, minutes] = value.split(':').map(Number);
-        const totalMinutes = (hours * 60 + minutes + 90) % (24 * 60);
-        customDetentionValue = `${String(Math.floor(totalMinutes / 60)).padStart(2, '0')}:${String(totalMinutes % 60).padStart(2, '0')}`;
-        const result = document.getElementById('timezoneCustomResult');
-        if (result) result.textContent = formatClockTime(customDetentionValue);
+        customDetentionValue = addDetentionWindow(value);
+        if (result) result.textContent = customDetentionValue;
       };
 
-      arrivalInput?.addEventListener('input', () => { arrivalTimeValue = arrivalInput.value; });
-      arrivalInput?.addEventListener('keydown', event => { if (event.key === 'Enter') calculateArrival(); });
-      calculateButton?.addEventListener('click', calculateArrival);
-      liveDetentionButton?.addEventListener('click', () => {
-        arrivalInput?.focus();
-        arrivalInput?.showPicker?.();
+      arrivalInput?.addEventListener('input', () => {
+        arrivalInput.value = normalizeMilitaryTime(arrivalInput.value);
+        calculateArrival();
       });
+      arrivalInput?.addEventListener('keydown', event => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          calculateArrival();
+        }
+      });
+      calculateButton?.addEventListener('click', calculateArrival);
+      liveDetentionButton?.addEventListener('click', () => arrivalInput?.focus());
     }
 
     async function findCity(query) {
