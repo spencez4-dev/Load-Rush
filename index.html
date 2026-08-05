@@ -75,32 +75,29 @@
         <div id="countdown" class="countdown" title="Live time remaining in the current hour">59:59</div>
       </div>
 
-      <div class="road-world" aria-label="Hourly quest race through a premium mountain landscape">
-        <div class="scene-aurora"></div>
-        <div class="scene-sun"></div>
-        <div class="scene-cloud scene-cloud-one"></div>
-        <div class="scene-cloud scene-cloud-two"></div>
-        <div class="mountain-range mountain-range-back"></div>
-        <div class="mountain-range mountain-range-front"></div>
-        <div class="scene-forest scene-forest-back"></div>
-        <div class="scene-forest scene-forest-front"></div>
-        <div class="scene-ground"></div>
-        <div class="route-sign" aria-hidden="true"><span>HOURLY</span><strong>QUEST</strong></div>
+      <div id="roadWorld" class="road-world" data-landscape="alpine" aria-label="Hourly quest race through Alpine Route">
+        <div class="landscape-sky"></div>
+        <div class="landscape-light"></div>
+        <div class="landscape-clouds landscape-clouds-back"></div>
+        <div class="landscape-clouds landscape-clouds-front"></div>
+        <div class="landscape-stars"></div>
+        <div class="landscape-horizon landscape-horizon-back"></div>
+        <div class="landscape-horizon landscape-horizon-mid"></div>
+        <div class="landscape-horizon landscape-horizon-front"></div>
+        <div class="landscape-landmarks"></div>
+        <div class="landscape-particles"></div>
+        <div class="landscape-ground"></div>
 
         <div class="road">
           <div class="road-shoulder road-shoulder-top"></div>
           <div class="road-shoulder road-shoulder-bottom"></div>
           <div class="lane-line lane-line-one"></div>
-          <div class="lane-line lane-line-two"></div>
           <div id="raceFill" class="race-fill"></div>
-          <div id="vehicle" class="vehicle" role="img" aria-label="Race vehicle">🚛</div>
-
-          <div class="finish-line finish-line-left">
-          </div>
+          <div id="ghostVehicle" class="ghost-vehicle" aria-hidden="true"></div>
+          <div id="vehicle" class="vehicle" aria-label="Your selected vehicle">🚛</div>
+          <div class="finish-line"></div>
           <div class="start-marker">START</div>
         </div>
-
-        <div id="trophy" class="trophy">🏆</div>
         <div id="fateScene" class="fate-scene" aria-hidden="true"></div>
       </div>
 
@@ -319,10 +316,22 @@
       </div>
 
       <div id="garageGrid" class="garage-grid"></div>
+
+      <section class="landscape-collection" aria-labelledby="landscapeCollectionTitle">
+        <div class="landscape-collection-heading">
+          <div><span class="section-kicker">ROUTE COLLECTION</span><h3 id="landscapeCollectionTitle">Choose Your Landscape</h3></div>
+          <span class="landscape-note">Cosmetic · earned through hourly quests</span>
+        </div>
+        <div id="landscapeGrid" class="landscape-grid"></div>
+      </section>
+
+      <section class="event-collection">
+        <div class="landscape-collection-heading">
+          <div><span class="section-kicker">ROAD EVENTS</span><h3>Discovered Encounters</h3></div>
           <div id="eventCollectionCount" class="countdown">0 / 10</div>
         </div>
         <div id="eventCollectionGrid" class="event-collection-grid"></div>
-      </div>
+      </section>
 
       <div class="dialog-actions">
         <button id="closeGarageBtn" class="primary-button" type="button">Done</button>

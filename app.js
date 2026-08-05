@@ -17,6 +17,7 @@ const DEFAULTS = {
   completedHours: [],
   hourlyRaceAwards: {},
   selectedRig: 'starter-semi',
+  selectedLandscape: 'alpine',
   theme: 'light',
   sound: true,
   soundStyle: 'engine',
@@ -62,6 +63,32 @@ const RIGS = [
   { id: 'fromelts-boat', icon: '🚤', name: "Fromelt's Boat", type: 'GARAGE ICON', rarity: 'POWERS LAKE', weight: .55, reward: 'Lake-spray aqua trail', accent: '#0891b2', rule: 'Complete 100 races', unlocked: () => state.raceWins >= 100 },
   { id: 'byler', icon: '🏄‍♂️', name: 'Bryler', type: 'SURF TRUCK', rarity: 'SURF SIDE', weight: .02, reward: 'Ocean-wave road shimmer', accent: '#06b6d4', rule: 'Reach Level 250 + complete 250 hourly quests', unlocked: () => lifetimeLevel() >= 250 && state.raceWins >= 250 }
 ];
+
+
+
+const LANDSCAPES = [
+  { id: 'alpine', name: 'Alpine Route', icon: '🏔️', rarity: 'COMMON', accent: '#5ca66f', goal: 0, description: 'Sunlit peaks, layered pine valleys, and clean open-air freight.' },
+  { id: 'christmas', name: 'Christmas Pass', icon: '❄️', rarity: 'RARE', accent: '#6bb7ef', goal: 50, description: 'A moonlit winter village with snowfall, warm cabins, and aurora skies.' },
+  { id: 'beach', name: 'Sunset Coast', icon: '🌴', rarity: 'EPIC', accent: '#c173ef', goal: 100, description: 'A glowing ocean horizon, palms, cliffs, sailboats, and rolling surf.' },
+  { id: 'lava', name: 'Volcanic Core', icon: '🌋', rarity: 'LEGENDARY', accent: '#ff8a18', goal: 200, description: 'Inside the caldera: molten falls, black peaks, embers, and magma light.' }
+];
+
+function selectedLandscape() {
+  return LANDSCAPES.find(item => item.id === state.selectedLandscape) || LANDSCAPES[0];
+}
+
+function isLandscapeUnlocked(landscape) {
+  return state.raceWins >= landscape.goal;
+}
+
+function applyLandscape() {
+  const world = $('roadWorld');
+  const landscape = selectedLandscape();
+  if (!world) return;
+  world.dataset.landscape = landscape.id;
+  world.setAttribute('aria-label', `Hourly quest race through ${landscape.name}`);
+  document.documentElement.style.setProperty('--landscape-accent', landscape.accent);
+}
 
 const FATE_EVENTS = [
   {
@@ -668,6 +695,8 @@ function renderAll() {
   const hourlyProgress = (currentRaceLoads / Math.max(1, state.hourlyGoal)) * 100;
   const dailyProgress = Math.min(100, Math.round((today / Math.max(1, state.dailyGoal)) * 100));
   const rig = selectedRig();
+  if (!isLandscapeUnlocked(selectedLandscape())) state.selectedLandscape = 'alpine';
+  applyLandscape();
 
   $('mainCount').textContent = today;
   $('workMetric').textContent = formatDuration(today * state.minutesPerUpdate);
@@ -762,6 +791,29 @@ function renderGarage() {
   if ($('garageCrateBtn')) $('garageCrateBtn').disabled = (state.crateTokens || 0) < 1 || unlocked.length === RIGS.length;
   $('garageGrid').innerHTML = RIGS.map(rig => { const isUnlocked = isRigOwned(rig.id); const isSelected = active.id === rig.id; const rarityClass = rig.rarity.toLowerCase().replace(/\s+/g, '-'); return `<button class="rig-card ${isUnlocked ? 'unlocked' : 'locked'} ${isSelected ? 'selected' : ''}" type="button" data-rig-id="${rig.id}" ${isUnlocked ? '' : 'disabled'}><span class="rig-card-top"><span class="rig-icon">${rig.icon}</span><span class="rig-rarity rarity-${rarityClass}">${rig.rarity}</span></span><span class="rig-name">${rig.name}</span><span class="rig-type">${rig.type}</span><span class="rig-reward">${isUnlocked ? `✦ ${rig.reward}` : `🔒 ${rig.rule}`}</span><span class="rig-rule">${isSelected ? 'Equipped' : isUnlocked ? 'Tap to equip' : 'Locked — earn it through the listed achievement'}</span></button>`; }).join('');
   document.querySelectorAll('[data-rig-id]').forEach(button => button.addEventListener('click', () => { const rig = RIGS.find(item => item.id === button.dataset.rigId); if (!rig || !isRigOwned(rig.id)) return; state.selectedRig = rig.id; saveState(); renderAll(); renderGarage(); showToast(`${rig.name} equipped`); }));
+
+  const landscapeGrid = $('landscapeGrid');
+  if (landscapeGrid) {
+    landscapeGrid.innerHTML = LANDSCAPES.map(landscape => {
+      const unlockedLandscape = isLandscapeUnlocked(landscape);
+      const selected = state.selectedLandscape === landscape.id;
+      const progress = landscape.goal === 0 ? 100 : Math.min(100, (state.raceWins / landscape.goal) * 100);
+      const progressLabel = landscape.goal === 0 ? 'Available from the start' : `${Math.min(state.raceWins, landscape.goal)} / ${landscape.goal} hourly quests`;
+      return `<button class="landscape-card landscape-${landscape.id} ${unlockedLandscape ? 'unlocked' : 'locked'} ${selected ? 'selected' : ''}" type="button" data-landscape-id="${landscape.id}" ${unlockedLandscape ? '' : 'disabled'}>
+        <span class="landscape-preview" aria-hidden="true"><span class="preview-atmosphere"></span><span class="preview-horizon"></span><span class="preview-detail"></span><span class="preview-road"></span></span>
+        <span class="landscape-copy"><span class="landscape-title-row"><strong>${landscape.icon} ${landscape.name}</strong><span class="landscape-rarity">${landscape.rarity}</span></span><span class="landscape-description">${landscape.description}</span><span class="landscape-progress"><span style="width:${progress}%"></span></span><span class="landscape-status">${selected ? '✓ Active landscape' : unlockedLandscape ? 'Tap to equip' : `🔒 ${progressLabel}`}</span></span>
+      </button>`;
+    }).join('');
+    document.querySelectorAll('[data-landscape-id]').forEach(button => button.addEventListener('click', () => {
+      const landscape = LANDSCAPES.find(item => item.id === button.dataset.landscapeId);
+      if (!landscape || !isLandscapeUnlocked(landscape)) return;
+      state.selectedLandscape = landscape.id;
+      saveState();
+      applyLandscape();
+      renderGarage();
+      showToast(`${landscape.name} equipped`);
+    }));
+  }
 }
 
 function applyTheme() {

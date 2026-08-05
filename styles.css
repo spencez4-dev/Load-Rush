@@ -2586,3 +2586,76 @@ body.alarm-active {
 }
 @keyframes questCloudDrift { to { translate: 18px 2px; } }
 @keyframes questLightBreathe { to { opacity: .58; transform: rotate(-4deg) scale(1.04); } }
+
+
+/* V6.4 — collectible premium landscapes */
+:root { --landscape-accent: #5ca66f; }
+.route-sign, .scene-aurora, .scene-sun, .scene-cloud, .mountain-range, .scene-forest, .scene-ground { display:none !important; }
+.road-world { overflow:hidden; background:#b9ddf7; }
+.landscape-sky,.landscape-light,.landscape-clouds,.landscape-stars,.landscape-horizon,.landscape-landmarks,.landscape-particles,.landscape-ground{position:absolute;inset:0;pointer-events:none}
+.landscape-sky{z-index:0;transition:background .45s ease}
+.landscape-light{z-index:1}
+.landscape-clouds{z-index:2;background-repeat:repeat-x}
+.landscape-stars{z-index:2;opacity:0}
+.landscape-horizon{left:-3%;right:-3%;top:auto;transform-origin:bottom}
+.landscape-horizon-back{z-index:3}.landscape-horizon-mid{z-index:4}.landscape-horizon-front{z-index:5}.landscape-landmarks{z-index:6}.landscape-particles{z-index:8}.landscape-ground{z-index:7;top:auto;height:38%;bottom:0}
+
+/* Alpine Route */
+.road-world[data-landscape="alpine"] .landscape-sky{background:radial-gradient(circle at 76% 13%,rgba(255,255,255,.9),transparent 18%),linear-gradient(180deg,#93cdf4 0%,#d8efff 71%,#eef7f2 100%)}
+.road-world[data-landscape="alpine"] .landscape-light{background:radial-gradient(circle at 87% 17%,#fffdf2 0 2.5%,#ffe8a3 3.3%,rgba(255,222,139,.3) 7%,transparent 16%)}
+.road-world[data-landscape="alpine"] .landscape-clouds-back{top:9%;height:28%;opacity:.55;background-image:radial-gradient(ellipse at 10% 70%,#fff 0 8%,transparent 9%),radial-gradient(ellipse at 19% 62%,#fff 0 10%,transparent 11%),radial-gradient(ellipse at 68% 48%,#fff 0 7%,transparent 8%),radial-gradient(ellipse at 75% 53%,#fff 0 10%,transparent 11%)}
+.road-world[data-landscape="alpine"] .landscape-horizon-back{bottom:43%;height:42%;clip-path:polygon(0 100%,0 77%,8% 58%,14% 73%,23% 27%,32% 68%,40% 46%,49% 78%,59% 20%,69% 70%,78% 45%,87% 72%,95% 31%,100% 55%,100% 100%);background:linear-gradient(180deg,#c6d7e4,#829aaa)}
+.road-world[data-landscape="alpine"] .landscape-horizon-mid{bottom:39%;height:34%;clip-path:polygon(0 100%,0 82%,9% 51%,18% 74%,28% 35%,38% 78%,48% 48%,58% 77%,67% 31%,76% 72%,86% 42%,94% 67%,100% 51%,100% 100%);background:linear-gradient(180deg,#799791,#476c61);box-shadow:inset 0 14px 28px rgba(255,255,255,.12)}
+.road-world[data-landscape="alpine"] .landscape-horizon-front{bottom:35%;height:18%;background:repeating-linear-gradient(72deg,transparent 0 22px,#31594b 23px 34px,transparent 35px 47px);filter:drop-shadow(0 6px 5px rgba(18,44,34,.2))}
+.road-world[data-landscape="alpine"] .landscape-ground{background:linear-gradient(180deg,#6e9466,#426249)}
+
+/* Christmas Pass */
+.road-world[data-landscape="christmas"] .landscape-sky{background:radial-gradient(circle at 72% 12%,rgba(148,174,255,.32),transparent 23%),linear-gradient(180deg,#151f4d,#384786 58%,#8a8fc4 100%)}
+.road-world[data-landscape="christmas"] .landscape-light{background:radial-gradient(circle at 82% 18%,#fff 0 2.8%,#dce9ff 3.2%,rgba(213,225,255,.22) 8%,transparent 15%),linear-gradient(112deg,transparent 12%,rgba(73,255,206,.16) 33%,rgba(114,134,255,.24) 48%,rgba(232,117,255,.13) 62%,transparent 76%);filter:blur(.2px)}
+.road-world[data-landscape="christmas"] .landscape-stars{opacity:.9;background-image:radial-gradient(circle,#fff 0 1px,transparent 1.5px),radial-gradient(circle,#bfe6ff 0 1px,transparent 1.7px);background-size:43px 43px,71px 71px;background-position:5px 7px,22px 17px}
+.road-world[data-landscape="christmas"] .landscape-horizon-back{bottom:43%;height:43%;clip-path:polygon(0 100%,0 78%,10% 49%,18% 71%,28% 18%,38% 69%,49% 36%,57% 73%,68% 23%,78% 70%,88% 31%,100% 64%,100% 100%);background:linear-gradient(145deg,#6e75a7 0 38%,#bfc8ea 39% 47%,#56628f 48%)}
+.road-world[data-landscape="christmas"] .landscape-horizon-mid{bottom:39%;height:30%;clip-path:polygon(0 100%,0 75%,8% 50%,15% 74%,25% 35%,34% 72%,43% 43%,54% 76%,64% 31%,74% 70%,84% 39%,93% 67%,100% 50%,100% 100%);background:linear-gradient(180deg,#53618e,#27365e)}
+.road-world[data-landscape="christmas"] .landscape-horizon-front{bottom:34%;height:23%;background:repeating-linear-gradient(72deg,transparent 0 18px,#182d52 19px 31px,transparent 32px 42px);filter:drop-shadow(0 5px 5px rgba(5,12,36,.45))}
+.road-world[data-landscape="christmas"] .landscape-landmarks{bottom:39%;top:auto;left:8%;width:145px;height:76px;background:linear-gradient(135deg,transparent 0 32%,#f4f6ff 33% 39%,transparent 40%),linear-gradient(90deg,transparent 8%,#704538 9% 52%,transparent 53%),linear-gradient(90deg,transparent 20%,#ffd77b 21% 27%,transparent 28% 35%,#ffd77b 36% 42%,transparent 43%);filter:drop-shadow(0 7px 8px rgba(5,11,32,.35));clip-path:polygon(0 100%,0 55%,15% 55%,35% 18%,55% 55%,82% 55%,82% 100%)}
+.road-world[data-landscape="christmas"] .landscape-particles{background-image:radial-gradient(circle,#fff 0 1.5px,transparent 2px);background-size:31px 37px;opacity:.75;animation:snowfall 8s linear infinite}
+.road-world[data-landscape="christmas"] .landscape-ground{background:linear-gradient(180deg,#d9e6f2,#8da6bd)}
+
+/* Sunset Coast */
+.road-world[data-landscape="beach"] .landscape-sky{background:radial-gradient(circle at 67% 27%,rgba(255,245,201,.85),transparent 17%),linear-gradient(180deg,#7f87d8 0%,#f19a9b 48%,#ffcc8c 72%,#6dbecb 73%,#2c8fa9 100%)}
+.road-world[data-landscape="beach"] .landscape-light{background:radial-gradient(circle at 70% 37%,#fff8d1 0 3%,#ffd774 3.5%,rgba(255,153,89,.22) 10%,transparent 20%)}
+.road-world[data-landscape="beach"] .landscape-clouds-front{top:16%;height:22%;opacity:.25;background:linear-gradient(165deg,transparent 0 55%,rgba(255,240,235,.65) 56% 60%,transparent 61%)}
+.road-world[data-landscape="beach"] .landscape-horizon-back{bottom:39%;height:24%;clip-path:polygon(0 100%,0 63%,7% 42%,14% 58%,21% 37%,29% 65%,37% 53%,48% 73%,59% 61%,70% 75%,82% 52%,91% 65%,100% 43%,100% 100%);background:linear-gradient(180deg,#795a73,#493e61)}
+.road-world[data-landscape="beach"] .landscape-horizon-mid{bottom:34%;height:22%;background:linear-gradient(180deg,rgba(255,214,157,.4),transparent 22%),repeating-linear-gradient(180deg,#4bb2c4 0 5px,#2f98ae 6px 10px);clip-path:polygon(0 23%,13% 28%,26% 19%,39% 31%,52% 20%,66% 30%,80% 18%,100% 27%,100% 100%,0 100%)}
+.road-world[data-landscape="beach"] .landscape-horizon-front{bottom:36%;height:31%;background:linear-gradient(78deg,transparent 0 7%,#1e3940 7.5% 9%,transparent 9.5% 16%,#233f43 16.5% 18%,transparent 18.5%),linear-gradient(102deg,transparent 0 84%,#273b40 84.5% 87%,transparent 87.5%);clip-path:polygon(0 100%,0 30%,8% 18%,12% 0,14% 18%,20% 34%,83% 62%,88% 31%,91% 4%,93% 28%,100% 43%,100% 100%)}
+.road-world[data-landscape="beach"] .landscape-landmarks{bottom:48%;top:auto;left:54%;width:55px;height:75px;background:linear-gradient(60deg,transparent 0 48%,#fff3d2 49% 80%,transparent 81%),linear-gradient(90deg,transparent 48%,#6c5a51 49% 52%,transparent 53%);filter:drop-shadow(0 5px 6px rgba(56,44,70,.25))}
+.road-world[data-landscape="beach"] .landscape-ground{background:linear-gradient(180deg,#d7b873,#8e7246)}
+
+/* Volcanic Core */
+.road-world[data-landscape="lava"] .landscape-sky{background:radial-gradient(circle at 51% 48%,rgba(255,96,18,.18),transparent 28%),linear-gradient(180deg,#160f18,#37151b 58%,#6a211a 100%)}
+.road-world[data-landscape="lava"] .landscape-light{background:radial-gradient(ellipse at 50% 100%,rgba(255,91,13,.85),rgba(255,57,5,.18) 35%,transparent 65%)}
+.road-world[data-landscape="lava"] .landscape-stars{opacity:.45;background-image:radial-gradient(circle,#ffb047 0 1px,transparent 1.8px);background-size:37px 41px}
+.road-world[data-landscape="lava"] .landscape-horizon-back{bottom:40%;height:49%;clip-path:polygon(0 100%,0 79%,8% 57%,14% 70%,22% 26%,31% 72%,38% 48%,46% 76%,54% 14%,62% 71%,71% 34%,80% 73%,90% 23%,100% 64%,100% 100%);background:linear-gradient(110deg,#1d171c,#3c2020 55%,#171419);filter:drop-shadow(0 -4px 16px rgba(255,71,10,.12))}
+.road-world[data-landscape="lava"] .landscape-horizon-mid{bottom:36%;height:37%;clip-path:polygon(0 100%,0 73%,9% 45%,18% 70%,27% 28%,37% 74%,46% 48%,56% 72%,66% 21%,76% 68%,86% 37%,94% 64%,100% 46%,100% 100%);background:linear-gradient(180deg,#2f1b1b,#120f13)}
+.road-world[data-landscape="lava"] .landscape-horizon-mid::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 0 18%,#ff6412 18.5% 19.5%,transparent 20% 46%,#ff8d1d 46.5% 48%,transparent 48.5% 66%,#ff4a0a 66.5% 68%,transparent 68.5%);filter:drop-shadow(0 0 7px #ff4e0a);opacity:.85}
+.road-world[data-landscape="lava"] .landscape-horizon-front{bottom:33%;height:17%;background:linear-gradient(180deg,#211618,#0f0d10)}
+.road-world[data-landscape="lava"] .landscape-landmarks{bottom:37%;top:auto;left:42%;width:18%;height:48%;clip-path:polygon(0 100%,33% 27%,44% 0,55% 30%,100% 100%);background:linear-gradient(97deg,#1a1315 0 47%,#ff4b0b 48% 51%,#211417 52%);filter:drop-shadow(0 0 18px rgba(255,67,7,.44))}
+.road-world[data-landscape="lava"] .landscape-particles{background-image:radial-gradient(circle,#ffb136 0 1px,transparent 1.8px);background-size:39px 47px;opacity:.7;animation:embers 6s linear infinite}
+.road-world[data-landscape="lava"] .landscape-ground{background:linear-gradient(180deg,#211719,#0e0c0f)}
+.road-world[data-landscape="lava"] .road{box-shadow:inset 0 10px 18px rgba(255,255,255,.04),inset 0 -18px 26px rgba(0,0,0,.38),0 10px 35px rgba(255,69,8,.24)}
+
+@keyframes snowfall{to{background-position:0 74px}}
+@keyframes embers{from{background-position:0 60px}to{background-position:22px -20px}}
+@media(prefers-reduced-motion:reduce){.landscape-particles{animation:none!important}}
+
+.landscape-collection{margin-top:28px;padding-top:24px;border-top:1px solid var(--border)}
+.landscape-collection-heading{display:flex;justify-content:space-between;gap:18px;align-items:end;margin-bottom:14px}.landscape-collection-heading h3{margin:3px 0 0;font-size:1.25rem}.landscape-note{font-size:.78rem;color:var(--muted)}
+.landscape-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.landscape-card{appearance:none;text-align:left;padding:0;border:1px solid var(--border);border-radius:20px;overflow:hidden;background:color-mix(in srgb,var(--surface) 92%,transparent);color:var(--text);box-shadow:0 10px 28px rgba(24,25,44,.08);transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}.landscape-card:not(:disabled){cursor:pointer}.landscape-card:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 16px 34px rgba(24,25,44,.14)}.landscape-card.selected{border-color:var(--landscape-card-accent,#7458ff);box-shadow:0 0 0 2px color-mix(in srgb,var(--landscape-card-accent,#7458ff) 22%,transparent),0 16px 34px rgba(24,25,44,.13)}.landscape-card.locked{opacity:.68;filter:saturate(.66)}
+.landscape-preview{display:block;position:relative;height:116px;overflow:hidden;background:#9bcdf1}.landscape-preview span{position:absolute;inset:0}.preview-road{top:auto!important;bottom:0!important;height:34%!important;background:linear-gradient(180deg,#464b52,#20242a)!important;border-top:3px solid rgba(255,255,255,.82)}.preview-road::after{content:"";position:absolute;left:4%;right:4%;top:48%;height:2px;background:repeating-linear-gradient(90deg,#fff 0 22px,transparent 22px 42px);opacity:.7}
+.landscape-copy{display:block;padding:14px}.landscape-title-row{display:flex;align-items:center;justify-content:space-between;gap:8px}.landscape-title-row strong{font-size:1rem}.landscape-rarity{font-size:.61rem;font-weight:900;letter-spacing:.09em;padding:4px 7px;border-radius:999px;background:color-mix(in srgb,var(--landscape-card-accent,#7458ff) 18%,transparent);color:var(--landscape-card-accent,#7458ff)}.landscape-description{display:block;margin:7px 0 12px;min-height:34px;color:var(--muted);font-size:.76rem;line-height:1.35}.landscape-progress{display:block;height:7px;border-radius:999px;background:color-mix(in srgb,var(--text) 9%,transparent);overflow:hidden}.landscape-progress span{display:block;height:100%;border-radius:inherit;background:var(--landscape-card-accent,#7458ff)}.landscape-status{display:block;margin-top:8px;font-size:.7rem;font-weight:800;color:var(--muted)}
+.landscape-alpine{--landscape-card-accent:#5ca66f}.landscape-christmas{--landscape-card-accent:#62aee8}.landscape-beach{--landscape-card-accent:#bc6ee8}.landscape-lava{--landscape-card-accent:#ff8618}
+.landscape-alpine .landscape-preview{background:linear-gradient(#91cdf4 0 62%,#5e875e 63%)}.landscape-alpine .preview-horizon{top:22%;background:#77958f;clip-path:polygon(0 100%,0 72%,20% 18%,37% 70%,55% 26%,72% 68%,89% 12%,100% 44%,100% 100%)}
+.landscape-christmas .landscape-preview{background:linear-gradient(#182451 0 64%,#a9bfd2 65%)}.landscape-christmas .preview-atmosphere{background:radial-gradient(circle at 76% 24%,#fff 0 3%,transparent 5%),linear-gradient(120deg,transparent 15%,rgba(83,255,208,.25),rgba(171,92,255,.2),transparent 76%)}.landscape-christmas .preview-horizon{top:20%;background:#53618e;clip-path:polygon(0 100%,0 78%,18% 20%,37% 72%,55% 15%,73% 70%,91% 23%,100% 54%,100% 100%)}
+.landscape-beach .landscape-preview{background:linear-gradient(#8584d2,#f3a195 55%,#4faabd 56%)}.landscape-beach .preview-atmosphere{background:radial-gradient(circle at 70% 37%,#fff5c7 0 5%,#ffc86d 6%,transparent 14%)}.landscape-beach .preview-detail{background:linear-gradient(78deg,transparent 0 12%,#263e42 12.5% 15%,transparent 15.5% 86%,#263e42 86.5% 89%,transparent 89.5%)}
+.landscape-lava .landscape-preview{background:linear-gradient(#180f17,#5b1c17)}.landscape-lava .preview-atmosphere{background:radial-gradient(ellipse at 50% 100%,rgba(255,77,8,.8),transparent 56%)}.landscape-lava .preview-horizon{top:16%;background:#181216;clip-path:polygon(0 100%,0 76%,18% 35%,33% 73%,49% 5%,64% 70%,81% 26%,100% 65%,100% 100%)}.landscape-lava .preview-detail{background:linear-gradient(99deg,transparent 0 47%,#ff5b0b 48% 50%,transparent 51%);filter:drop-shadow(0 0 6px #ff5b0b)}
+@media(max-width:720px){.landscape-grid{grid-template-columns:1fr}.landscape-collection-heading{align-items:start;flex-direction:column}.landscape-note{margin-top:-8px}}
