@@ -3,10 +3,16 @@
 
 const STORAGE_KEY = 'loadRushUltimateV1';
 const LEGACY_KEYS = [
+  'loadRushUltimateV1',
   'loadQuestStateV1',
   'pulseProState',
-  'pulseCount'
+  'pulseCount',
+  'loadRushState',
+  'loadRushStateV1',
+  'loadRushBackupV1',
+  'loadRushAutoBackupV1'
 ];
+const AUTO_BACKUP_KEY = 'loadRushAutoBackupV2';
 
 const DEFAULTS = {
   log: [],
@@ -188,42 +194,63 @@ const FATE_EVENTS = [
 
 const $ = id => document.getElementById(id);
 
+function stateRichness(candidate) {
+  if (!candidate || typeof candidate !== 'object') return -1;
+  const log = Array.isArray(candidate.log) ? candidate.log : [];
+  const positiveLog = log.reduce((sum, entry) => sum + Math.max(0, Number(entry?.delta) || 0), 0);
+  const explicitXP = Math.max(0, Number(candidate.lifetimeXP) || Number(candidate.totalXP) || Number(candidate.xp) || 0);
+  const wins = Math.max(0, Number(candidate.raceWins) || Number(candidate.totalRaceWins) || 0);
+  const crates = Math.max(0, Number(candidate.crateTokens) || 0);
+  return (log.length * 1000) + positiveLog + explicitXP + (wins * 100) + (crates * 10);
+}
+
+function parseStoredCandidate(key, raw) {
+  if (!raw) return null;
+  try {
+    if (key === 'pulseCount') {
+      const count = Number(raw) || 0;
+      return {
+        ...DEFAULTS,
+        log: count > 0
+          ? Array.from({ length: count }, (_, index) => ({
+              delta: 1,
+              time: Date.now() - index * 1000,
+              xp: 1
+            }))
+          : []
+      };
+    }
+    return migrateLegacyState(JSON.parse(raw));
+  } catch (error) {
+    console.warn(`Could not read stored Load Rush state from ${key}:`, error);
+    return null;
+  }
+}
+
 function readStoredState() {
-  const direct = localStorage.getItem(STORAGE_KEY);
-  if (direct) {
-    try {
-      return JSON.parse(direct);
-    } catch (error) {
-      console.warn('Could not read current state:', error);
-    }
+  const candidates = [];
+  const seen = new Set();
+  const keys = [...LEGACY_KEYS, AUTO_BACKUP_KEY];
+
+  for (let index = 0; index < localStorage.length; index += 1) {
+    const key = localStorage.key(index);
+    if (key && /load.?rush|load.?quest|pulse/i.test(key)) keys.push(key);
   }
 
-  for (const key of LEGACY_KEYS) {
-    const legacy = localStorage.getItem(key);
-    if (!legacy) continue;
-
-    try {
-      if (key === 'pulseCount') {
-        const count = Number(legacy) || 0;
-        return {
-          ...DEFAULTS,
-          log: count > 0
-            ? Array.from({ length: count }, (_, index) => ({
-                delta: 1,
-                time: Date.now() - index * 1000
-              }))
-            : []
-        };
-      }
-
-      const parsed = JSON.parse(legacy);
-      return migrateLegacyState(parsed);
-    } catch (error) {
-      console.warn(`Could not migrate ${key}:`, error);
-    }
+  for (const key of keys) {
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    const parsed = parseStoredCandidate(key, localStorage.getItem(key));
+    if (parsed) candidates.push({ key, state: parsed, score: stateRichness(parsed) });
   }
 
-  return { ...DEFAULTS };
+  if (!candidates.length) return { ...DEFAULTS };
+  candidates.sort((a, b) => b.score - a.score);
+  const recovered = candidates[0];
+  if (recovered.key !== STORAGE_KEY) {
+    console.info(`Recovered Load Rush progress from ${recovered.key}.`);
+  }
+  return recovered.state;
 }
 
 function migrateLegacyState(legacy) {
@@ -237,6 +264,9 @@ function migrateLegacyState(legacy) {
         }))
     : [];
 
+  const explicitXP = Math.max(0, Number(legacy.lifetimeXP) || Number(legacy.totalXP) || Number(legacy.xp) || 0);
+  const logXP = log.reduce((sum, entry) => sum + Math.max(0, Number(entry.xp) || Number(entry.delta) || 0), 0);
+
   return {
     ...DEFAULTS,
     ...legacy,
@@ -249,7 +279,9 @@ function migrateLegacyState(legacy) {
     dailyGoal: Number(legacy.dailyGoal) || DEFAULTS.dailyGoal,
     hourlyGoal: Number(legacy.hourlyGoal) || DEFAULTS.hourlyGoal,
     minutesPerUpdate: Number(legacy.minutesPerUpdate) || DEFAULTS.minutesPerUpdate,
-    raceWins: Number(legacy.raceWins) || 0,
+    raceWins: Math.max(0, Number(legacy.raceWins) || Number(legacy.totalRaceWins) || 0),
+    bonusXP: Math.max(Number(legacy.bonusXP) || 0, explicitXP - logXP),
+    hourlyRaceAwards: legacy.hourlyRaceAwards && typeof legacy.hourlyRaceAwards === 'object' ? legacy.hourlyRaceAwards : {},
     completedHours: Array.isArray(legacy.completedHours)
       ? legacy.completedHours
       : Array.isArray(legacy.completedRaceHours)
@@ -278,14 +310,46 @@ let alarmAudioContext = null;
 let alarmOscillators = [];
 let alarmPulseTimer = null;
 
+function reconcileProgressFromLog() {
+  if (!Array.isArray(state.log) || state.log.length === 0) return;
+  const byHour = {};
+  for (const entry of state.log) {
+    const time = Number(entry?.time);
+    const delta = Number(entry?.delta);
+    if (!Number.isFinite(time) || !Number.isFinite(delta)) continue;
+    const key = currentHourKey(new Date(time));
+    byHour[key] = (byHour[key] || 0) + delta;
+  }
+
+  const awards = state.hourlyRaceAwards && typeof state.hourlyRaceAwards === 'object'
+    ? { ...state.hourlyRaceAwards }
+    : {};
+  let reconstructedWins = 0;
+  for (const [key, total] of Object.entries(byHour)) {
+    const wins = Math.max(0, Math.floor(Math.max(0, total) / Math.max(1, Number(state.hourlyGoal) || DEFAULTS.hourlyGoal)));
+    awards[key] = Math.max(Number(awards[key]) || 0, wins);
+    reconstructedWins += wins;
+  }
+
+  state.hourlyRaceAwards = awards;
+  state.raceWins = Math.max(Number(state.raceWins) || 0, reconstructedWins);
+}
+
 function saveState() {
   const clean = {
     ...state,
-    log: state.log.slice(0, 3000),
-    completedHours: state.completedHours.slice(-500)
+    log: Array.isArray(state.log) ? state.log.slice(0, 3000) : [],
+    completedHours: Array.isArray(state.completedHours) ? state.completedHours.slice(-500) : [],
+    hourlyRaceAwards: state.hourlyRaceAwards && typeof state.hourlyRaceAwards === 'object' ? state.hourlyRaceAwards : {}
   };
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(clean));
+  try {
+    const existing = localStorage.getItem(STORAGE_KEY);
+    if (existing) localStorage.setItem(AUTO_BACKUP_KEY, existing);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(clean));
+  } catch (error) {
+    console.error('Could not save Load Rush progress:', error);
+  }
 }
 
 
@@ -543,7 +607,8 @@ function renderGhostTruck() {
   const progress = Math.min(100, (data.count / Math.max(1, state.hourlyGoal)) * 100);
   ghost.hidden = false;
   ghost.style.right = `${progress}%`;
-  $('ghostVehicleIcon').textContent = selectedRig().icon;
+  const ghostIcon = $('ghostVehicleIcon');
+  if (ghostIcon) ghostIcon.textContent = selectedRig().icon;
   ghost.title = `Best-hour ghost: ${data.count.toFixed(1)} loads at this point (${data.total} total)`;
 }
 
@@ -648,7 +713,7 @@ function secondsUntilNextHour() {
   const now = new Date();
   const next = new Date(now);
   next.setHours(now.getHours() + 1, 0, 0, 0);
-  return Math.max(0, Math.floor((next - now) / 1000));
+  return Math.max(0, Math.ceil((next - now) / 1000));
 }
 
 function formatCountdown(seconds) {
@@ -817,12 +882,11 @@ function renderGarage() {
 function applyTheme() {
   document.documentElement.dataset.theme = state.theme;
 
-  document.querySelector('meta[name="theme-color"]').setAttribute(
-    'content',
-    state.theme === 'dark' ? '#111326' : '#efe9ff'
-  );
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+  if (themeMeta) themeMeta.setAttribute('content', state.theme === 'dark' ? '#111326' : '#efe9ff');
 
-  $('themeBtn').textContent = state.theme === 'dark' ? '☀' : '☾';
+  const themeButton = $('themeBtn');
+  if (themeButton) themeButton.textContent = state.theme === 'dark' ? '☀' : '☾';
 
   updateSwitch('soundToggle', state.sound);
   updateSwitch('reminderAlarmToggle', state.reminderAlarmEnabled !== false);
@@ -832,8 +896,9 @@ function applyTheme() {
 
 function updateSwitch(id, enabled) {
   const element = $(id);
-  element.classList.toggle('on', enabled);
-  element.setAttribute('aria-checked', String(enabled));
+  if (!element) return;
+  element.classList.toggle('on', Boolean(enabled));
+  element.setAttribute('aria-checked', String(Boolean(enabled)));
 }
 
 function animateCount(delta) {
@@ -957,9 +1022,11 @@ function flashMegaMessage(text) {
 function celebrateRace() {
   const trophy = $('trophy');
 
-  trophy.classList.remove('show');
-  void trophy.offsetWidth;
-  trophy.classList.add('show');
+  if (trophy) {
+    trophy.classList.remove('show');
+    void trophy.offsetWidth;
+    trophy.classList.add('show');
+  }
 
   flashMegaMessage('CHECKERED FLAG!');
   particleBurst($('vehicle'), 110, 2.6);
@@ -990,6 +1057,7 @@ function maybeAwardRace() {
   const recentKeys = Object.keys(state.hourlyRaceAwards).sort().slice(-72);
   state.hourlyRaceAwards = Object.fromEntries(recentKeys.map(key => [key, state.hourlyRaceAwards[key]]));
   saveState();
+  renderAll();
 
   celebrateRace();
   showToast(`${newWins} race${newWins === 1 ? '' : 's'} complete · +${newWins} loot box${newWins === 1 ? '' : 'es'} · ${state.raceWins} total wins`);
@@ -1668,7 +1736,7 @@ function startHourlyClock() {
   }
 
   tickClock();
-  hourlyClockInterval = setInterval(tickClock, 250);
+  hourlyClockInterval = setInterval(tickClock, 1000);
 
   window.addEventListener('focus', tickClock);
   document.addEventListener('visibilitychange', () => {
@@ -2396,6 +2464,13 @@ async function registerServiceWorker() {
 
 async function initialize() {
   await clearLegacyAppCaches();
+  state.log = Array.isArray(state.log) ? state.log : [];
+  state.completedHours = Array.isArray(state.completedHours) ? state.completedHours : [];
+  state.hourlyRaceAwards = state.hourlyRaceAwards && typeof state.hourlyRaceAwards === 'object' ? state.hourlyRaceAwards : {};
+  state.raceWins = Math.max(0, Number(state.raceWins) || 0);
+  state.crateTokens = Math.max(0, Number(state.crateTokens) || 0);
+  state.bonusXP = Math.max(0, Number(state.bonusXP) || 0);
+  reconcileProgressFromLog();
   state.reminders = Array.isArray(state.reminders) ? state.reminders : [];
   state.reminderAlarmEnabled = state.reminderAlarmEnabled !== false;
   state.reminderAlarmWarningSeen = state.reminderAlarmWarningSeen === true;

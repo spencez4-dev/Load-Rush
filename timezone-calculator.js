@@ -663,14 +663,14 @@
                 <span>${escapeHtml(placeLine || activePlace.timezone)}</span>
               </div>
             </div>
-            <div class="timezone-live-time">${escapeHtml(time)}</div>
-            <div class="timezone-live-date">${escapeHtml(date)}</div>
+            <div id="timezoneLiveClock" class="timezone-live-time">${escapeHtml(time)}</div>
+            <div id="timezoneLiveDate" class="timezone-live-date">${escapeHtml(date)}</div>
           </article>
 
           <aside class="timezone-detail-card">
             <button id="timezoneLiveDetention" class="timezone-detail timezone-detention timezone-detention-button" type="button">
               <span>Approaching Detention Check Call</span>
-              <strong>${escapeHtml(detentionTime)}</strong>
+              <strong id="timezoneLiveDetentionTime">${escapeHtml(detentionTime)}</strong>
               <small>Current local time + 1 hour 30 minutes · Tap to use an arrival time</small>
             </button>
             <div class="timezone-detail timezone-custom-detention">
@@ -724,6 +724,33 @@
       });
       calculateButton?.addEventListener('click', calculateArrival);
       liveDetentionButton?.addEventListener('click', () => arrivalInput?.focus());
+    }
+
+    function updateLiveTimes() {
+      if (!activePlace) return;
+      const now = new Date();
+      const liveClock = document.getElementById('timezoneLiveClock');
+      const liveDate = document.getElementById('timezoneLiveDate');
+      const liveDetention = document.getElementById('timezoneLiveDetentionTime');
+
+      if (liveClock) {
+        liveClock.textContent = new Intl.DateTimeFormat('en-US', {
+          timeZone: activePlace.timezone,
+          hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+        }).format(now);
+      }
+      if (liveDate) {
+        liveDate.textContent = new Intl.DateTimeFormat('en-US', {
+          timeZone: activePlace.timezone,
+          weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+        }).format(now);
+      }
+      if (liveDetention) {
+        liveDetention.textContent = new Intl.DateTimeFormat('en-US', {
+          timeZone: activePlace.timezone,
+          hour: '2-digit', minute: '2-digit', hour12: false
+        }).format(new Date(now.getTime() + 90 * 60 * 1000));
+      }
     }
 
     async function findCity(query) {
@@ -796,7 +823,7 @@
 
     renderRecents();
     clockTimer = window.setInterval(() => {
-      if (activePlace && page.classList.contains('active')) renderPlace();
+      if (activePlace && page.classList.contains('active')) updateLiveTimes();
     }, 1000);
 
     window.addEventListener('beforeunload', () => {
