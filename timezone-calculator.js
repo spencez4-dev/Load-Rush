@@ -328,6 +328,29 @@
         overflow-wrap: anywhere;
       }
 
+      .timezone-detail small {
+        display: block;
+        margin-top: 7px;
+        color: var(--muted, #6b6480);
+        line-height: 1.4;
+      }
+
+      .timezone-detention {
+        background: linear-gradient(135deg, rgba(116,88,255,.18), rgba(116,88,255,.07));
+        border: 1px solid rgba(116,88,255,.24);
+      }
+
+      .timezone-detention strong {
+        font-size: clamp(1.65rem, 4vw, 2.35rem);
+        letter-spacing: -.035em;
+        color: #7458ff;
+      }
+
+      body.dark .timezone-detention strong,
+      [data-theme="dark"] .timezone-detention strong {
+        color: #b7a8ff;
+      }
+
       .timezone-recents {
         margin-top: 18px;
         padding: 20px;
@@ -433,14 +456,14 @@
           <div>
             <span class="section-kicker">GLOBAL DISPATCH</span>
             <h2>Time Zone Calculator</h2>
-            <p>Search any city to see its live local time, IANA time zone, UTC offset, and the difference from your current location.</p>
+            <p>Search any U.S. city to see its live local time, time zone, and detention check-call time.</p>
           </div>
           <button id="timezoneBackBtn" class="secondary-button timezone-back-button" type="button">← Load Rush</button>
         </div>
 
         <form id="timezoneSearchForm" class="timezone-search">
           <label class="sr-only" for="timezoneCityInput">Search for a city</label>
-          <input id="timezoneCityInput" type="search" placeholder="Try London, Tokyo, or Miami…" autocomplete="off" required>
+          <input id="timezoneCityInput" type="search" placeholder="Try Miami, Phoenix, or Denver…" autocomplete="off" required>
           <button id="timezoneSearchBtn" class="primary-button" type="submit">Check Time</button>
         </form>
 
@@ -448,7 +471,7 @@
         <div id="timezoneContent">
           <div class="timezone-empty">
             <div style="font-size:2rem;margin-bottom:8px">🛰️</div>
-            Enter a city and we’ll locate the clock.
+            Enter a U.S. city and we’ll locate the clock.
           </div>
         </div>
 
@@ -551,6 +574,14 @@
         year: 'numeric'
       }).format(now);
 
+      const detentionCheckAt = new Date(now.getTime() + 90 * 60 * 1000);
+      const detentionTime = new Intl.DateTimeFormat('en-US', {
+        timeZone: activePlace.timezone,
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      }).format(detentionCheckAt);
+
       const placeLine = [activePlace.admin1, activePlace.country].filter(Boolean).join(', ');
 
       content.innerHTML = `
@@ -568,6 +599,11 @@
           </article>
 
           <aside class="timezone-detail-card">
+            <div class="timezone-detail timezone-detention">
+              <span>Approaching Detention Check Call</span>
+              <strong>${escapeHtml(detentionTime)}</strong>
+              <small>Current local time + 1 hour 30 minutes</small>
+            </div>
             <div class="timezone-detail">
               <span>Time zone</span>
               <strong>${escapeHtml(activePlace.timezone)}</strong>
@@ -575,10 +611,6 @@
             <div class="timezone-detail">
               <span>UTC offset</span>
               <strong>${formatOffset(targetOffset)}</strong>
-            </div>
-            <div class="timezone-detail">
-              <span>Compared with you</span>
-              <strong>${differenceCopy(targetOffset, localOffset)}</strong>
             </div>
           </aside>
         </div>
@@ -588,7 +620,8 @@
     async function findCity(query) {
       const url = new URL(API_URL);
       url.searchParams.set('name', query);
-      url.searchParams.set('count', '1');
+      url.searchParams.set('count', '10');
+      url.searchParams.set('countryCode', 'US');
       url.searchParams.set('language', 'en');
       url.searchParams.set('format', 'json');
 
@@ -596,8 +629,8 @@
       if (!response.ok) throw new Error(`Search failed (${response.status})`);
 
       const data = await response.json();
-      const result = data.results?.[0];
-      if (!result?.timezone) throw new Error('No matching city found.');
+      const result = data.results?.find(item => item.country_code === 'US' && item.timezone);
+      if (!result?.timezone) throw new Error('No matching U.S. city found. Try adding the state.');
 
       return {
         name: result.name,
@@ -629,7 +662,7 @@
         content.innerHTML = `
           <div class="timezone-empty">
             <div style="font-size:2rem;margin-bottom:8px">🗺️</div>
-            We couldn’t find that city. Try adding a state or country.
+            We couldn’t find that U.S. city. Try adding the state abbreviation.
           </div>
         `;
         status.classList.add('error');

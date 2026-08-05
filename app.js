@@ -67,14 +67,12 @@ const RIGS = [
 
 
 const LANDSCAPES = [
-  { id: 'alpine', name: 'Alpine Route', icon: '🏔️', rarity: 'COMMON', accent: '#5ca66f', goal: 0, description: 'Sunlit peaks, layered pine valleys, and clean open-air freight.' },
-  { id: 'christmas', name: 'Christmas Pass', icon: '❄️', rarity: 'RARE', accent: '#6bb7ef', goal: 50, description: 'A moonlit winter village with snowfall, warm cabins, and aurora skies.' },
-  { id: 'beach', name: 'Sunset Coast', icon: '🌴', rarity: 'EPIC', accent: '#c173ef', goal: 100, description: 'A glowing ocean horizon, palms, cliffs, sailboats, and rolling surf.' },
-  { id: 'lava', name: 'Volcanic Core', icon: '🌋', rarity: 'LEGENDARY', accent: '#ff8a18', goal: 200, description: 'Inside the caldera: molten falls, black peaks, embers, and magma light.' }
+  { id: 'alpine', name: 'Alpine Route', icon: '🏔️', rarity: 'SIGNATURE', accent: '#5ca66f', goal: 0, description: 'A polished mountain corridor built for the Hourly Quest.' }
 ];
 
 function selectedLandscape() {
-  return LANDSCAPES.find(item => item.id === state.selectedLandscape) || LANDSCAPES[0];
+  if (state.selectedLandscape !== 'alpine') state.selectedLandscape = 'alpine';
+  return LANDSCAPES[0];
 }
 
 function isLandscapeUnlocked(landscape) {

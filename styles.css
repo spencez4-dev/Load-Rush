@@ -2659,3 +2659,90 @@ body.alarm-active {
 .landscape-beach .landscape-preview{background:linear-gradient(#8584d2,#f3a195 55%,#4faabd 56%)}.landscape-beach .preview-atmosphere{background:radial-gradient(circle at 70% 37%,#fff5c7 0 5%,#ffc86d 6%,transparent 14%)}.landscape-beach .preview-detail{background:linear-gradient(78deg,transparent 0 12%,#263e42 12.5% 15%,transparent 15.5% 86%,#263e42 86.5% 89%,transparent 89.5%)}
 .landscape-lava .landscape-preview{background:linear-gradient(#180f17,#5b1c17)}.landscape-lava .preview-atmosphere{background:radial-gradient(ellipse at 50% 100%,rgba(255,77,8,.8),transparent 56%)}.landscape-lava .preview-horizon{top:16%;background:#181216;clip-path:polygon(0 100%,0 76%,18% 35%,33% 73%,49% 5%,64% 70%,81% 26%,100% 65%,100% 100%)}.landscape-lava .preview-detail{background:linear-gradient(99deg,transparent 0 47%,#ff5b0b 48% 50%,transparent 51%);filter:drop-shadow(0 0 6px #ff5b0b)}
 @media(max-width:720px){.landscape-grid{grid-template-columns:1fr}.landscape-collection-heading{align-items:start;flex-direction:column}.landscape-note{margin-top:-8px}}
+
+/* V7 — Signature Alpine Route: one focused, polished landscape */
+.road-world[data-landscape="alpine"] {
+  background: #b8dff5;
+  overflow: hidden;
+}
+.road-world[data-landscape="alpine"] .landscape-sky {
+  background:
+    radial-gradient(circle at 78% 15%, rgba(255,255,255,.96) 0 2.8%, rgba(255,227,157,.82) 3.1%, rgba(255,220,138,.22) 9%, transparent 18%),
+    linear-gradient(180deg,#8fcdf3 0%,#c9e8fb 58%,#e9f3ed 100%);
+}
+.road-world[data-landscape="alpine"] .landscape-light {
+  background:
+    radial-gradient(ellipse at 50% 15%, rgba(255,255,255,.34), transparent 52%),
+    linear-gradient(110deg, rgba(255,255,255,.12), transparent 36%);
+}
+.road-world[data-landscape="alpine"] .landscape-clouds-back {
+  top: 9%; height: 24%; opacity: .68;
+  background-image:
+    radial-gradient(ellipse at 8% 64%,rgba(255,255,255,.9) 0 7%,transparent 8%),
+    radial-gradient(ellipse at 16% 57%,rgba(255,255,255,.86) 0 9%,transparent 10%),
+    radial-gradient(ellipse at 25% 66%,rgba(255,255,255,.72) 0 6%,transparent 7%),
+    radial-gradient(ellipse at 63% 50%,rgba(255,255,255,.74) 0 6%,transparent 7%),
+    radial-gradient(ellipse at 70% 56%,rgba(255,255,255,.78) 0 8%,transparent 9%);
+  filter: blur(.2px);
+  animation: premiumCloudDrift 22s ease-in-out infinite alternate;
+}
+.road-world[data-landscape="alpine"] .landscape-clouds-front {
+  top: 20%; height: 16%; opacity: .25;
+  background: linear-gradient(170deg,transparent 0 46%,rgba(255,255,255,.75) 47% 53%,transparent 54%);
+}
+.road-world[data-landscape="alpine"] .landscape-horizon-back {
+  bottom: 43%; height: 44%;
+  clip-path: polygon(0 100%,0 82%,7% 65%,13% 73%,21% 39%,28% 62%,37% 22%,45% 68%,55% 33%,63% 70%,72% 18%,80% 61%,89% 34%,96% 66%,100% 53%,100% 100%);
+  background: linear-gradient(155deg,#d9e6ed 0 34%,#a8bfcd 35% 48%,#718a9b 49% 100%);
+  filter: drop-shadow(0 8px 12px rgba(63,91,108,.13));
+}
+.road-world[data-landscape="alpine"] .landscape-horizon-back::after {
+  content:""; position:absolute; inset:0;
+  background: linear-gradient(145deg,transparent 0 17%,rgba(255,255,255,.88) 17.5% 21%,transparent 21.5% 49%,rgba(255,255,255,.72) 49.5% 53%,transparent 53.5% 75%,rgba(255,255,255,.65) 75.5% 78%,transparent 78.5%);
+  opacity:.7;
+}
+.road-world[data-landscape="alpine"] .landscape-horizon-mid {
+  bottom: 39%; height: 34%;
+  clip-path: polygon(0 100%,0 81%,8% 56%,16% 72%,25% 38%,34% 76%,44% 48%,54% 78%,64% 34%,74% 73%,84% 45%,93% 70%,100% 54%,100% 100%);
+  background: linear-gradient(180deg,#789792 0%,#4f7569 68%,#3f6458 100%);
+  box-shadow: inset 0 15px 24px rgba(255,255,255,.13);
+}
+.road-world[data-landscape="alpine"] .landscape-horizon-front {
+  bottom: 34%; height: 23%;
+  background:
+    repeating-linear-gradient(72deg,transparent 0 20px,#345c4f 21px 31px,transparent 32px 44px),
+    linear-gradient(180deg,transparent,#2f5549);
+  filter: drop-shadow(0 6px 6px rgba(22,49,39,.2));
+}
+.road-world[data-landscape="alpine"] .landscape-landmarks {
+  inset: auto 0 39% 0; height: 16%;
+  background:
+    radial-gradient(ellipse at 18% 100%,rgba(255,255,255,.24),transparent 36%),
+    linear-gradient(90deg,transparent 0 12%,rgba(34,74,57,.55) 12.2% 12.8%,transparent 13% 86%,rgba(34,74,57,.5) 86.2% 86.8%,transparent 87%);
+}
+.road-world[data-landscape="alpine"] .landscape-ground {
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.12),transparent 20%),
+    linear-gradient(180deg,#75966d,#45684d);
+}
+.road-world[data-landscape="alpine"] .landscape-particles {
+  opacity:.18;
+  background-image: radial-gradient(circle,rgba(255,255,255,.9) 0 1px,transparent 1.4px);
+  background-size: 53px 47px;
+}
+.road-world[data-landscape="alpine"] .road {
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.028),transparent 25%,rgba(255,255,255,.018) 58%,transparent 82%),
+    linear-gradient(180deg,#4a5058 0%,#2d3239 56%,#20252b 100%);
+  box-shadow: inset 0 10px 18px rgba(255,255,255,.055), inset 0 -18px 26px rgba(0,0,0,.3), 0 16px 30px rgba(18,28,31,.28);
+}
+.route-sign { display:none !important; }
+.landscape-collection { display:none !important; }
+@keyframes premiumCloudDrift { from{transform:translateX(-1%)} to{transform:translateX(2.5%)} }
+[data-theme="dark"] .road-world[data-landscape="alpine"] .landscape-sky {
+  background: radial-gradient(circle at 78% 15%,rgba(235,244,255,.72) 0 2.2%,rgba(145,178,224,.16) 5%,transparent 14%),linear-gradient(180deg,#142945 0%,#28445e 60%,#3d5557 100%);
+}
+[data-theme="dark"] .road-world[data-landscape="alpine"] .landscape-horizon-back { background:linear-gradient(155deg,#5b7182,#344b5a 58%,#263b47); }
+[data-theme="dark"] .road-world[data-landscape="alpine"] .landscape-horizon-mid { background:linear-gradient(180deg,#405e5c,#29483f); }
+[data-theme="dark"] .road-world[data-landscape="alpine"] .landscape-horizon-front { opacity:.76; }
+[data-theme="dark"] .road-world[data-landscape="alpine"] .landscape-ground { background:linear-gradient(180deg,#31503e,#1e3429); }
