@@ -93,6 +93,49 @@
     return `${amount} ${difference > 0 ? 'ahead of you' : 'behind you'}`;
   }
 
+
+  function localDateTimeInZoneToUtc(timeZone, year, month, day, hour, minute) {
+    const desiredUtcShape = Date.UTC(year, month - 1, day, hour, minute, 0);
+    let candidate = new Date(desiredUtcShape);
+
+    // Resolve the selected city's local wall-clock time to a real instant.
+    // Repeating handles DST boundaries without hard-coding offsets.
+    for (let i = 0; i < 3; i += 1) {
+      const offset = utcOffsetMinutes(timeZone, candidate);
+      candidate = new Date(desiredUtcShape - offset * 60000);
+    }
+
+    return candidate;
+  }
+
+  function datePartsInZone(timeZone, date = new Date()) {
+    const parts = Object.fromEntries(
+      new Intl.DateTimeFormat('en-US', {
+        timeZone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hourCycle: 'h23'
+      }).formatToParts(date)
+        .filter(part => part.type !== 'literal')
+        .map(part => [part.type, part.value])
+    );
+
+    return {
+      year: Number(parts.year),
+      month: Number(parts.month),
+      day: Number(parts.day)
+    };
+  }
+
+  function formatMilitaryLocal(date) {
+    return new Intl.DateTimeFormat('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    }).format(date).replace(':', '');
+  }
+
   function injectStyles() {
     if (document.getElementById('timezoneTabStyles')) return;
 
@@ -452,6 +495,67 @@
         to { opacity: 1; transform: translateY(0); }
       }
 
+
+      body.dark .timezone-shell,
+      [data-theme="dark"] .timezone-shell {
+        color: #f7f5ff;
+      }
+
+      body.dark .timezone-header p,
+      body.dark .timezone-status,
+      body.dark .timezone-location span,
+      body.dark .timezone-live-date,
+      body.dark .timezone-detail span,
+      body.dark .timezone-detail small,
+      [data-theme="dark"] .timezone-header p,
+      [data-theme="dark"] .timezone-status,
+      [data-theme="dark"] .timezone-location span,
+      [data-theme="dark"] .timezone-live-date,
+      [data-theme="dark"] .timezone-detail span,
+      [data-theme="dark"] .timezone-detail small {
+        color: #c8c2dc;
+      }
+
+      body.dark .timezone-clock-card,
+      body.dark .timezone-detail-card,
+      body.dark .timezone-recents,
+      [data-theme="dark"] .timezone-clock-card,
+      [data-theme="dark"] .timezone-detail-card,
+      [data-theme="dark"] .timezone-recents {
+        background: rgba(18, 17, 30, .92);
+        border-color: rgba(183, 168, 255, .24);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+      }
+
+      body.dark .timezone-detail,
+      [data-theme="dark"] .timezone-detail {
+        background: rgba(183, 168, 255, .10);
+        border: 1px solid rgba(183, 168, 255, .13);
+      }
+
+      body.dark .timezone-search input,
+      body.dark .timezone-arrival-row input,
+      [data-theme="dark"] .timezone-search input,
+      [data-theme="dark"] .timezone-arrival-row input {
+        background: #11101c;
+        color: #ffffff;
+        border-color: rgba(183, 168, 255, .34);
+        caret-color: #b7a8ff;
+      }
+
+      body.dark .timezone-search input::placeholder,
+      body.dark .timezone-arrival-row input::placeholder,
+      [data-theme="dark"] .timezone-search input::placeholder,
+      [data-theme="dark"] .timezone-arrival-row input::placeholder {
+        color: #8f89a5;
+        opacity: 1;
+      }
+
+      body.dark .timezone-custom-result,
+      [data-theme="dark"] .timezone-custom-result {
+        color: #c7bbff;
+      }
+
       @media (max-width: 760px) {
         .timezone-nav-button span:last-child {
           display: none;
@@ -508,7 +612,7 @@
           <div>
             <span class="section-kicker">GLOBAL DISPATCH</span>
             <h2>Time Zone Calculator</h2>
-            <p>Search any U.S. city to see its live local time, time zone, and detention check-call time.</p>
+            <p>Search any U.S. city, enter the driver’s arrival time there, and get the detention check-call time in your local time.</p>
           </div>
           <button id="timezoneBackBtn" class="secondary-button timezone-back-button" type="button">← Load Rush</button>
         </div>
@@ -628,14 +732,6 @@
         year: 'numeric'
       }).format(now);
 
-      const detentionCheckAt = new Date(now.getTime() + 90 * 60 * 1000);
-      const detentionTime = new Intl.DateTimeFormat('en-US', {
-        timeZone: activePlace.timezone,
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-      }).format(detentionCheckAt);
-
       const normalizeMilitaryTime = value => String(value || '').replace(/\D/g, '').slice(0, 4);
       const isValidMilitaryTime = value => {
         if (!/^\d{4}$/.test(value)) return false;
@@ -643,12 +739,20 @@
         const minutes = Number(value.slice(2));
         return hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59;
       };
-      const addDetentionWindow = value => {
+      const calculateLocalDetentionTime = value => {
         if (!isValidMilitaryTime(value)) return '';
         const hours = Number(value.slice(0, 2));
         const minutes = Number(value.slice(2));
-        const totalMinutes = (hours * 60 + minutes + 90) % 1440;
-        return `${String(Math.floor(totalMinutes / 60)).padStart(2, '0')}${String(totalMinutes % 60).padStart(2, '0')}`;
+        const cityDate = datePartsInZone(activePlace.timezone, new Date());
+        const arrivalInstant = localDateTimeInZoneToUtc(
+          activePlace.timezone,
+          cityDate.year,
+          cityDate.month,
+          cityDate.day,
+          hours,
+          minutes
+        );
+        return formatMilitaryLocal(new Date(arrivalInstant.getTime() + 90 * 60 * 1000));
       };
 
       const placeLine = [activePlace.admin1, activePlace.country].filter(Boolean).join(', ');
@@ -668,19 +772,16 @@
           </article>
 
           <aside class="timezone-detail-card">
-            <button id="timezoneLiveDetention" class="timezone-detail timezone-detention timezone-detention-button" type="button">
-              <span>Approaching Detention Check Call</span>
-              <strong id="timezoneLiveDetentionTime">${escapeHtml(detentionTime)}</strong>
-              <small>Current local time + 1 hour 30 minutes · Tap to use an arrival time</small>
-            </button>
-            <div class="timezone-detail timezone-custom-detention">
-              <span>Calculate from driver arrival</span>
+            <div class="timezone-detail timezone-custom-detention timezone-detention">
+              <span>Driver arrival in ${escapeHtml(activePlace.name)}</span>
               <div class="timezone-arrival-row">
-                <input id="timezoneArrivalTime" type="text" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="1030" aria-label="Driver arrival time in 24-hour military format" value="${escapeHtml(arrivalTimeValue)}">
-                <button id="timezoneArrivalCalculate" class="primary-button" type="button">Add 0130</button>
+                <input id="timezoneArrivalTime" type="text" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="0800" aria-label="Driver arrival time in 24-hour military format" value="${escapeHtml(arrivalTimeValue)}">
+                <button id="timezoneArrivalCalculate" class="primary-button" type="button">Calculate</button>
               </div>
-              <strong id="timezoneCustomResult" class="timezone-custom-result">${customDetentionValue ? escapeHtml(customDetentionValue) : 'Enter 4-digit time'}</strong>
-              <small>Enter four digits in 24-hour time, such as 1030 or 2215.</small>
+              <small>Enter the driver’s local arrival time in four-digit military format.</small>
+              <span>Your detention check call</span>
+              <strong id="timezoneCustomResult" class="timezone-custom-result">${customDetentionValue ? escapeHtml(customDetentionValue) : 'Enter arrival time'}</strong>
+              <small>Converted to your current time zone, then advanced by 1 hour 30 minutes.</small>
             </div>
             <div class="timezone-detail">
               <span>Time zone</span>
@@ -696,7 +797,6 @@
 
       const arrivalInput = document.getElementById('timezoneArrivalTime');
       const calculateButton = document.getElementById('timezoneArrivalCalculate');
-      const liveDetentionButton = document.getElementById('timezoneLiveDetention');
 
       const calculateArrival = () => {
         const value = normalizeMilitaryTime(arrivalInput?.value);
@@ -708,7 +808,7 @@
           if (result) result.textContent = value.length === 4 ? 'Invalid time' : 'Enter 4-digit time';
           return;
         }
-        customDetentionValue = addDetentionWindow(value);
+        customDetentionValue = calculateLocalDetentionTime(value);
         if (result) result.textContent = customDetentionValue;
       };
 
@@ -723,7 +823,6 @@
         }
       });
       calculateButton?.addEventListener('click', calculateArrival);
-      liveDetentionButton?.addEventListener('click', () => arrivalInput?.focus());
     }
 
     function updateLiveTimes() {
@@ -731,7 +830,6 @@
       const now = new Date();
       const liveClock = document.getElementById('timezoneLiveClock');
       const liveDate = document.getElementById('timezoneLiveDate');
-      const liveDetention = document.getElementById('timezoneLiveDetentionTime');
 
       if (liveClock) {
         liveClock.textContent = new Intl.DateTimeFormat('en-US', {
@@ -744,12 +842,6 @@
           timeZone: activePlace.timezone,
           weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
         }).format(now);
-      }
-      if (liveDetention) {
-        liveDetention.textContent = new Intl.DateTimeFormat('en-US', {
-          timeZone: activePlace.timezone,
-          hour: '2-digit', minute: '2-digit', hour12: false
-        }).format(new Date(now.getTime() + 90 * 60 * 1000));
       }
     }
 
