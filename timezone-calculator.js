@@ -351,6 +351,54 @@
         color: #b7a8ff;
       }
 
+      .timezone-detention-button {
+        width: 100%;
+        color: inherit;
+        text-align: left;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .timezone-detention-button:hover {
+        border-color: rgba(116,88,255,.55);
+        transform: translateY(-1px);
+      }
+
+      .timezone-custom-detention {
+        display: grid;
+        gap: 10px;
+      }
+
+      .timezone-arrival-row {
+        display: grid;
+        grid-template-columns: minmax(0,1fr) auto;
+        gap: 9px;
+      }
+
+      .timezone-arrival-row input {
+        min-width: 0;
+        min-height: 44px;
+        border: 1px solid var(--border, rgba(116,88,255,.22));
+        border-radius: 12px;
+        background: var(--input, rgba(255,255,255,.7));
+        color: inherit;
+        padding: 0 12px;
+        font: inherit;
+        font-weight: 800;
+      }
+
+      .timezone-arrival-row button {
+        min-height: 44px;
+        padding: 0 13px;
+        white-space: nowrap;
+      }
+
+      .timezone-custom-result {
+        font-size: 1.55rem;
+        color: #7458ff;
+        letter-spacing: -.025em;
+      }
+
       .timezone-recents {
         margin-top: 18px;
         padding: 20px;
@@ -423,6 +471,10 @@
 
         .timezone-header {
           display: block;
+        }
+
+        .timezone-arrival-row {
+          grid-template-columns: 1fr;
         }
 
         .timezone-back-button {
@@ -511,6 +563,8 @@
 
     let activePlace = null;
     let clockTimer = null;
+    let arrivalTimeValue = '';
+    let customDetentionValue = '';
 
     function showTimezone() {
       normalSections.forEach(section => section.classList.add('timezone-hidden'));
@@ -582,6 +636,13 @@
         hour12: true
       }).format(detentionCheckAt);
 
+      const formatClockTime = value => {
+        if (!value || !/^\d{2}:\d{2}$/.test(value)) return '';
+        const [hours, minutes] = value.split(':').map(Number);
+        const anchor = new Date(2000, 0, 1, hours, minutes);
+        return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).format(anchor);
+      };
+
       const placeLine = [activePlace.admin1, activePlace.country].filter(Boolean).join(', ');
 
       content.innerHTML = `
@@ -599,10 +660,19 @@
           </article>
 
           <aside class="timezone-detail-card">
-            <div class="timezone-detail timezone-detention">
+            <button id="timezoneLiveDetention" class="timezone-detail timezone-detention timezone-detention-button" type="button">
               <span>Approaching Detention Check Call</span>
               <strong>${escapeHtml(detentionTime)}</strong>
-              <small>Current local time + 1 hour 30 minutes</small>
+              <small>Current local time + 1 hour 30 minutes · Tap to use an arrival time</small>
+            </button>
+            <div class="timezone-detail timezone-custom-detention">
+              <span>Calculate from driver arrival</span>
+              <div class="timezone-arrival-row">
+                <input id="timezoneArrivalTime" type="time" aria-label="Driver arrival time" value="${escapeHtml(arrivalTimeValue)}">
+                <button id="timezoneArrivalCalculate" class="primary-button" type="button">Add 1h 30m</button>
+              </div>
+              <strong id="timezoneCustomResult" class="timezone-custom-result">${customDetentionValue ? escapeHtml(formatClockTime(customDetentionValue)) : 'Enter arrival time'}</strong>
+              <small>Uses the driver's actual onsite arrival time—not the current clock.</small>
             </div>
             <div class="timezone-detail">
               <span>Time zone</span>
@@ -615,6 +685,32 @@
           </aside>
         </div>
       `;
+
+      const arrivalInput = document.getElementById('timezoneArrivalTime');
+      const calculateButton = document.getElementById('timezoneArrivalCalculate');
+      const liveDetentionButton = document.getElementById('timezoneLiveDetention');
+
+      const calculateArrival = () => {
+        const value = arrivalInput?.value || '';
+        if (!/^\d{2}:\d{2}$/.test(value)) {
+          arrivalInput?.focus();
+          return;
+        }
+        arrivalTimeValue = value;
+        const [hours, minutes] = value.split(':').map(Number);
+        const totalMinutes = (hours * 60 + minutes + 90) % (24 * 60);
+        customDetentionValue = `${String(Math.floor(totalMinutes / 60)).padStart(2, '0')}:${String(totalMinutes % 60).padStart(2, '0')}`;
+        const result = document.getElementById('timezoneCustomResult');
+        if (result) result.textContent = formatClockTime(customDetentionValue);
+      };
+
+      arrivalInput?.addEventListener('input', () => { arrivalTimeValue = arrivalInput.value; });
+      arrivalInput?.addEventListener('keydown', event => { if (event.key === 'Enter') calculateArrival(); });
+      calculateButton?.addEventListener('click', calculateArrival);
+      liveDetentionButton?.addEventListener('click', () => {
+        arrivalInput?.focus();
+        arrivalInput?.showPicker?.();
+      });
     }
 
     async function findCity(query) {

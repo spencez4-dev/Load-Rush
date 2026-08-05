@@ -2746,3 +2746,88 @@ body.alarm-active {
 [data-theme="dark"] .road-world[data-landscape="alpine"] .landscape-horizon-mid { background:linear-gradient(180deg,#405e5c,#29483f); }
 [data-theme="dark"] .road-world[data-landscape="alpine"] .landscape-horizon-front { opacity:.76; }
 [data-theme="dark"] .road-world[data-landscape="alpine"] .landscape-ground { background:linear-gradient(180deg,#31503e,#1e3429); }
+
+/* V7.1 — refined signature route geometry */
+.road-world[data-landscape="alpine"] .landscape-horizon-front {
+  bottom: 35%;
+  height: 19%;
+  opacity: .92;
+  background:
+    radial-gradient(ellipse at 4% 100%, #294f43 0 7%, transparent 7.5%),
+    radial-gradient(ellipse at 12% 100%, #315b4d 0 9%, transparent 9.5%),
+    radial-gradient(ellipse at 22% 100%, #274b40 0 8%, transparent 8.5%),
+    radial-gradient(ellipse at 34% 100%, #365f50 0 10%, transparent 10.5%),
+    radial-gradient(ellipse at 47% 100%, #294f43 0 8%, transparent 8.5%),
+    radial-gradient(ellipse at 60% 100%, #315b4d 0 9%, transparent 9.5%),
+    radial-gradient(ellipse at 73% 100%, #274b40 0 8%, transparent 8.5%),
+    radial-gradient(ellipse at 85% 100%, #365f50 0 10%, transparent 10.5%),
+    radial-gradient(ellipse at 96% 100%, #294f43 0 8%, transparent 8.5%),
+    linear-gradient(180deg, transparent 0 32%, #315749 33% 100%);
+  filter: drop-shadow(0 7px 7px rgba(22,49,39,.18));
+}
+
+.road-world .road {
+  overflow: hidden;
+  border-radius: 30px;
+  border-color: rgba(255,255,255,.16);
+}
+.road-world .road::before {
+  inset: 10px;
+  border-radius: 22px;
+  background:
+    linear-gradient(90deg, transparent, rgba(255,255,255,.028) 48%, transparent),
+    repeating-linear-gradient(90deg, transparent 0 118px, rgba(255,255,255,.015) 119px 120px);
+}
+.road-world .road::after {
+  left: 3%;
+  right: 3%;
+  border-radius: 0 0 24px 24px;
+}
+.road-world .road-shoulder {
+  left: 0;
+  right: 0;
+  height: 7px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: repeating-linear-gradient(90deg,#f4f4ef 0 34px,#d34f53 34px 68px);
+  box-shadow: 0 1px 2px rgba(0,0,0,.28), inset 0 1px rgba(255,255,255,.45);
+}
+.road-world .road-shoulder-top { top: 0; }
+.road-world .road-shoulder-bottom { bottom: 0; }
+.road-world .lane-line {
+  left: 7%;
+  right: 7%;
+  top: 50%;
+  height: 4px;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: repeating-linear-gradient(90deg,rgba(255,255,255,.88) 0 44px,transparent 44px 82px);
+  opacity: .74;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.32));
+}
+.road-world .finish-line {
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 18px;
+  border-radius: 30px 0 0 30px;
+  overflow: hidden;
+  background:
+    conic-gradient(from 90deg at 50% 12.5%,#f7f7f4 0 25%,#15181d 0 50%,#f7f7f4 0 75%,#15181d 0) 0 0 / 18px 18px;
+  box-shadow: inset -2px 0 0 rgba(0,0,0,.18), 2px 0 6px rgba(0,0,0,.2);
+}
+.road-world .race-fill {
+  top: 7px;
+  bottom: 7px;
+  border-radius: 22px;
+}
+.road-world .start-marker {
+  right: 15px;
+  bottom: 12px;
+  border-radius: 12px;
+}
+
+@media (max-width: 640px) {
+  .road-world .road { border-radius: 24px; }
+  .road-world .finish-line { border-radius: 24px 0 0 24px; }
+}
