@@ -2300,43 +2300,153 @@ function bindReminderEventsSafely() {
 }
 
 
-// V7.5 — hold-click Easter egg. Visual/audio only; release still logs exactly one load.
+// V7.7 — ROCKET HOLD Easter egg. Hold + to arm the booster; release fires
+// the equipped rig into orbit and detonates a giant cartoon blast. Visual/audio only.
 let plusHoldTimer = null, plusHoldRevving = false, plusHoldOscillator = null, plusHoldGain = null;
+
+function rocketBurstParticles(vehicle) {
+  if (!vehicle) return;
+  const rect = vehicle.getBoundingClientRect();
+  const chars = ['🔥','✨','💥','⚡','•'];
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement('div');
+    p.className = 'rocket-debris';
+    p.textContent = chars[Math.floor(Math.random()*chars.length)];
+    p.style.left = `${rect.left + rect.width/2}px`;
+    p.style.top = `${rect.top + rect.height/2}px`;
+    p.style.setProperty('--rx', `${(Math.random()-.5)*320}px`);
+    p.style.setProperty('--ry', `${-80 + Math.random()*260}px`);
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(), 950);
+  }
+}
+
+function makeRocketExplosion(vehicle) {
+  if (!vehicle) return;
+  const rect = vehicle.getBoundingClientRect();
+  const boom = document.createElement('div');
+  boom.className = 'rocket-explosion';
+  boom.style.left = `${rect.left + rect.width/2}px`;
+  boom.style.top = `${rect.top + rect.height/2}px`;
+  boom.innerHTML = `<div class="boom-core">💥</div><div class="boom-ring"></div><div class="boom-word">KABOOM</div>`;
+  document.body.appendChild(boom);
+  rocketBurstParticles(vehicle);
+  setTimeout(()=>boom.remove(), 1050);
+}
+
 function startPlusHold(event) {
   if (event.pointerType === 'mouse' && event.button !== 0) return;
-  clearTimeout(plusHoldTimer); plusHoldRevving = false;
+  clearTimeout(plusHoldTimer);
+  plusHoldRevving = false;
+
   plusHoldTimer = setTimeout(() => {
     plusHoldRevving = true;
-    const plus=$('plusBtn'), vehicle=document.querySelector('.road-world .vehicle');
-    plus.classList.add('revving'); if(vehicle) vehicle.classList.add('hold-rev');
-    showTruckSmoke(); setTimeout(showTruckSmoke,170); setTimeout(showTruckSmoke,340);
-    if(state.sound) try {
-      audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
-      const now=audioContext.currentTime;
-      plusHoldOscillator=audioContext.createOscillator(); plusHoldGain=audioContext.createGain();
-      plusHoldOscillator.type='sawtooth'; plusHoldOscillator.frequency.setValueAtTime(72,now);
-      plusHoldOscillator.frequency.exponentialRampToValueAtTime(138,now+.65);
-      plusHoldGain.gain.setValueAtTime(.0001,now); plusHoldGain.gain.exponentialRampToValueAtTime(.025,now+.04);
-      plusHoldOscillator.connect(plusHoldGain).connect(audioContext.destination); plusHoldOscillator.start(now);
-    } catch {}
-  },700);
+    const plus = $('plusBtn');
+    const vehicle = document.querySelector('.road-world .vehicle');
+    plus.classList.add('rocket-armed');
+    if (vehicle) vehicle.classList.add('rocket-arming');
+
+    // escalating exhaust while the button remains held
+    showTruckSmoke();
+    setTimeout(showTruckSmoke, 120);
+    setTimeout(showTruckSmoke, 240);
+    setTimeout(showTruckSmoke, 360);
+
+    if (state.sound) {
+      try {
+        audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+        const now = audioContext.currentTime;
+        plusHoldOscillator = audioContext.createOscillator();
+        plusHoldGain = audioContext.createGain();
+        plusHoldOscillator.type = 'sawtooth';
+        plusHoldOscillator.frequency.setValueAtTime(58, now);
+        plusHoldOscillator.frequency.exponentialRampToValueAtTime(210, now + .9);
+        plusHoldGain.gain.setValueAtTime(.0001, now);
+        plusHoldGain.gain.exponentialRampToValueAtTime(.035, now + .06);
+        plusHoldOscillator.connect(plusHoldGain).connect(audioContext.destination);
+        plusHoldOscillator.start(now);
+      } catch {}
+    }
+  }, 700);
 }
+
 function endPlusHold() {
-  clearTimeout(plusHoldTimer); plusHoldTimer=null;
-  const plus=$('plusBtn'), vehicle=document.querySelector('.road-world .vehicle');
-  plus.classList.remove('revving'); if(vehicle) vehicle.classList.remove('hold-rev');
-  if(plusHoldOscillator && plusHoldGain && audioContext) try {
-    const now=audioContext.currentTime;
-    plusHoldOscillator.frequency.exponentialRampToValueAtTime(260,now+.12);
-    plusHoldGain.gain.exponentialRampToValueAtTime(.0001,now+.16); plusHoldOscillator.stop(now+.18);
-  } catch {}
-  plusHoldOscillator=null; plusHoldGain=null;
-  if(plusHoldRevving){
-    plus.classList.remove('hold-launch'); void plus.offsetWidth; plus.classList.add('hold-launch');
-    if(vehicle){ vehicle.classList.remove('hold-launch-rig'); void vehicle.offsetWidth; vehicle.classList.add('hold-launch-rig'); setTimeout(()=>vehicle.classList.remove('hold-launch-rig'),420); }
-    setTimeout(showTruckSmoke,40); setTimeout(()=>plus.classList.remove('hold-launch'),420);
+  clearTimeout(plusHoldTimer);
+  plusHoldTimer = null;
+
+  const plus = $('plusBtn');
+  const vehicle = document.querySelector('.road-world .vehicle');
+  plus.classList.remove('rocket-armed');
+  if (vehicle) vehicle.classList.remove('rocket-arming');
+
+  if (plusHoldOscillator && plusHoldGain && audioContext) {
+    try {
+      const now = audioContext.currentTime;
+      plusHoldOscillator.frequency.exponentialRampToValueAtTime(520, now + .16);
+      plusHoldGain.gain.exponentialRampToValueAtTime(.0001, now + .22);
+      plusHoldOscillator.stop(now + .24);
+    } catch {}
   }
-  plusHoldRevving=false;
+  plusHoldOscillator = null;
+  plusHoldGain = null;
+
+  if (plusHoldRevving && vehicle) {
+    // Temporarily clone the rig for the launch so the real race-position element
+    // never loses its normal transform/progress logic.
+    const rect = vehicle.getBoundingClientRect();
+    const clone = vehicle.cloneNode(true);
+    clone.className = 'rocket-launch-clone';
+    clone.style.left = `${rect.left}px`;
+    clone.style.top = `${rect.top}px`;
+    clone.style.width = `${rect.width}px`;
+    clone.style.height = `${rect.height}px`;
+    document.body.appendChild(clone);
+
+    vehicle.style.visibility = 'hidden';
+    plus.classList.add('rocket-release');
+    document.body.classList.add('rocket-screen-rumble');
+
+    // Rocket flame attached to the clone.
+    const flame = document.createElement('div');
+    flame.className = 'rocket-flame';
+    flame.textContent = '🔥';
+    clone.appendChild(flame);
+
+    if (state.sound) {
+      try {
+        audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+        const now = audioContext.currentTime;
+        createOscillator(150, 'sawtooth', now, .18, .045);
+        createOscillator(290, 'square', now + .10, .13, .025);
+      } catch {}
+    }
+
+    setTimeout(() => {
+      makeRocketExplosion(clone);
+      clone.classList.add('rocket-detonated');
+      if (state.sound) {
+        try {
+          const now = audioContext.currentTime;
+          createOscillator(72, 'sawtooth', now, .24, .06);
+          createOscillator(48, 'square', now, .20, .035);
+        } catch {}
+      }
+    }, 520);
+
+    setTimeout(() => {
+      clone.remove();
+      vehicle.style.visibility = '';
+      vehicle.classList.add('rocket-return');
+      setTimeout(()=>vehicle.classList.remove('rocket-return'), 500);
+    }, 920);
+
+    setTimeout(() => {
+      plus.classList.remove('rocket-release');
+      document.body.classList.remove('rocket-screen-rumble');
+    }, 1000);
+  }
+
+  plusHoldRevving = false;
 }
 
 function bindEvents() {

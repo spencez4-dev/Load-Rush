@@ -2910,3 +2910,132 @@ body.alarm-active {
   animation:brylerTag .7s ease-out forwards;
 }
 @keyframes brylerTag { from{opacity:0;transform:translate(-50%,8px) scale(.82)} 22%{opacity:1} to{opacity:0;transform:translate(-50%,-24px) scale(1.08)} }
+
+
+/* V7.7 — HOLD + = ROCKET TRUCK */
+.count-button.plus.rocket-armed{
+  animation: rocketArmButton .07s linear infinite alternate;
+  box-shadow: 0 0 0 8px color-mix(in srgb,#ff8a00 18%,transparent),
+              0 0 38px rgba(255,116,0,.32);
+}
+@keyframes rocketArmButton{
+  from{transform:scale(.93) rotate(-1deg)}
+  to{transform:scale(.96) rotate(1deg)}
+}
+.road-world .vehicle.rocket-arming{
+  animation: rocketArmRig .06s linear infinite alternate!important;
+  filter:drop-shadow(0 0 8px rgba(255,120,0,.65));
+}
+@keyframes rocketArmRig{
+  from{transform:translate(0,-50%) rotate(-3deg)}
+  to{transform:translate(3px,-53%) rotate(3deg)}
+}
+.count-button.plus.rocket-release{
+  animation: rocketReleaseButton .42s cubic-bezier(.15,.85,.25,1);
+}
+@keyframes rocketReleaseButton{
+  0%{transform:scale(.9)}
+  32%{transform:scale(1.12)}
+  100%{transform:scale(1)}
+}
+.rocket-launch-clone{
+  position:fixed!important;
+  z-index:9998!important;
+  margin:0!important;
+  pointer-events:none!important;
+  transform-origin:center center!important;
+  animation: rocketTruckFlight .92s cubic-bezier(.16,.75,.25,1) forwards!important;
+  filter:drop-shadow(0 10px 12px rgba(0,0,0,.25));
+}
+@keyframes rocketTruckFlight{
+  0%{transform:translate(0,0) rotate(0deg) scale(1)}
+  22%{transform:translate(-18px,8px) rotate(-12deg) scale(1.05)}
+  60%{transform:translate(150px,-240px) rotate(38deg) scale(1.16)}
+  100%{transform:translate(260px,-390px) rotate(105deg) scale(.35);opacity:.15}
+}
+.rocket-flame{
+  position:absolute;
+  right:-26px;
+  top:50%;
+  transform:translateY(-50%) rotate(90deg);
+  font-size:30px;
+  animation: rocketFlame .06s linear infinite alternate;
+  filter:drop-shadow(0 0 8px #ff8a00);
+}
+@keyframes rocketFlame{
+  from{transform:translateY(-50%) rotate(90deg) scale(.75)}
+  to{transform:translateY(-50%) rotate(90deg) scale(1.35)}
+}
+.rocket-explosion{
+  position:fixed;
+  z-index:10000;
+  width:1px;height:1px;
+  pointer-events:none;
+}
+.boom-core{
+  position:absolute;
+  left:0;top:0;
+  transform:translate(-50%,-50%);
+  font-size:42px;
+  animation: boomCore .75s ease-out forwards;
+}
+@keyframes boomCore{
+  0%{transform:translate(-50%,-50%) scale(.2);opacity:0}
+  18%{opacity:1}
+  55%{transform:translate(-50%,-50%) scale(3.5)}
+  100%{transform:translate(-50%,-50%) scale(5.2);opacity:0}
+}
+.boom-ring{
+  position:absolute;
+  left:0;top:0;
+  width:30px;height:30px;
+  border:5px solid rgba(255,181,44,.95);
+  border-radius:50%;
+  transform:translate(-50%,-50%) scale(.2);
+  animation: boomRing .8s ease-out forwards;
+}
+@keyframes boomRing{
+  to{transform:translate(-50%,-50%) scale(8);opacity:0}
+}
+.boom-word{
+  position:absolute;
+  left:0;top:-60px;
+  transform:translateX(-50%) scale(.3) rotate(-8deg);
+  font-weight:1000;
+  font-size:24px;
+  letter-spacing:.08em;
+  color:#fff;
+  text-shadow:0 3px 0 #ff5b00,0 0 18px #ffb000;
+  animation: boomWord .85s cubic-bezier(.15,.85,.25,1) forwards;
+}
+@keyframes boomWord{
+  25%{transform:translateX(-50%) scale(1.5) rotate(5deg)}
+  100%{transform:translateX(-50%) translateY(-65px) scale(.9);opacity:0}
+}
+.rocket-debris{
+  position:fixed;
+  z-index:10001;
+  pointer-events:none;
+  font-size:18px;
+  animation: rocketDebris .9s ease-out forwards;
+}
+@keyframes rocketDebris{
+  to{transform:translate(var(--rx),var(--ry)) rotate(620deg) scale(.25);opacity:0}
+}
+.rocket-screen-rumble{
+  animation: rocketScreenRumble .07s linear 8;
+}
+@keyframes rocketScreenRumble{
+  0%,100%{transform:translate(0,0)}
+  25%{transform:translate(-2px,1px)}
+  50%{transform:translate(2px,-1px)}
+  75%{transform:translate(-1px,-2px)}
+}
+.road-world .vehicle.rocket-return{
+  animation: rocketReturn .48s cubic-bezier(.15,.9,.25,1)!important;
+}
+@keyframes rocketReturn{
+  0%{transform:translate(0,-90%) scale(.25);opacity:0}
+  55%{transform:translate(0,-48%) scale(1.18);opacity:1}
+  100%{transform:translate(0,-50%) scale(1)}
+}
