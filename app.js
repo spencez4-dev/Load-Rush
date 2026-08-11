@@ -26,7 +26,7 @@ const DEFAULTS = {
   selectedLandscape: 'alpine',
   theme: 'light',
   sound: true,
-  soundStyle: 'engine',
+  soundStyle: 'orbit',
   particles: true,
   fateEnabled: true,
   fateFrequency: 10,
@@ -945,9 +945,23 @@ function playTone(kind = 'plus', special = false, forcePreview = false) {
   const style = state.soundStyle || 'engine';
 
   if (special) {
+    // Race wins, loot rewards, rare Freight Fate events, etc.
+    const notes = style === 'orbit' ? [420, 620, 820] : [660, 810, 960];
     [0, .07, .15].forEach((offset, index) => {
-      createOscillator(660 + index * 150, 'sine', now + offset, .17, .085);
+      createOscillator(notes[index], 'sine', now + offset, style === 'orbit' ? .10 : .17, style === 'orbit' ? .06 : .085);
     });
+    return;
+  }
+
+  if (style === 'orbit') {
+    // ORBIT RUN sound pack: short, soft sine beeps that scale cleanly with the action.
+    // Kept intentionally tiny so rapid load entry stays satisfying instead of noisy.
+    const frequency = kind === 'plus' ? 245 : 165;
+    createOscillator(frequency, 'sine', now, .055, .038);
+
+    if (kind === 'plus') {
+      createOscillator(frequency * 1.35, 'sine', now + .028, .045, .018);
+    }
     return;
   }
 
