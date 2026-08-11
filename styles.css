@@ -2845,3 +2845,68 @@ body.alarm-active {
   from { transform: translate(0, -56%) rotate(-5deg) scale(1); }
   to { transform: translate(0, -66%) rotate(5deg) scale(1.12); }
 }
+
+
+/* V7.5 — tactile hold-to-rev Easter egg */
+.count-button.plus.revving{animation:holdButtonRev .085s linear infinite alternate;box-shadow:0 0 0 7px color-mix(in srgb,var(--accent) 13%,transparent),0 15px 34px rgba(0,0,0,.12)}
+@keyframes holdButtonRev{from{transform:scale(.94) rotate(-1.2deg)}to{transform:scale(.96) rotate(1.2deg)}}
+.count-button.plus.hold-launch{animation:holdButtonLaunch .4s cubic-bezier(.18,.85,.3,1)}
+@keyframes holdButtonLaunch{0%{transform:scale(.92)}38%{transform:scale(1.09)}100%{transform:scale(1)}}
+.road-world .vehicle.hold-rev{animation:holdRigRev .075s linear infinite alternate!important}
+@keyframes holdRigRev{from{transform:translate(0,-50%) rotate(-2deg)}to{transform:translate(2px,-52%) rotate(2deg)}}
+.road-world .vehicle.hold-launch-rig{animation:holdRigLaunch .38s cubic-bezier(.16,.9,.25,1)!important}
+@keyframes holdRigLaunch{0%{transform:translate(0,-50%) scale(1)}42%{transform:translate(-18px,-50%) scale(1.08)}100%{transform:translate(0,-50%) scale(1)}}
+
+
+/* V7.6 — BRYLER: SURF SIDE POWER */
+.road { overflow: hidden; }
+#vehicle.bryler-surf-power {
+  transform-origin: 50% 80%;
+  animation: brylerSurfPower .72s cubic-bezier(.18,.82,.25,1) !important;
+  z-index: 8;
+}
+@keyframes brylerSurfPower {
+  0%   { transform: translate(0,-50%) rotate(0deg) scale(1); }
+  18%  { transform: translate(-8px,-82%) rotate(-18deg) scale(1.08); }
+  43%  { transform: translate(-18px,-128%) rotate(-165deg) scale(1.14); }
+  68%  { transform: translate(-10px,-92%) rotate(-330deg) scale(1.09); }
+  84%  { transform: translate(2px,-46%) rotate(-360deg) scale(1.12,.88); }
+  100% { transform: translate(0,-50%) rotate(-360deg) scale(1); }
+}
+.bryler-wave {
+  position:absolute;
+  left:-18%; right:-18%; bottom:-24px;
+  height:78px;
+  z-index:4;
+  pointer-events:none;
+  border-radius:52% 48% 0 0 / 65% 65% 0 0;
+  background:linear-gradient(180deg,rgba(103,232,249,.78),rgba(6,182,212,.38) 48%,rgba(14,116,144,.06));
+  box-shadow:0 -7px 18px rgba(34,211,238,.25), inset 0 10px 0 rgba(255,255,255,.28);
+  transform:translateX(95%) skewX(-12deg);
+  animation:brylerWaveSweep .78s cubic-bezier(.15,.78,.2,1) forwards;
+}
+.bryler-wave::before {
+  content:'🌊'; position:absolute; left:42%; top:-31px; font-size:50px;
+  filter:drop-shadow(0 4px 7px rgba(6,182,212,.3));
+}
+@keyframes brylerWaveSweep {
+  0%{transform:translateX(95%) skewX(-12deg) scaleY(.72);opacity:0}
+  18%{opacity:1}
+  100%{transform:translateX(-90%) skewX(-12deg) scaleY(1.05);opacity:0}
+}
+.bryler-splash {
+  position:absolute; z-index:9; pointer-events:none; font-size:14px;
+  animation:brylerSplash .72s ease-out forwards;
+}
+@keyframes brylerSplash {
+  from{transform:translate(0,0) scale(.7);opacity:1}
+  to{transform:translate(var(--bx),var(--by)) scale(1.2) rotate(180deg);opacity:0}
+}
+.bryler-power-tag {
+  position:absolute;z-index:10;pointer-events:none;transform:translateX(-50%);
+  color:#ecfeff;background:rgba(8,145,178,.88);border:1px solid rgba(165,243,252,.7);
+  box-shadow:0 5px 18px rgba(6,182,212,.28);border-radius:999px;padding:4px 8px;
+  font-size:9px;font-weight:950;letter-spacing:.11em;white-space:nowrap;
+  animation:brylerTag .7s ease-out forwards;
+}
+@keyframes brylerTag { from{opacity:0;transform:translate(-50%,8px) scale(.82)} 22%{opacity:1} to{opacity:0;transform:translate(-50%,-24px) scale(1.08)} }

@@ -956,7 +956,9 @@ function playTone(kind = 'plus', special = false, forcePreview = false) {
   if (style === 'orbit') {
     // ORBIT RUN sound pack: short, soft sine beeps that scale cleanly with the action.
     // Kept intentionally tiny so rapid load entry stays satisfying instead of noisy.
-    const frequency = kind === 'plus' ? 245 : 165;
+    const clickCombo = kind === 'plus' ? Math.max(1, comboStats().current || 1) : 1;
+    const ladder = [245, 275, 310, 345, 390, 440, 495, 555];
+    const frequency = kind === 'plus' ? ladder[Math.min(clickCombo - 1, ladder.length - 1)] : 165;
     createOscillator(frequency, 'sine', now, .055, .038);
 
     if (kind === 'plus') {
@@ -1632,6 +1634,66 @@ function showTruckSmoke() {
   setTimeout(() => puff.remove(), 650);
 }
 
+
+// V7.6 — Bryler's equipped-only Surf Side power. Purely visual/audio.
+function triggerBrylerPower() {
+  if (selectedRig().id !== 'byler') return;
+  const road = document.querySelector('.road');
+  const vehicle = $('vehicle');
+  if (!road || !vehicle) return;
+
+  vehicle.classList.remove('bryler-surf-power');
+  void vehicle.offsetWidth;
+  vehicle.classList.add('bryler-surf-power');
+  setTimeout(() => vehicle.classList.remove('bryler-surf-power'), 760);
+
+  const wave = document.createElement('div');
+  wave.className = 'bryler-wave';
+  road.appendChild(wave);
+  setTimeout(() => wave.remove(), 850);
+
+  const splashChars = ['💧','🫧','✦','🌊'];
+  const vr = vehicle.getBoundingClientRect();
+  const rr = road.getBoundingClientRect();
+  for (let i = 0; i < 9; i++) {
+    const splash = document.createElement('span');
+    splash.className = 'bryler-splash';
+    splash.textContent = splashChars[Math.floor(Math.random()*splashChars.length)];
+    splash.style.left = `${vr.left - rr.left + vr.width*.45}px`;
+    splash.style.top = `${vr.top - rr.top + vr.height*.6}px`;
+    splash.style.setProperty('--bx', `${-45 + Math.random()*90}px`);
+    splash.style.setProperty('--by', `${-35 - Math.random()*55}px`);
+    splash.style.animationDelay = `${Math.random()*70}ms`;
+    road.appendChild(splash);
+    setTimeout(() => splash.remove(), 900);
+  }
+
+  const tag = document.createElement('span');
+  tag.className = 'bryler-power-tag';
+  tag.textContent = Math.random() < .5 ? 'SURF SIDE ⚡' : 'BRYLER BOOST 🌊';
+  tag.style.left = `${Math.max(42, vr.left - rr.left + vr.width/2)}px`;
+  tag.style.top = `${Math.max(8, vr.top - rr.top - 18)}px`;
+  road.appendChild(tag);
+  setTimeout(() => tag.remove(), 800);
+
+  if (state.sound) {
+    try {
+      audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+      const now = audioContext.currentTime;
+      [[330,0],[440,.045],[660,.09]].forEach(([freq,offset],idx) => {
+        const o=audioContext.createOscillator(), g=audioContext.createGain();
+        o.type = idx === 2 ? 'triangle' : 'sine';
+        o.frequency.setValueAtTime(freq, now+offset);
+        g.gain.setValueAtTime(.0001, now+offset);
+        g.gain.exponentialRampToValueAtTime(idx===2?.027:.018, now+offset+.012);
+        g.gain.exponentialRampToValueAtTime(.0001, now+offset+.16);
+        o.connect(g).connect(audioContext.destination);
+        o.start(now+offset); o.stop(now+offset+.18);
+      });
+    } catch {}
+  }
+}
+
 function addLoad(delta) {
   const oldLevel = lifetimeLevel();
   const entry = { delta, time: Date.now(), xp: delta };
@@ -1645,7 +1707,7 @@ function addLoad(delta) {
   if (delta > 0 && newLevel > oldLevel) {
     showToast(`Level ${newLevel}! Keep hauling toward the next truck.`);
   }
-  saveState(); renderAll(); animateCount(delta); playTone(delta > 0 ? 'plus' : 'minus'); if (delta > 0) showTruckSmoke();
+  saveState(); renderAll(); animateCount(delta); playTone(delta > 0 ? 'plus' : 'minus'); if (delta > 0) { showTruckSmoke(); triggerBrylerPower(); }
   if (delta > 0) { const combo = comboStats(); particleBurst($('plusBtn'), combo.current >= 10 ? 70 : combo.current >= 5 ? 45 : undefined, combo.current >= 5 ? 1.8 : undefined); if (combo.current === 3) showToast('Combo active · 2× XP'); if (combo.current === 5) flashMegaMessage('HOT STREAK · 3× XP!'); if (combo.current === 10) flashMegaMessage('FREIGHT FRENZY · 5× XP!'); maybeAwardRace(); announceNewUnlocks(); if (todayNetLoads() === state.dailyGoal) { flashMegaMessage('SHIFT GOAL CRUSHED!'); particleBurst($('mainCount'), 100, 2.4); showToast('Daily load goal complete'); } if (shouldPromptFate()) setTimeout(promptFreightFate, 350); } else showToast('Subtracted from every live metric');
 }
 
@@ -2237,8 +2299,52 @@ function bindReminderEventsSafely() {
   }
 }
 
+
+// V7.5 — hold-click Easter egg. Visual/audio only; release still logs exactly one load.
+let plusHoldTimer = null, plusHoldRevving = false, plusHoldOscillator = null, plusHoldGain = null;
+function startPlusHold(event) {
+  if (event.pointerType === 'mouse' && event.button !== 0) return;
+  clearTimeout(plusHoldTimer); plusHoldRevving = false;
+  plusHoldTimer = setTimeout(() => {
+    plusHoldRevving = true;
+    const plus=$('plusBtn'), vehicle=document.querySelector('.road-world .vehicle');
+    plus.classList.add('revving'); if(vehicle) vehicle.classList.add('hold-rev');
+    showTruckSmoke(); setTimeout(showTruckSmoke,170); setTimeout(showTruckSmoke,340);
+    if(state.sound) try {
+      audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+      const now=audioContext.currentTime;
+      plusHoldOscillator=audioContext.createOscillator(); plusHoldGain=audioContext.createGain();
+      plusHoldOscillator.type='sawtooth'; plusHoldOscillator.frequency.setValueAtTime(72,now);
+      plusHoldOscillator.frequency.exponentialRampToValueAtTime(138,now+.65);
+      plusHoldGain.gain.setValueAtTime(.0001,now); plusHoldGain.gain.exponentialRampToValueAtTime(.025,now+.04);
+      plusHoldOscillator.connect(plusHoldGain).connect(audioContext.destination); plusHoldOscillator.start(now);
+    } catch {}
+  },700);
+}
+function endPlusHold() {
+  clearTimeout(plusHoldTimer); plusHoldTimer=null;
+  const plus=$('plusBtn'), vehicle=document.querySelector('.road-world .vehicle');
+  plus.classList.remove('revving'); if(vehicle) vehicle.classList.remove('hold-rev');
+  if(plusHoldOscillator && plusHoldGain && audioContext) try {
+    const now=audioContext.currentTime;
+    plusHoldOscillator.frequency.exponentialRampToValueAtTime(260,now+.12);
+    plusHoldGain.gain.exponentialRampToValueAtTime(.0001,now+.16); plusHoldOscillator.stop(now+.18);
+  } catch {}
+  plusHoldOscillator=null; plusHoldGain=null;
+  if(plusHoldRevving){
+    plus.classList.remove('hold-launch'); void plus.offsetWidth; plus.classList.add('hold-launch');
+    if(vehicle){ vehicle.classList.remove('hold-launch-rig'); void vehicle.offsetWidth; vehicle.classList.add('hold-launch-rig'); setTimeout(()=>vehicle.classList.remove('hold-launch-rig'),420); }
+    setTimeout(showTruckSmoke,40); setTimeout(()=>plus.classList.remove('hold-launch'),420);
+  }
+  plusHoldRevving=false;
+}
+
 function bindEvents() {
   $('plusBtn').addEventListener('click', () => addLoad(1));
+  $('plusBtn').addEventListener('pointerdown', startPlusHold);
+  $('plusBtn').addEventListener('pointerup', endPlusHold);
+  $('plusBtn').addEventListener('pointercancel', endPlusHold);
+  $('plusBtn').addEventListener('pointerleave', event => { if (event.buttons) endPlusHold(); });
   $('minusBtn').addEventListener('click', () => addLoad(-1));
   $('undoBtn').addEventListener('click', undoLast);
   $('exportBtn').addEventListener('click', exportBackup);
