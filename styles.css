@@ -3176,3 +3176,92 @@ body.lr-afternoon-frenzy .count-button.plus{animation:lrFrenzyPlus .3s ease-in-o
 .crate-all-results-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:9px;max-height:48vh;overflow:auto;padding:3px}
 .crate-all-result{position:relative;display:flex;min-height:120px;flex-direction:column;align-items:center;justify-content:center;padding:13px 8px;border-radius:15px;background:rgba(127,127,140,.08);border:1px solid rgba(127,127,140,.12);text-align:center}.crate-all-result.character-drop{background:linear-gradient(145deg,rgba(255,184,0,.17),rgba(255,45,146,.13));border-color:rgba(255,174,0,.42);box-shadow:0 0 24px rgba(255,174,0,.09)}.crate-all-icon{font-size:31px;margin-bottom:5px}.crate-all-result strong{font-size:11px}.crate-all-result small{margin-top:3px;font-size:8px;line-height:1.25;opacity:.58}.crate-all-number{position:absolute;left:8px;top:7px;font-size:8px;font-weight:900;opacity:.38}
 @media(max-width:620px){.crate-all-summary{grid-template-columns:repeat(2,1fr)}.crate-all-results-grid{grid-template-columns:repeat(2,1fr)}}
+
+
+/* V7.22 — Super Character Mastery */
+.rig-emoji-composite{
+  position:relative;
+  display:inline-block;
+  width:1em;
+  height:1em;
+  line-height:1;
+  vertical-align:middle;
+  overflow:visible;
+}
+.rig-emoji-base{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  line-height:1;
+}
+.super-crown{
+  position:absolute;
+  z-index:8;
+  left:50%;
+  top:-0.055em;
+  font-size:.29em;
+  line-height:1;
+  transform:translate(-50%,0) rotate(-3deg);
+  transform-origin:center bottom;
+  filter:drop-shadow(0 .025em .025em rgba(0,0,0,.24));
+  pointer-events:none;
+}
+/* Crown physically overlaps the emoji's top pixels so it reads as one crowned emoji. */
+.rig-emoji-composite.is-super .super-crown{
+  animation:superCrownShine 2.6s ease-in-out infinite;
+}
+@keyframes superCrownShine{
+  0%,78%,100%{transform:translate(-50%,0) rotate(-3deg) scale(1)}
+  86%{transform:translate(-50%,-.025em) rotate(2deg) scale(1.12)}
+  92%{transform:translate(-50%,0) rotate(-2deg) scale(1.04)}
+}
+
+/* Preserve race emoji sizing even though vehicle now contains nested spans. */
+.vehicle > .rig-emoji-composite.race{
+  display:block;
+  width:1em;
+  height:1em;
+  font-size:inherit;
+}
+
+/* Garage composite inherits card icon sizing. */
+.rig-icon .rig-emoji-composite.garage{
+  font-size:1em;
+}
+
+/* Mastery progress */
+.rig-super-progress{
+  display:block;
+  margin-top:9px;
+}
+.rig-super-progress>span{
+  display:block;
+  height:6px;
+  overflow:hidden;
+  border-radius:999px;
+  background:color-mix(in srgb,var(--text) 9%,transparent);
+}
+.rig-super-progress i{
+  display:block;
+  height:100%;
+  border-radius:inherit;
+  background:linear-gradient(90deg,#f59e0b,#facc15,#fff3a3);
+  transition:width .3s ease;
+}
+.rig-super-progress b{
+  display:block;
+  margin-top:5px;
+  font-size:.62rem;
+  color:var(--muted);
+  letter-spacing:.03em;
+}
+.rig-super-progress.complete b{
+  color:#d69b00;
+  font-weight:1000;
+}
+
+/* Super rigs get a very subtle gold aura without changing gameplay. */
+.vehicle .rig-emoji-composite.is-super{
+  filter:drop-shadow(0 0 .11em rgba(255,197,45,.8));
+}

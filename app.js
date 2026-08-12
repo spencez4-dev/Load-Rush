@@ -42,6 +42,7 @@ const DEFAULTS = {
   ownedRigs: ['starter-semi'],
   crateTokens: 0,
   openedCrates: 0,
+  rigLoadCounts: {},
   bonusXP: 0,
   lastRecapDate: ''
 };
@@ -620,6 +621,29 @@ function renderGhostTruck() {
   ghost.title = `Best-hour ghost: ${data.count.toFixed(1)} loads at this point (${data.total} total)`;
 }
 
+
+const SUPER_LOAD_GOAL = 1000;
+
+function rigLoadCount(rigId) {
+  return Math.max(0, Number(state.rigLoadCounts?.[rigId]) || 0);
+}
+
+function isSuperRig(rigId) {
+  return rigLoadCount(rigId) >= SUPER_LOAD_GOAL;
+}
+
+function superRigProgress(rigId) {
+  return Math.min(SUPER_LOAD_GOAL, rigLoadCount(rigId));
+}
+
+function rigIconMarkup(rig, context='race') {
+  const superClass = isSuperRig(rig.id) ? ' is-super' : '';
+  const crown = isSuperRig(rig.id)
+    ? '<span class="super-crown" aria-hidden="true">👑</span>'
+    : '';
+  return `<span class="rig-emoji-composite ${context}${superClass}" aria-label="${escapeHtml(rig.name)}">${crown}<span class="rig-emoji-base">${rig.icon}</span></span>`;
+}
+
 function ownedRigIds() { const owned = new Set(Array.isArray(state.ownedRigs) ? state.ownedRigs : ['starter-semi']); owned.add('starter-semi'); return [...owned]; }
 function isRigOwned(rigId) { const rig = RIGS.find(item => item.id === rigId); return Boolean(rig && (ownedRigIds().includes(rigId) || rig.unlocked())); }
 function unlockedRigIds() { return RIGS.filter(rig => isRigOwned(rig.id)).map(rig => rig.id); }
@@ -756,7 +780,7 @@ function openTruckCrate() {
       renderAll();
 
       stage.classList.add('jackpot');
-      icon.textContent = rig.icon;
+      icon.innerHTML = rigIconMarkup(rig, 'crate');
       rarity.textContent = rig.rarity;
       title.textContent = rig.id === 'byler' ? 'SURF SIDE: BRYLER!' : `${rig.name.toUpperCase()} UNLOCKED!`;
       description.textContent = `${rig.reward} · Added to your garage.`;
@@ -895,7 +919,7 @@ function renderAll() {
   $('raceProgressText').textContent = `${currentRaceLoads} / ${state.hourlyGoal}`;
   $('raceFill').style.width = `${hourlyProgress}%`;
   $('vehicle').style.right = `${3 + (hourlyProgress * 0.91)}%`;
-  $('vehicle').textContent = rig.icon;
+  $('vehicle').innerHTML = rigIconMarkup(rig, 'race');
   $('vehicle').classList.remove('finished');
   document.documentElement.style.setProperty('--rig-accent', rig.accent || 'var(--accent)');
   document.documentElement.dataset.rigRarity = (rig.rarity || 'COMMON').toLowerCase();
@@ -925,7 +949,7 @@ function renderAll() {
   $('goalText').textContent = `${today} / ${state.dailyGoal}`;
 
   $('raceWinsValue').textContent = state.raceWins;
-  $('activeRigLabel').textContent = `Driving: ${rig.name}`;
+  $('activeRigLabel').textContent = `Driving: ${rig.name}${isSuperRig(rig.id) ? ' 👑 SUPER' : ` · ${superRigProgress(rig.id)}/${SUPER_LOAD_GOAL} to Super`}`;
 
   $('dailyGoalInput').value = state.dailyGoal;
   $('hourlyGoalInput').value = state.hourlyGoal;
@@ -978,7 +1002,7 @@ function renderGarage() {
   if ($('garageCrateCount')) $('garageCrateCount').textContent = state.crateTokens || 0;
   if ($('garageCrateBtn')) $('garageCrateBtn').disabled = (state.crateTokens || 0) < 1;
   if ($('garageOpenAllBtn')) $('garageOpenAllBtn').disabled = (state.crateTokens || 0) < 1;
-  $('garageGrid').innerHTML = RIGS.map(rig => { const isUnlocked = isRigOwned(rig.id); const isSelected = active.id === rig.id; const rarityClass = rig.rarity.toLowerCase().replace(/\s+/g, '-'); return `<button class="rig-card ${isUnlocked ? 'unlocked' : 'locked'} ${isSelected ? 'selected' : ''}" type="button" data-rig-id="${rig.id}" ${isUnlocked ? '' : 'disabled'}><span class="rig-card-top"><span class="rig-icon">${rig.icon}</span><span class="rig-rarity rarity-${rarityClass}">${rig.rarity}</span></span><span class="rig-name">${rig.name}</span><span class="rig-type">${rig.type}</span><span class="rig-reward">${isUnlocked ? `✦ ${rig.reward}` : `🔒 ${rig.rule}`}</span><span class="rig-rule">${isSelected ? 'Equipped' : isUnlocked ? 'Tap to equip' : 'Locked — earn it through the listed achievement'}</span></button>`; }).join('');
+  $('garageGrid').innerHTML = RIGS.map(rig => { const isUnlocked = isRigOwned(rig.id); const isSelected = active.id === rig.id; const rarityClass = rig.rarity.toLowerCase().replace(/\s+/g, '-'); return `<button class="rig-card ${isUnlocked ? 'unlocked' : 'locked'} ${isSelected ? 'selected' : ''}" type="button" data-rig-id="${rig.id}" ${isUnlocked ? '' : 'disabled'}><span class="rig-card-top"><span class="rig-icon">${rigIconMarkup(rig, 'garage')}</span><span class="rig-rarity rarity-${rarityClass}">${isSuperRig(rig.id) ? '👑 SUPER' : rig.rarity}</span></span><span class="rig-name">${rig.name}</span><span class="rig-type">${rig.type}</span><span class="rig-reward">${isUnlocked ? `✦ ${rig.reward}` : `🔒 ${rig.rule}`}</span><span class="rig-super-progress ${isSuperRig(rig.id) ? 'complete' : ''}"><span><i style="width:${Math.min(100,(superRigProgress(rig.id)/SUPER_LOAD_GOAL)*100)}%"></i></span><b>${isSuperRig(rig.id) ? 'SUPER UNLOCKED' : `${superRigProgress(rig.id)} / ${SUPER_LOAD_GOAL} loads to Super`}</b></span><span class="rig-rule">${isSelected ? 'Equipped' : isUnlocked ? 'Tap to equip' : 'Locked — earn it through the listed achievement'}</span></button>`; }).join('');
   document.querySelectorAll('[data-rig-id]').forEach(button => button.addEventListener('click', () => { const rig = RIGS.find(item => item.id === button.dataset.rigId); if (!rig || !isRigOwned(rig.id)) return; state.selectedRig = rig.id; saveState(); renderAll(); renderGarage(); showToast(`${rig.name} equipped`); }));
 
   const landscapeGrid = $('landscapeGrid');
@@ -1918,6 +1942,22 @@ function addLoad(delta) {
   if (delta > 0) {
     const combo = comboStats();
     entry.xp = Math.max(1, combo.multiplier || 1);
+  }
+  if (delta > 0) {
+    const activeRigId = selectedRig().id;
+    state.rigLoadCounts ||= {};
+    const before = rigLoadCount(activeRigId);
+    state.rigLoadCounts[activeRigId] = before + 1;
+
+    if (before < SUPER_LOAD_GOAL && state.rigLoadCounts[activeRigId] >= SUPER_LOAD_GOAL) {
+      const mastered = selectedRig();
+      setTimeout(() => {
+        flashMegaMessage(`👑 SUPER ${mastered.name.toUpperCase()}!`);
+        showToast(`${mastered.name} mastered · 1,000 loads`);
+        particleBurst($('vehicle'), 130, 2.5);
+        playTone('plus', true);
+      }, 80);
+    }
   }
   const newLevel = lifetimeLevel();
   if (delta > 0 && newLevel > oldLevel) {
@@ -3149,6 +3189,7 @@ async function initialize() {
   state.hourlyRaceAwards = state.hourlyRaceAwards && typeof state.hourlyRaceAwards === 'object' ? state.hourlyRaceAwards : {};
   state.raceWins = Math.max(0, Number(state.raceWins) || 0);
   state.crateTokens = Math.max(0, Number(state.crateTokens) || 0);
+  state.rigLoadCounts = state.rigLoadCounts && typeof state.rigLoadCounts === 'object' ? state.rigLoadCounts : {};
   state.bonusXP = Math.max(0, Number(state.bonusXP) || 0);
   reconcileProgressFromLog();
   state.reminders = Array.isArray(state.reminders) ? state.reminders : [];
