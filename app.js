@@ -794,6 +794,7 @@ function renderAll() {
   $('xpValue').textContent = lifetime;
   $('xpBar').style.width = `${levelProgress}%`;
   $('levelLabel').textContent = `Level ${level} · ${Math.floor(levelDetails.earned)} / ${levelDetails.needed} XP to next level`;
+  lrRenderPrestige();
 
   $('goalRing').style.setProperty('--goal-pct', dailyProgress);
   $('goalPercent').textContent = `${dailyProgress}%`;
@@ -2499,44 +2500,47 @@ function lrInitQuirks(){lrApplyAfternoon();lrAfternoonLoop=setInterval(lrApplyAf
 // V7.13 — Prestige every 100 levels.
 
 function lrCurrentLevel(){
-  try {
-    if (typeof getLevel === 'function') {
-      const v = Number(getLevel());
-      if (Number.isFinite(v)) return v;
-    }
-  } catch {}
-  try {
-    if (typeof levelFromXp === 'function') {
-      const xp = Number(state.lifetimeXp ?? state.xp ?? 0);
-      const v = Number(levelFromXp(xp));
-      if (Number.isFinite(v)) return v;
-    }
-  } catch {}
-  const direct = Number(state.level);
-  if (Number.isFinite(direct)) return direct;
-  const xp = Number(state.lifetimeXp ?? state.xp ?? 0);
-  return Math.max(1, Math.floor(xp / 100) + 1);
+  // HARD SYNC: this is the exact same canonical level source used by the main XP card.
+  return lifetimeLevel();
+}
+
+function lrPrestigeCycleLevel(){
+  const lifetime = lifetimeLevel();
+  const baseline = Number(state.prestigeLevelBaseline || 0);
+  // Before first prestige, mirror the actual lifetime level exactly.
+  if (lrPrestigeRank() === 0) return Math.min(100, lifetime);
+  // After prestiging, count levels gained since the prestige moment.
+  return Math.min(100, Math.max(1, lifetime - baseline + 1));
 }
 
 function lrPrestigeRank(){return Math.max(0,Number(state.prestige||0))}
-function lrCanPrestige(){return lrCurrentLevel()>=100}
+function lrCanPrestige(){return lrPrestigeCycleLevel()>=100}
 function lrPrestigeRewardName(rank){const r=['Rebirth Aura','Overdrive','Weather Machine','Classified Road Events','Freight Royalty','Reality Failure','The Zebra','Lucky Freight','Cosmic Dispatch','Immortal'];return r[(rank-1)%r.length]||'Unknown'}
 function lrRenderPrestige(){
  let box=document.getElementById('lrPrestigeBox'),host=document.querySelector('#garageView,.garage-view,[data-view="garage"],.garage-section')||document.querySelector('main');if(!host)return;
  if(!box){box=document.createElement('section');box.id='lrPrestigeBox';box.className='lr-prestige-box';host.appendChild(box)}
  const p=lrPrestigeRank(),ready=lrCanPrestige();
- box.innerHTML=`<div class="lr-prestige-head"><div><span>CAREER PRESTIGE</span><h3>${p?`P${p} • ${lrPrestigeRewardName(p)}`:'Prestige awaits'}</h3></div><div class="lr-prestige-emblem">${p?`P${p}`:'♛'}</div></div><p>Every 100 levels, restart the level climb and permanently raise your Prestige. Garage unlocks, lifetime stats, race records and history stay yours.</p><div class="lr-prestige-progress"><i style="width:${Math.min(100,lrCurrentLevel())}%"></i></div><div class="lr-prestige-foot"><b>Level ${lrCurrentLevel()}/100</b><span>Next: ${lrPrestigeRewardName(p+1)}</span></div><button id="lrPrestigeBtn" class="lr-prestige-btn" ${ready?'':'disabled'}>${ready?'PRESTIGE NOW':'REACH LEVEL 100'}</button>`;
+ box.innerHTML=`<div class="lr-prestige-head"><div><span>CAREER PRESTIGE</span><h3>${p?`P${p} • ${lrPrestigeRewardName(p)}`:'Prestige awaits'}</h3></div><div class="lr-prestige-emblem">${p?`P${p}`:'♛'}</div></div><p>Every 100 levels, restart the level climb and permanently raise your Prestige. Garage unlocks, lifetime stats, race records and history stay yours.</p><div class="lr-prestige-progress"><i style="width:${lrPrestigeCycleLevel()}%"></i></div><div class="lr-prestige-foot"><b>Level ${lrPrestigeCycleLevel()}/100</b><span>Next: ${lrPrestigeRewardName(p+1)}</span></div><button id="lrPrestigeBtn" class="lr-prestige-btn" ${ready?'':'disabled'}>${ready?'PRESTIGE NOW':'REACH LEVEL 100'}</button>`;
  const btn=document.getElementById('lrPrestigeBtn');if(btn&&ready)btn.onclick=lrDoPrestige;
  document.body.classList.toggle('lr-prestige-aura',p>=1);
 }
 function lrDoPrestige(){
  if(!lrCanPrestige())return;const next=lrPrestigeRank()+1,reward=lrPrestigeRewardName(next);
  if(!confirm(`PRESTIGE ${next}?\n\nYour current level resets to 1. Lifetime stats, races, garage unlocks and history stay intact.\n\nUnlock: ${reward}`))return;
- state.prestige=next;state.prestigeStartLevel=lrCurrentLevel();if('levelXp'in state)state.levelXp=0;save();
+ state.prestige=next;state.prestigeLevelBaseline=lifetimeLevel();if('levelXp'in state)state.levelXp=0;save();
  const ov=document.createElement('div');ov.className='lr-prestige-ceremony';ov.innerHTML=`<div>✦</div><small>RUN COMPLETE</small><strong>PRESTIGE ${next}</strong><span>${reward.toUpperCase()} UNLOCKED</span>`;document.body.appendChild(ov);setTimeout(()=>ov.classList.add('show'),30);setTimeout(()=>ov.remove(),3500);
  try{render()}catch{}lrRenderPrestige();
 }
-function lrInitPrestige(){if(state.prestige==null)state.prestige=0;lrRenderPrestige();setInterval(lrRenderPrestige,4000);document.addEventListener('click',()=>setTimeout(lrRenderPrestige,80))}
+function lrInitPrestige(){
+  if(state.prestige==null) state.prestige=0;
+  // Migration for anyone who already prestiged before baseline tracking existed.
+  if(lrPrestigeRank()>0 && !Number.isFinite(Number(state.prestigeLevelBaseline))){
+    state.prestigeLevelBaseline=lifetimeLevel();
+    save();
+  }
+  lrRenderPrestige();
+  document.addEventListener('click',()=>setTimeout(lrRenderPrestige,80));
+}
 
 function bindEvents() {
   $('plusBtn').addEventListener('click', () => { addLoad(1); lrAfternoonClick(); lrResetIdle(); });
