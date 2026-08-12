@@ -917,8 +917,24 @@ function animateCount(delta) {
   }
 }
 
+async function ensureGameAudio() {
+  try {
+    audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+    if (audioContext.state === 'suspended') {
+      await audioContext.resume();
+    }
+    return audioContext;
+  } catch (error) {
+    console.warn('Load Rush audio unavailable:', error);
+    return null;
+  }
+}
+
 function createOscillator(frequency, type, start, duration, volume = .06) {
   audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+  if (audioContext.state === 'suspended') {
+    audioContext.resume().catch(() => {});
+  }
 
   const oscillator = audioContext.createOscillator();
   const gain = audioContext.createGain();
@@ -942,6 +958,9 @@ function playTone(kind = 'plus', special = false, forcePreview = false) {
   }
 
   audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+  if (audioContext.state === 'suspended') {
+    audioContext.resume().catch(() => {});
+  }
   const now = audioContext.currentTime;
   const style = state.soundStyle || 'engine';
 
@@ -2452,49 +2471,19 @@ function endPlusHold() {
 
 
 // V7.9 — Idle characters + automatic 12:30 PM Afternoon Mode.
-let lrIdleTimer,lrIdleLoop,lrIdleProp,lrAfternoonLoop;
-const lrIdleScenes=[['💤','POWER NAP','lr-idle-nap'],['🥪','LUNCH BREAK','lr-idle-snack'],['🗺️','WHERE ARE WE?','lr-idle-map'],['🎣',"GONE FISHIN'",'lr-idle-fish'],['📱','ONE SEC...','lr-idle-phone'],['☕','REFUELING','lr-idle-coffee']];
+let lrAfternoonLoop;
 const lrAfternoonLines=['SEND IT','YEAHAH','ANOTHER ONE','LOCK IT IN','ABSOLUTELY','FIRE ME UP','SWING THE CHEESE','LET IT EAT'];
 const lrRoadLines=['PROFESSIONALISM OPTIONAL','THE ROAD IS NOW UNSUPERVISED','AFTERNOON OPERATIONS: QUESTIONABLE','CORPORATE SAID NOTHING ABOUT THIS'];
 function lrAfternoonNow(){const d=new Date();return d.getHours()*60+d.getMinutes()>=750}
 function lrApplyAfternoon(){const on=lrAfternoonNow();document.body.classList.toggle('lr-afternoon',on);let b=document.getElementById('lrAfternoonBadge');if(on&&!b){b=document.createElement('div');b.id='lrAfternoonBadge';b.className='lr-afternoon-badge';b.innerHTML='<span>😎</span><div><b>AFTERNOON MODE</b><small>professionalism has expired</small></div>';document.body.appendChild(b)}else if(!on&&b)b.remove()}
 function lrAfternoonClick(){if(!lrAfternoonNow())return;const btn=$('plusBtn'),r=btn.getBoundingClientRect(),p=document.createElement('div');p.className='lr-afternoon-pop';p.textContent=lrAfternoonLines[Math.floor(Math.random()*lrAfternoonLines.length)];p.style.left=(r.left+r.width/2)+'px';p.style.top=r.top+'px';document.body.appendChild(p);setTimeout(()=>p.remove(),900);if(Math.random()<.12){const road=document.querySelector('.road-world');if(road){const s=document.createElement('div');s.className='lr-road-sign';s.textContent=lrRoadLines[Math.floor(Math.random()*lrRoadLines.length)];road.appendChild(s);setTimeout(()=>s.remove(),2500)}}if(Math.random()<.18){const v=document.querySelector('.road-world .vehicle');if(v){v.classList.remove('lr-afternoon-hop');void v.offsetWidth;v.classList.add('lr-afternoon-hop');setTimeout(()=>v.classList.remove('lr-afternoon-hop'),520)}}}
-function lrClearIdle(){
-  clearInterval(lrIdleLoop);
-  lrIdleLoop=null;
-  const v=document.querySelector('.road-world .vehicle');
-  if(v)lrIdleScenes.forEach(x=>v.classList.remove(x[2]));
-  if(lrIdleProp){lrIdleProp.remove();lrIdleProp=null;}
+function lrInitQuirks(){
+  lrApplyAfternoon();
+  lrAfternoonLoop=setInterval(lrApplyAfternoon,30000);
+  document.addEventListener('visibilitychange',()=>{
+    if(!document.hidden) lrApplyAfternoon();
+  });
 }
-function lrIdleScene(){
-  const v=document.querySelector('.road-world .vehicle');
-  if(!v||document.hidden)return;
-
-  // Clear only the previous visual scene, but keep the long-running idle loop alive.
-  lrIdleScenes.forEach(x=>v.classList.remove(x[2]));
-  if(lrIdleProp){lrIdleProp.remove();lrIdleProp=null;}
-
-  const s=lrIdleScenes[Math.floor(Math.random()*lrIdleScenes.length)];
-  v.classList.add(s[2]);
-
-  const p=document.createElement('div');
-  p.className='lr-idle-prop lr-idle-persistent';
-  p.innerHTML=`<span>${s[0]}</span><b>${s[1]}</b>`;
-  v.appendChild(p);
-  lrIdleProp=p;
-}
-function lrResetIdle(){
-  clearTimeout(lrIdleTimer);
-  lrClearIdle();
-
-  // After 90 seconds, idle mode begins and remains active until the next + click.
-  // While idle, the character switches to a new goofy activity every 20 seconds.
-  lrIdleTimer=setTimeout(()=>{
-    lrIdleScene();
-    lrIdleLoop=setInterval(lrIdleScene,20000);
-  },90000);
-}
-function lrInitQuirks(){lrApplyAfternoon();lrAfternoonLoop=setInterval(lrApplyAfternoon,30000);lrResetIdle();document.addEventListener('visibilitychange',()=>{if(document.hidden)lrClearIdle();else{lrApplyAfternoon();lrResetIdle()}})}
 
 
 // V7.13 — Prestige every 100 levels.
@@ -2543,7 +2532,11 @@ function lrInitPrestige(){
 }
 
 function bindEvents() {
-  $('plusBtn').addEventListener('click', () => { addLoad(1); lrAfternoonClick(); lrResetIdle(); });
+  $('plusBtn').addEventListener('click', async () => {
+    if (state.sound) await ensureGameAudio();
+    addLoad(1);
+    lrAfternoonClick();
+  });
   $('plusBtn').addEventListener('pointerdown', startPlusHold);
   $('plusBtn').addEventListener('pointerup', endPlusHold);
   $('plusBtn').addEventListener('pointercancel', endPlusHold);
@@ -2611,10 +2604,18 @@ function bindEvents() {
     showToast('Settings saved');
   });
 
-  $('soundToggle').addEventListener('click', () => {
+  $('soundToggle').addEventListener('click', async () => {
     state.sound = !state.sound;
     saveState();
     applyTheme();
+
+    if (state.sound) {
+      await ensureGameAudio();
+      playTone('plus', false, true);
+      showToast('Sound on');
+    } else {
+      showToast('Sound muted');
+    }
   });
 
   $('reminderAlarmToggle').addEventListener('click', () => {
@@ -2643,8 +2644,9 @@ function bindEvents() {
     saveState();
   });
 
-  $('previewSoundBtn').addEventListener('click', () => {
+  $('previewSoundBtn').addEventListener('click', async () => {
     state.soundStyle = $('soundStyleSelect').value;
+    await ensureGameAudio();
     playTone('plus', false, true);
   });
 
