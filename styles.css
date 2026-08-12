@@ -3102,3 +3102,53 @@ body.lr-afternoon .count-button.plus::after{
   position:absolute;right:10px;top:8px;font-size:14px;
   opacity:.62;transform:rotate(8deg);pointer-events:none
 }
+
+
+/* V7.19 loot character powers */
+.lr-character-tag{
+  position:absolute;z-index:120;transform:translate(-50%,-100%);
+  padding:5px 9px;border-radius:999px;background:rgba(15,18,27,.9);color:#fff;
+  font-size:9px;font-weight:1000;letter-spacing:.07em;white-space:nowrap;
+  pointer-events:none;animation:lrCharTag .85s ease-out forwards
+}
+@keyframes lrCharTag{0%{opacity:0;transform:translate(-50%,-70%) scale(.6)}20%{opacity:1;transform:translate(-50%,-115%) scale(1.08)}100%{opacity:0;transform:translate(-50%,-180%) scale(.9)}}
+
+/* Slopes */
+.vehicle.slopes-trick{animation:slopesTrick .82s cubic-bezier(.18,.85,.28,1)!important;z-index:90!important}
+@keyframes slopesTrick{
+  0%{transform:translate(50%,-50%) rotate(0)}
+  25%{transform:translate(15%,-130%) rotate(-25deg) scale(1.08)}
+  58%{transform:translate(-55%,-190%) rotate(330deg) scale(1.14)}
+  82%{transform:translate(-25%,-85%) rotate(365deg)}
+  100%{transform:translate(50%,-50%) rotate(360deg)}
+}
+.slopes-ramp{position:absolute;right:14%;bottom:4%;z-index:30;font-size:48px;transform:rotate(-12deg);opacity:.9;animation:slopesRamp .9s ease forwards;pointer-events:none}
+@keyframes slopesRamp{0%,100%{opacity:0}15%,75%{opacity:.9}}
+.slopes-snow{position:absolute;right:20%;top:45%;z-index:80;font-size:18px;pointer-events:none;animation:slopesSnow .8s ease-out forwards}
+@keyframes slopesSnow{to{transform:translate(var(--sx),var(--sy)) rotate(360deg);opacity:0}}
+
+/* GRRR */
+.vehicle.grrr-lunge{animation:grrrLunge .62s cubic-bezier(.12,.9,.2,1)!important;z-index:90!important}
+@keyframes grrrLunge{
+  0%{transform:translate(50%,-50%) scale(1)}
+  30%{transform:translate(75%,-50%) scale(.92) rotate(4deg)}
+  55%{transform:translate(-95%,-50%) scale(1.32) rotate(-8deg)}
+  75%{transform:translate(-125%,-52%) scale(1.12)}
+  100%{transform:translate(50%,-50%) scale(1)}
+}
+.grrr-slash{position:absolute;left:38%;top:18%;z-index:85;font-size:58px;pointer-events:none;animation:grrrSlash .62s ease-out forwards}
+@keyframes grrrSlash{0%{opacity:0;transform:scale(.2) rotate(-20deg)}35%{opacity:1;transform:scale(1.35) rotate(10deg)}100%{opacity:0;transform:translateX(-90px) scale(.7) rotate(35deg)}}
+
+/* Otter */
+.vehicle.otter-swim{animation:otterSwim .98s ease-in-out!important;z-index:90!important}
+@keyframes otterSwim{
+  0%{transform:translate(50%,-50%) rotate(0)}
+  20%{transform:translate(20%,-72%) rotate(-22deg)}
+  45%{transform:translate(-40%,-42%) rotate(18deg)}
+  68%{transform:translate(-70%,-68%) rotate(-18deg)}
+  100%{transform:translate(50%,-50%) rotate(0)}
+}
+.otter-water{position:absolute;left:2%;right:2%;bottom:8%;height:58%;z-index:25;border-radius:50% 50% 12px 12px;background:linear-gradient(180deg,rgba(56,189,248,.15),rgba(14,165,233,.42));clip-path:polygon(0 45%,8% 36%,16% 47%,25% 34%,34% 46%,43% 32%,52% 47%,62% 35%,72% 46%,82% 33%,91% 45%,100% 36%,100% 100%,0 100%);animation:otterWater .98s ease forwards;pointer-events:none}
+@keyframes otterWater{0%,100%{opacity:0}12%,82%{opacity:1}}
+.otter-bubble{position:absolute;bottom:18%;z-index:95;font-size:18px;pointer-events:none;animation:otterBubble .9s ease-out forwards}
+@keyframes otterBubble{to{transform:translateY(-90px) scale(.6);opacity:0}}

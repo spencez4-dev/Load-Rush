@@ -68,6 +68,9 @@ const RIGS = [
   { id: 'slotted-trotter', icon: '🏌️', name: 'Slotted Trotter', type: 'GARAGE ICON', rarity: 'TOUR STICK', weight: 1.25, reward: 'Fairway-green tracer', accent: '#16a34a', rule: 'Build a 40-update combo', unlocked: () => comboStats().best >= 40 },
   { id: 'vinny', icon: '🐳', name: 'Vinny', type: 'GARAGE ICON', rarity: 'VINES', weight: .9, reward: 'Deep-blue ocean wake', accent: '#0284c7', rule: 'Earn 12,000 Lifetime XP', unlocked: () => lifetimeXP() >= 12000 },
   { id: 'fromelts-boat', icon: '🚤', name: "Fromelt's Boat", type: 'GARAGE ICON', rarity: 'POWERS LAKE', weight: .55, reward: 'Lake-spray aqua trail', accent: '#0891b2', rule: 'Complete 100 races', unlocked: () => state.raceWins >= 100 },
+  { id: 'slopes', icon: '⛷️', name: 'Slopes', type: 'LOOT EXCLUSIVE', rarity: 'POWDER', weight: .55, reward: 'Ski-jump trick animation on every +', accent: '#dbeafe', rule: 'Loot box exclusive', unlocked: () => false },
+  { id: 'grrr', icon: '🐅', name: 'GRRR', type: 'LOOT EXCLUSIVE', rarity: 'PREDATOR', weight: .42, reward: 'Tiger lunge attack on every +', accent: '#f97316', rule: 'Loot box exclusive', unlocked: () => false },
+  { id: 'otter', icon: '🦦', name: 'Otter', type: 'LOOT EXCLUSIVE', rarity: 'SPLASH', weight: .65, reward: 'Water-swim chaos on every +', accent: '#38bdf8', rule: 'Loot box exclusive', unlocked: () => false },
   { id: 'byler', icon: '🏄‍♂️', name: 'Bryler', type: 'SURF TRUCK', rarity: 'SURF SIDE', weight: .02, reward: 'Ocean-wave road shimmer', accent: '#06b6d4', rule: 'Reach Level 250 + complete 250 hourly quests', unlocked: () => lifetimeLevel() >= 250 && state.raceWins >= 250 }
 ];
 
@@ -651,7 +654,7 @@ function openTruckCrate() {
   icon.textContent = '🎁';
   rarity.textContent = 'OPENING';
   title.textContent = 'The crate is shaking...';
-  description.textContent = 'Something from the garage is about to drop.';
+  description.textContent = 'Truck, XP, refund, jackpot... who knows.';
   continueButton.disabled = true;
 
   state.crateTokens -= 1;
@@ -660,8 +663,9 @@ function openTruckCrate() {
   renderAll();
 
   setTimeout(() => {
-    // Trucks and garage icons remain achievements: only 8% of boxes contain a new collectible.
-    const rig = Math.random() < .08 ? weightedCrateRig() : null;
+    // Character drops are meaningful now, especially the three loot exclusives.
+    const locked = RIGS.filter(rig => !isRigOwned(rig.id));
+    const rig = locked.length && Math.random() < .16 ? weightedCrateRig() : null;
 
     stage.classList.remove('opening');
     stage.classList.add('revealed');
@@ -675,28 +679,68 @@ function openTruckCrate() {
       stage.classList.add('jackpot');
       icon.textContent = rig.icon;
       rarity.textContent = rig.rarity;
-      title.textContent = rig.id === 'byler' ? 'SURF SIDE: BYLER!' : rig.name;
+      title.textContent = rig.id === 'byler' ? 'SURF SIDE: BRYLER!' : `${rig.name.toUpperCase()} UNLOCKED!`;
       description.textContent = `${rig.reward} · Added to your garage.`;
-      particleBurst(stage, rig.id === 'byler' ? 130 : 90, rig.id === 'byler' ? 2.8 : 2);
+      particleBurst(stage, 110, 2.3);
       playTone('plus', true);
     } else {
       const roll = Math.random();
-      const xpReward = roll < .65 ? 25 : roll < .92 ? 50 : 100;
-      state.bonusXP = (Number(state.bonusXP) || 0) + xpReward;
+
+      if (roll < .48) {
+        const xpReward = [35,50,75][Math.floor(Math.random()*3)];
+        state.bonusXP = (Number(state.bonusXP) || 0) + xpReward;
+        icon.textContent = '⚡';
+        rarity.textContent = 'XP CACHE';
+        title.textContent = `+${xpReward} Lifetime XP`;
+        description.textContent = 'Straight into the level meter.';
+        particleBurst(stage, 55, 1.5);
+        playTone('plus', xpReward >= 75);
+      } else if (roll < .70) {
+        const xpReward = 125;
+        state.bonusXP = (Number(state.bonusXP) || 0) + xpReward;
+        stage.classList.add('jackpot');
+        icon.textContent = '💎';
+        rarity.textContent = 'EPIC XP';
+        title.textContent = '+125 Lifetime XP';
+        description.textContent = 'Now THAT is a box.';
+        particleBurst(stage, 90, 2);
+        playTone('plus', true);
+      } else if (roll < .86) {
+        state.crateTokens = (Number(state.crateTokens) || 0) + 1;
+        icon.textContent = '🔁';
+        rarity.textContent = 'FREE REROLL';
+        title.textContent = 'LOOT BOX REFUNDED';
+        description.textContent = 'You got the box back. Run it again.';
+        particleBurst(stage, 55, 1.5);
+        playTone('plus', false);
+      } else if (roll < .96) {
+        state.crateTokens = (Number(state.crateTokens) || 0) + 2;
+        stage.classList.add('jackpot');
+        icon.textContent = '🎁';
+        rarity.textContent = 'DOUBLE DROP';
+        title.textContent = '+2 LOOT BOXES';
+        description.textContent = 'The box reproduced. Logistics miracle.';
+        particleBurst(stage, 95, 2.1);
+        playTone('plus', true);
+      } else {
+        const xpReward = 300;
+        state.bonusXP = (Number(state.bonusXP) || 0) + xpReward;
+        stage.classList.add('jackpot');
+        icon.textContent = '🌟';
+        rarity.textContent = 'MYTHIC';
+        title.textContent = 'MEGA XP JACKPOT';
+        description.textContent = '+300 Lifetime XP. Absolute heater.';
+        particleBurst(stage, 140, 2.8);
+        playTone('plus', true);
+      }
+
       saveState();
       renderAll();
-
-      icon.textContent = '⚡';
-      rarity.textContent = 'XP REWARD';
-      title.textContent = `+${xpReward} Lifetime XP`;
-      description.textContent = 'Your level progress just got a boost.';
-      particleBurst(stage, 60, 1.6);
-      playTone('plus', xpReward >= 100);
       announceNewUnlocks();
     }
 
     continueButton.disabled = false;
-  }, 1500);
+  }, 1350);
 }
 
 function selectedRig() {
@@ -853,7 +897,7 @@ function renderGarage() {
   const unlocked = RIGS.filter(rig => isRigOwned(rig.id)); const active = selectedRig();
   if ($('garageUnlocked')) $('garageUnlocked').textContent = `${unlocked.length} / ${RIGS.length} trucks`;
   if ($('garageCrateCount')) $('garageCrateCount').textContent = state.crateTokens || 0;
-  if ($('garageCrateBtn')) $('garageCrateBtn').disabled = (state.crateTokens || 0) < 1 || unlocked.length === RIGS.length;
+  if ($('garageCrateBtn')) $('garageCrateBtn').disabled = (state.crateTokens || 0) < 1;
   $('garageGrid').innerHTML = RIGS.map(rig => { const isUnlocked = isRigOwned(rig.id); const isSelected = active.id === rig.id; const rarityClass = rig.rarity.toLowerCase().replace(/\s+/g, '-'); return `<button class="rig-card ${isUnlocked ? 'unlocked' : 'locked'} ${isSelected ? 'selected' : ''}" type="button" data-rig-id="${rig.id}" ${isUnlocked ? '' : 'disabled'}><span class="rig-card-top"><span class="rig-icon">${rig.icon}</span><span class="rig-rarity rarity-${rarityClass}">${rig.rarity}</span></span><span class="rig-name">${rig.name}</span><span class="rig-type">${rig.type}</span><span class="rig-reward">${isUnlocked ? `✦ ${rig.reward}` : `🔒 ${rig.rule}`}</span><span class="rig-rule">${isSelected ? 'Equipped' : isUnlocked ? 'Tap to equip' : 'Locked — earn it through the listed achievement'}</span></button>`; }).join('');
   document.querySelectorAll('[data-rig-id]').forEach(button => button.addEventListener('click', () => { const rig = RIGS.find(item => item.id === button.dataset.rigId); if (!rig || !isRigOwned(rig.id)) return; state.selectedRig = rig.id; saveState(); renderAll(); renderGarage(); showToast(`${rig.name} equipped`); }));
 
@@ -1716,6 +1760,76 @@ function triggerBrylerPower() {
   }
 }
 
+
+// V7.19 — loot-character equipped powers. Cosmetic only.
+function lrCharacterTag(text, className='lr-character-tag') {
+  const road=document.querySelector('.road'), vehicle=$('vehicle');
+  if(!road||!vehicle)return;
+  const vr=vehicle.getBoundingClientRect(), rr=road.getBoundingClientRect();
+  const tag=document.createElement('span');
+  tag.className=className;
+  tag.textContent=text;
+  tag.style.left=`${vr.left-rr.left+vr.width/2}px`;
+  tag.style.top=`${Math.max(2,vr.top-rr.top-18)}px`;
+  road.appendChild(tag);
+  setTimeout(()=>tag.remove(),900);
+}
+
+function triggerSlopesPower(){
+  if(selectedRig().id!=='slopes')return;
+  const road=document.querySelector('.road'),v=$('vehicle');if(!road||!v)return;
+  v.classList.remove('slopes-trick');void v.offsetWidth;v.classList.add('slopes-trick');
+  setTimeout(()=>v.classList.remove('slopes-trick'),850);
+
+  const ramp=document.createElement('div');
+  ramp.className='slopes-ramp';
+  ramp.textContent='🏔️';
+  road.appendChild(ramp);
+  setTimeout(()=>ramp.remove(),900);
+
+  ['❄️','❄️','✨','❄️','💨'].forEach((c,i)=>{
+    const p=document.createElement('span');p.className='slopes-snow';p.textContent=c;
+    p.style.setProperty('--sx',`${-55+Math.random()*110}px`);
+    p.style.setProperty('--sy',`${-30-Math.random()*75}px`);
+    p.style.animationDelay=`${i*35}ms`;road.appendChild(p);setTimeout(()=>p.remove(),900);
+  });
+  lrCharacterTag(Math.random()<.5?'YARD SALE? NEVER. ⛷️':'SEND THE CLIFF ❄️');
+}
+
+function triggerGrrrPower(){
+  if(selectedRig().id!=='grrr')return;
+  const road=document.querySelector('.road'),v=$('vehicle');if(!road||!v)return;
+  v.classList.remove('grrr-lunge');void v.offsetWidth;v.classList.add('grrr-lunge');
+  setTimeout(()=>v.classList.remove('grrr-lunge'),650);
+
+  const slash=document.createElement('div');slash.className='grrr-slash';slash.textContent='💥';
+  road.appendChild(slash);setTimeout(()=>slash.remove(),650);
+  lrCharacterTag(Math.random()<.5?'GRRRRRR 🐅':'PREDATOR MODE');
+}
+
+function triggerOtterPower(){
+  if(selectedRig().id!=='otter')return;
+  const road=document.querySelector('.road'),v=$('vehicle');if(!road||!v)return;
+  v.classList.remove('otter-swim');void v.offsetWidth;v.classList.add('otter-swim');
+  setTimeout(()=>v.classList.remove('otter-swim'),1000);
+
+  const water=document.createElement('div');water.className='otter-water';road.appendChild(water);
+  setTimeout(()=>water.remove(),1050);
+
+  ['💧','🫧','🌊','🫧','💧','🫧'].forEach((c,i)=>{
+    const p=document.createElement('span');p.className='otter-bubble';p.textContent=c;
+    p.style.left=`${20+Math.random()*65}%`;p.style.animationDelay=`${i*55}ms`;
+    road.appendChild(p);setTimeout(()=>p.remove(),1100);
+  });
+  lrCharacterTag(Math.random()<.5?'OTTERLY LOCKED IN 🦦':'SPLASH ZONE');
+}
+
+function triggerLootCharacterPower(){
+  triggerSlopesPower();
+  triggerGrrrPower();
+  triggerOtterPower();
+}
+
 function addLoad(delta) {
   const oldLevel = lifetimeLevel();
   const entry = { delta, time: Date.now(), xp: delta };
@@ -1729,7 +1843,7 @@ function addLoad(delta) {
   if (delta > 0 && newLevel > oldLevel) {
     showToast(`Level ${newLevel}! Keep hauling toward the next truck.`);
   }
-  saveState(); renderAll(); animateCount(delta); playTone(delta > 0 ? 'plus' : 'minus'); if (delta > 0) { showTruckSmoke(); triggerBrylerPower(); }
+  saveState(); renderAll(); animateCount(delta); playTone(delta > 0 ? 'plus' : 'minus'); if (delta > 0) { showTruckSmoke(); triggerBrylerPower(); triggerLootCharacterPower(); }
   if (delta > 0) { const combo = comboStats(); particleBurst($('plusBtn'), combo.current >= 10 ? 70 : combo.current >= 5 ? 45 : undefined, combo.current >= 5 ? 1.8 : undefined); if (combo.current === 3) showToast('Combo active · 2× XP'); if (combo.current === 5) flashMegaMessage('HOT STREAK · 3× XP!'); if (combo.current === 10) flashMegaMessage('FREIGHT FRENZY · 5× XP!'); maybeAwardRace(); announceNewUnlocks(); if (todayNetLoads() === state.dailyGoal) { flashMegaMessage('SHIFT GOAL CRUSHED!'); particleBurst($('mainCount'), 100, 2.4); showToast('Daily load goal complete'); } if (shouldPromptFate()) setTimeout(promptFreightFate, 350); } else showToast('Subtracted from every live metric');
 }
 
