@@ -643,12 +643,62 @@
         const minutes = Number(value.slice(2));
         return hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59;
       };
+      const HOME_TIMEZONE = 'America/Chicago';
+
       const addDetentionWindow = value => {
         if (!isValidMilitaryTime(value)) return '';
+
         const hours = Number(value.slice(0, 2));
         const minutes = Number(value.slice(2));
-        const totalMinutes = (hours * 60 + minutes + 90) % 1440;
-        return `${String(Math.floor(totalMinutes / 60)).padStart(2, '0')}${String(totalMinutes % 60).padStart(2, '0')}`;
+        const now = new Date();
+
+        const dateParts = new Intl.DateTimeFormat('en-US', {
+          timeZone: activePlace.timezone,
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        }).formatToParts(now).reduce((acc, part) => {
+          if (part.type !== 'literal') acc[part.type] = part.value;
+          return acc;
+        }, {});
+
+        const y = Number(dateParts.year);
+        const mo = Number(dateParts.month);
+        const d = Number(dateParts.day);
+
+        const roughUtc = new Date(Date.UTC(y, mo - 1, d, hours, minutes));
+
+        const localParts = new Intl.DateTimeFormat('en-US', {
+          timeZone: activePlace.timezone,
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          hourCycle: 'h23'
+        }).formatToParts(roughUtc).reduce((acc, part) => {
+          if (part.type !== 'literal') acc[part.type] = part.value;
+          return acc;
+        }, {});
+
+        const representedAsUtc = Date.UTC(
+          Number(localParts.year),
+          Number(localParts.month) - 1,
+          Number(localParts.day),
+          Number(localParts.hour),
+          Number(localParts.minute)
+        );
+
+        const driverOffsetMs = representedAsUtc - roughUtc.getTime();
+        const arrivalInstant = new Date(Date.UTC(y, mo - 1, d, hours, minutes) - driverOffsetMs);
+        const detentionInstant = new Date(arrivalInstant.getTime() + 90 * 60 * 1000);
+
+        return new Intl.DateTimeFormat('en-US', {
+          timeZone: HOME_TIMEZONE,
+          hour: '2-digit',
+          minute: '2-digit',
+          hourCycle: 'h23'
+        }).format(detentionInstant).replace(':', '');
       };
 
       const placeLine = [activePlace.admin1, activePlace.country].filter(Boolean).join(', ');
@@ -677,10 +727,10 @@
               <span>Calculate from driver arrival</span>
               <div class="timezone-arrival-row">
                 <input id="timezoneArrivalTime" type="text" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="1030" aria-label="Driver arrival time in 24-hour military format" value="${escapeHtml(arrivalTimeValue)}">
-                <button id="timezoneArrivalCalculate" class="primary-button" type="button">Add 0130</button>
+                <button id="timezoneArrivalCalculate" class="primary-button" type="button">Set Check Call</button>
               </div>
               <strong id="timezoneCustomResult" class="timezone-custom-result">${customDetentionValue ? escapeHtml(customDetentionValue) : 'Enter 4-digit time'}</strong>
-              <small>Enter four digits in 24-hour time, such as 1030 or 2215.</small>
+              <small>Enter the driver's local arrival time. Result is always shown in Chicago time.</small>
             </div>
             <div class="timezone-detail">
               <span>Time zone</span>
@@ -709,7 +759,7 @@
           return;
         }
         customDetentionValue = addDetentionWindow(value);
-        if (result) result.textContent = customDetentionValue;
+        if (result) result.textContent = `${customDetentionValue} Chicago`;
       };
 
       arrivalInput?.addEventListener('input', () => {
