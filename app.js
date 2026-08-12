@@ -28,6 +28,7 @@ const DEFAULTS = {
   sound: true,
   soundStyle: 'orbit',
   particles: true,
+  afternoonModeEnabled: true,
   fateEnabled: true,
   fateFrequency: 10,
   lastFateMilestone: 0,
@@ -892,6 +893,7 @@ function applyTheme() {
   updateSwitch('soundToggle', state.sound);
   updateSwitch('reminderAlarmToggle', state.reminderAlarmEnabled !== false);
   updateSwitch('particlesToggle', state.particles);
+  updateSwitch('afternoonModeToggle', state.afternoonModeEnabled !== false);
   updateSwitch('fateToggle', state.fateEnabled);
 }
 
@@ -2470,21 +2472,124 @@ function endPlusHold() {
 }
 
 
-// V7.9 — Idle characters + automatic 12:30 PM Afternoon Mode.
+// V7.17 — automatic 12:30 PM Afternoon Mode, now toggleable and substantially less serious.
 let lrAfternoonLoop;
-const lrAfternoonLines=['SEND IT','YEAHAH','ANOTHER ONE','LOCK IT IN','ABSOLUTELY','FIRE ME UP','SWING THE CHEESE','LET IT EAT'];
-const lrRoadLines=['PROFESSIONALISM OPTIONAL','THE ROAD IS NOW UNSUPERVISED','AFTERNOON OPERATIONS: QUESTIONABLE','CORPORATE SAID NOTHING ABOUT THIS'];
-function lrAfternoonNow(){const d=new Date();return d.getHours()*60+d.getMinutes()>=750}
-function lrApplyAfternoon(){const on=lrAfternoonNow();document.body.classList.toggle('lr-afternoon',on);let b=document.getElementById('lrAfternoonBadge');if(on&&!b){b=document.createElement('div');b.id='lrAfternoonBadge';b.className='lr-afternoon-badge';b.innerHTML='<span>😎</span><div><b>AFTERNOON MODE</b><small>professionalism has expired</small></div>';document.body.appendChild(b)}else if(!on&&b)b.remove()}
-function lrAfternoonClick(){if(!lrAfternoonNow())return;const btn=$('plusBtn'),r=btn.getBoundingClientRect(),p=document.createElement('div');p.className='lr-afternoon-pop';p.textContent=lrAfternoonLines[Math.floor(Math.random()*lrAfternoonLines.length)];p.style.left=(r.left+r.width/2)+'px';p.style.top=r.top+'px';document.body.appendChild(p);setTimeout(()=>p.remove(),900);if(Math.random()<.12){const road=document.querySelector('.road-world');if(road){const s=document.createElement('div');s.className='lr-road-sign';s.textContent=lrRoadLines[Math.floor(Math.random()*lrRoadLines.length)];road.appendChild(s);setTimeout(()=>s.remove(),2500)}}if(Math.random()<.18){const v=document.querySelector('.road-world .vehicle');if(v){v.classList.remove('lr-afternoon-hop');void v.offsetWidth;v.classList.add('lr-afternoon-hop');setTimeout(()=>v.classList.remove('lr-afternoon-hop'),520)}}}
-function lrInitQuirks(){
-  lrApplyAfternoon();
-  lrAfternoonLoop=setInterval(lrApplyAfternoon,30000);
-  document.addEventListener('visibilitychange',()=>{
-    if(!document.hidden) lrApplyAfternoon();
-  });
+const lrAfternoonLines=[
+  'SEND IT','YEAHAH','ANOTHER ONE','LOCK IT IN','ABSOLUTELY','FIRE ME UP',
+  'SWING THE CHEESE','LET IT EAT','CLOCKED IN, CHECKED OUT','FREIGHT BE DAMNED',
+  'WE BALL','TREMENDOUS WORK, PROBABLY','BANG THE DRUM','CERTIFIED AFTERNOON'
+];
+const lrRoadLines=[
+  'PROFESSIONALISM OPTIONAL','THE ROAD IS NOW UNSUPERVISED',
+  'AFTERNOON OPERATIONS: QUESTIONABLE','CORPORATE SAID NOTHING ABOUT THIS',
+  'HR HAS LEFT THE CHAT','PRODUCTIVITY, BUT MAKE IT SILLY',
+  'NO MANAGERIAL OVERSIGHT DETECTED','THIS SHIFT HAS VIBES NOW'
+];
+const lrIncidentNames=[
+  ['🕺','DISPATCH DISCO'],['🦆','DUCKS HAVE TAKEN CONTROL'],['🌮','TACTICAL TACO BREAK'],
+  ['🪩','MANDATORY BOOGIE'],['🧀','CHEESE HAS BEEN SWUNG'],['🧃','JUICE BOX EMERGENCY'],
+  ['🫡','SALUTE THE AFTERNOON'],['🛸','UNEXPLAINED MANAGEMENT VISIT']
+];
+
+function lrAfternoonClockReady(){
+  const d=new Date();
+  return d.getHours()*60+d.getMinutes()>=750;
+}
+function lrAfternoonNow(){
+  return state.afternoonModeEnabled !== false && lrAfternoonClockReady();
 }
 
+function lrRemoveAfternoonExtras(){
+  document.body.classList.remove('lr-afternoon','lr-afternoon-disco');
+  document.getElementById('lrAfternoonBadge')?.remove();
+  document.querySelectorAll('.lr-afternoon-floater,.lr-afternoon-incident,.lr-road-sign').forEach(el=>el.remove());
+}
+
+function lrApplyAfternoon(){
+  const on=lrAfternoonNow();
+  document.body.classList.toggle('lr-afternoon',on);
+  let b=document.getElementById('lrAfternoonBadge');
+  if(on&&!b){
+    b=document.createElement('button');
+    b.id='lrAfternoonBadge';
+    b.className='lr-afternoon-badge';
+    b.type='button';
+    b.title='Open Settings to toggle Afternoon Mode';
+    b.innerHTML='<span>😎</span><div><b>AFTERNOON MODE</b><small>professionalism has expired</small></div>';
+    b.addEventListener('click',()=>openDialog($('settingsDialog')));
+    document.body.appendChild(b);
+  } else if(!on&&b) b.remove();
+}
+
+function lrAfternoonRain(chars=['🧀','✨','😎','📦']){
+  for(let i=0;i<16;i++){
+    const e=document.createElement('div');
+    e.className='lr-afternoon-floater';
+    e.textContent=chars[Math.floor(Math.random()*chars.length)];
+    e.style.left=(5+Math.random()*90)+'vw';
+    e.style.setProperty('--drift',`${(Math.random()-.5)*150}px`);
+    e.style.animationDelay=(Math.random()*.18)+'s';
+    document.body.appendChild(e);
+    setTimeout(()=>e.remove(),1900);
+  }
+}
+
+function lrAfternoonIncident(){
+  if(!lrAfternoonNow())return;
+  const [icon,name]=lrIncidentNames[Math.floor(Math.random()*lrIncidentNames.length)];
+  const card=document.createElement('div');
+  card.className='lr-afternoon-incident';
+  card.innerHTML=`<span>${icon}</span><div><small>AFTERNOON INCIDENT</small><b>${name}</b></div>`;
+  document.body.appendChild(card);
+  requestAnimationFrame(()=>card.classList.add('show'));
+  lrAfternoonRain([icon,'✨','😎','🧀']);
+  document.body.classList.add('lr-afternoon-disco');
+  setTimeout(()=>document.body.classList.remove('lr-afternoon-disco'),1100);
+  setTimeout(()=>card.remove(),2200);
+  if(state.sound) playTone('plus',true);
+}
+
+function lrAfternoonClick(){
+  if(!lrAfternoonNow())return;
+  const btn=$('plusBtn'),r=btn.getBoundingClientRect(),p=document.createElement('div');
+  p.className='lr-afternoon-pop';
+  p.textContent=lrAfternoonLines[Math.floor(Math.random()*lrAfternoonLines.length)];
+  p.style.left=(r.left+r.width/2)+'px';
+  p.style.top=r.top+'px';
+  document.body.appendChild(p);
+  setTimeout(()=>p.remove(),900);
+
+  if(Math.random()<.20){
+    const road=document.querySelector('.road-world');
+    if(road){
+      const s=document.createElement('div');
+      s.className='lr-road-sign';
+      s.textContent=lrRoadLines[Math.floor(Math.random()*lrRoadLines.length)];
+      road.appendChild(s);
+      setTimeout(()=>s.remove(),2700);
+    }
+  }
+
+  if(Math.random()<.28){
+    const v=document.querySelector('.road-world .vehicle');
+    if(v){
+      v.classList.remove('lr-afternoon-hop');
+      void v.offsetWidth;
+      v.classList.add('lr-afternoon-hop');
+      setTimeout(()=>v.classList.remove('lr-afternoon-hop'),520);
+    }
+  }
+
+  // Rare full-screen nonsense. Cosmetic only.
+  if(Math.random()<.045) lrAfternoonIncident();
+}
+
+function lrInitQuirks(){
+  if(state.afternoonModeEnabled==null) state.afternoonModeEnabled=true;
+  lrApplyAfternoon();
+  lrAfternoonLoop=setInterval(lrApplyAfternoon,30000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)lrApplyAfternoon()});
+}
 
 // V7.13 — Prestige every 100 levels.
 
@@ -2654,6 +2759,19 @@ function bindEvents() {
     state.particles = !state.particles;
     saveState();
     applyTheme();
+  });
+
+  $('afternoonModeToggle').addEventListener('click', () => {
+    state.afternoonModeEnabled = state.afternoonModeEnabled === false;
+    saveState();
+    applyTheme();
+    if (state.afternoonModeEnabled) {
+      lrApplyAfternoon();
+      showToast(lrAfternoonClockReady() ? 'Afternoon Mode unleashed' : 'Afternoon Mode armed for 12:30');
+    } else {
+      lrRemoveAfternoonExtras();
+      showToast('Afternoon Mode off');
+    }
   });
 
   $('fateToggle').addEventListener('click', () => {
