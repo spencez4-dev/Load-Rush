@@ -206,6 +206,24 @@
     </div>
   </dialog>
 
+  <dialog id="crateAllResultsDialog" class="wide-dialog crate-all-results-dialog">
+    <div class="dialog-content">
+      <div class="section-heading">
+        <div>
+          <span class="section-kicker">LOOT HAUL</span>
+          <h2 id="crateAllResultsTitle">You cracked the stack.</h2>
+        </div>
+        <button id="closeCrateAllResultsX" class="icon-button" type="button" aria-label="Close loot haul">×</button>
+      </div>
+      <div id="crateAllHero" class="crate-all-hero">🎁</div>
+      <div id="crateAllSummary" class="crate-all-summary"></div>
+      <div id="crateAllResultsGrid" class="crate-all-results-grid"></div>
+      <div class="dialog-actions">
+        <button id="closeCrateAllResultsBtn" class="primary-button" type="button">Back to Garage</button>
+      </div>
+    </div>
+  </dialog>
+
   <dialog id="remindersDialog" class="wide-dialog reminders-dialog">
     <div class="dialog-content">
       <div class="section-heading">
@@ -313,6 +331,11 @@
           <span class="crate-emoji">🎁</span>
           <span>OPEN LOOT BOX</span>
           <b><span id="garageCrateCount">0</span> ready</b>
+        </button>
+        <button id="garageOpenAllBtn" class="crate-button crate-open-all-button" type="button">
+          <span class="crate-emoji">💥</span>
+          <span>OPEN ALL</span>
+          <b>Crack the whole stack</b>
         </button>
       </div>
 
@@ -496,7 +519,7 @@
     </div>
   </dialog>
 
-  <script src="app.js?v=7.19.0" defer></script>
+  <script src="app.js?v=7.21.0" defer></script>
   <script src="timezone-calculator.js?v=7.3.0" defer></script>
 </body>
 </html>

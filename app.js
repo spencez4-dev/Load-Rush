@@ -489,6 +489,10 @@ function hourlyStreak() {
 }
 
 function comboStats(now = Date.now()) {
+  if (Number(state.afternoonFrenzyUntil || 0) > now) {
+    return { current: 10, best: Math.max(10, Number(state.bestCombo || 0)), multiplier: 10, remainingMs: state.afternoonFrenzyUntil - now, afternoonFrenzy: true };
+  }
+
   const windowMs = 3 * 60 * 1000;
   const entries = todaysEntries().slice().sort((a, b) => a.time - b.time);
   let current = 0;
@@ -631,6 +635,81 @@ function weightedCrateRig() {
     if (roll <= 0) return rig;
   }
   return locked[locked.length - 1];
+}
+
+
+function lrRollBulkCrate() {
+  state.crateTokens = Math.max(0, (Number(state.crateTokens) || 0) - 1);
+  state.openedCrates = (state.openedCrates || 0) + 1;
+
+  const locked = RIGS.filter(rig => !isRigOwned(rig.id));
+  const rig = locked.length && Math.random() < .16 ? weightedCrateRig() : null;
+
+  if (rig) {
+    state.ownedRigs = [...new Set([...ownedRigIds(), rig.id])];
+    state.seenUnlocks = [...new Set([...(state.seenUnlocks || []), rig.id])];
+    return { type:'rig', icon:rig.icon, title:rig.name, detail:`${rig.rarity} · ${rig.reward}`, rig };
+  }
+
+  const roll=Math.random();
+  if(roll<.48){
+    const xp=[35,50,75][Math.floor(Math.random()*3)];
+    state.bonusXP=(Number(state.bonusXP)||0)+xp;
+    return {type:'xp',icon:'⚡',title:`+${xp} XP`,detail:'XP Cache',xp};
+  }
+  if(roll<.70){
+    state.bonusXP=(Number(state.bonusXP)||0)+125;
+    return {type:'xp',icon:'💎',title:'+125 XP',detail:'Epic XP',xp:125};
+  }
+  if(roll<.86){
+    state.crateTokens=(Number(state.crateTokens)||0)+1;
+    return {type:'box',icon:'🔁',title:'+1 Loot Box',detail:'Free Reroll',boxes:1};
+  }
+  if(roll<.96){
+    state.crateTokens=(Number(state.crateTokens)||0)+2;
+    return {type:'box',icon:'🎁',title:'+2 Loot Boxes',detail:'Double Drop',boxes:2};
+  }
+  state.bonusXP=(Number(state.bonusXP)||0)+300;
+  return {type:'xp',icon:'🌟',title:'+300 XP',detail:'MYTHIC Mega XP',xp:300};
+}
+
+function lrOpenAllCrates(){
+  const starting=Math.max(0,Number(state.crateTokens)||0);
+  if(starting<1){showToast('No loot boxes ready');return;}
+
+  // "Open All" means the boxes you have right now. Any refunded/bonus boxes
+  // won in this batch remain in the garage afterward instead of causing an infinite loop.
+  const results=[];
+  for(let i=0;i<starting;i++) results.push(lrRollBulkCrate());
+
+  saveState();
+  renderAll();
+  closeDialog($('garageDialog'));
+
+  const xp=results.reduce((n,r)=>n+(r.xp||0),0);
+  const characters=results.filter(r=>r.type==='rig');
+  const bonusBoxes=Math.max(0,Number(state.crateTokens)||0);
+
+  $('crateAllResultsTitle').textContent=`${starting} box${starting===1?'':'es'} opened.`;
+  $('crateAllHero').textContent=characters.length?'🔥':'🎁';
+  $('crateAllSummary').innerHTML=`
+    <div><span>BOXES OPENED</span><strong>${starting}</strong></div>
+    <div><span>XP WON</span><strong>+${xp}</strong></div>
+    <div><span>NEW RIDES</span><strong>${characters.length}</strong></div>
+    <div><span>BOXES WON BACK</span><strong>${bonusBoxes}</strong></div>
+  `;
+  $('crateAllResultsGrid').innerHTML=results.map((r,i)=>`
+    <article class="crate-all-result ${r.type==='rig'?'character-drop':''}">
+      <span class="crate-all-number">#${i+1}</span>
+      <div class="crate-all-icon">${r.icon}</div>
+      <strong>${escapeHtml(r.title)}</strong>
+      <small>${escapeHtml(r.detail)}</small>
+    </article>
+  `).join('');
+
+  openDialog($('crateAllResultsDialog'));
+  if(state.sound) playTone('plus',characters.length>0||xp>=300);
+  particleBurst($('crateAllHero'),Math.min(160,50+starting*4),2);
 }
 
 function openTruckCrate() {
@@ -898,6 +977,7 @@ function renderGarage() {
   if ($('garageUnlocked')) $('garageUnlocked').textContent = `${unlocked.length} / ${RIGS.length} trucks`;
   if ($('garageCrateCount')) $('garageCrateCount').textContent = state.crateTokens || 0;
   if ($('garageCrateBtn')) $('garageCrateBtn').disabled = (state.crateTokens || 0) < 1;
+  if ($('garageOpenAllBtn')) $('garageOpenAllBtn').disabled = (state.crateTokens || 0) < 1;
   $('garageGrid').innerHTML = RIGS.map(rig => { const isUnlocked = isRigOwned(rig.id); const isSelected = active.id === rig.id; const rarityClass = rig.rarity.toLowerCase().replace(/\s+/g, '-'); return `<button class="rig-card ${isUnlocked ? 'unlocked' : 'locked'} ${isSelected ? 'selected' : ''}" type="button" data-rig-id="${rig.id}" ${isUnlocked ? '' : 'disabled'}><span class="rig-card-top"><span class="rig-icon">${rig.icon}</span><span class="rig-rarity rarity-${rarityClass}">${rig.rarity}</span></span><span class="rig-name">${rig.name}</span><span class="rig-type">${rig.type}</span><span class="rig-reward">${isUnlocked ? `✦ ${rig.reward}` : `🔒 ${rig.rule}`}</span><span class="rig-rule">${isSelected ? 'Equipped' : isUnlocked ? 'Tap to equip' : 'Locked — earn it through the listed achievement'}</span></button>`; }).join('');
   document.querySelectorAll('[data-rig-id]').forEach(button => button.addEventListener('click', () => { const rig = RIGS.find(item => item.id === button.dataset.rigId); if (!rig || !isRigOwned(rig.id)) return; state.selectedRig = rig.id; saveState(); renderAll(); renderGarage(); showToast(`${rig.name} equipped`); }));
 
@@ -2648,6 +2728,45 @@ function lrAfternoonRain(chars=['🧀','✨','😎','📦']){
   }
 }
 
+
+function lrAfternoonFrenzy(){
+  if(!lrAfternoonNow())return;
+  state.afternoonFrenzyUntil=Date.now()+8000;
+  document.body.classList.add('lr-afternoon-frenzy');
+  renderAll();
+
+  const scream=document.createElement('div');
+  scream.className='lr-load-rush-scream';
+  scream.innerHTML='<small>10× COMBO ENGAGED</small><strong>LOAD RUSH!</strong><span>🌈⚡📦⚡🌈</span>';
+  document.body.appendChild(scream);
+  requestAnimationFrame(()=>scream.classList.add('show'));
+  lrAfternoonRain(['🌈','⚡','📦','🔥','😎','✨','🚛']);
+
+  if(state.sound){
+    ensureGameAudio().then(()=>{
+      try{
+        const now=audioContext.currentTime;
+        [[110,0],[165,.05],[220,.10],[330,.18],[440,.26],[660,.34]].forEach(([f,o],i)=>{
+          const osc=audioContext.createOscillator(),g=audioContext.createGain();
+          osc.type=i<3?'sawtooth':'square';
+          osc.frequency.setValueAtTime(f,now+o);
+          g.gain.setValueAtTime(.0001,now+o);
+          g.gain.exponentialRampToValueAtTime(i<3?.09:.055,now+o+.015);
+          g.gain.exponentialRampToValueAtTime(.0001,now+o+.20);
+          osc.connect(g).connect(audioContext.destination);osc.start(now+o);osc.stop(now+o+.22);
+        });
+      }catch{}
+    });
+  }
+  setTimeout(()=>scream.classList.add('pulse'),420);
+  setTimeout(()=>scream.remove(),3400);
+  setTimeout(()=>{
+    document.body.classList.remove('lr-afternoon-frenzy');
+    state.afternoonFrenzyUntil=0;
+    renderAll();
+  },8200);
+}
+
 function lrAfternoonIncident(){
   if(!lrAfternoonNow())return;
   const [icon,name]=lrIncidentNames[Math.floor(Math.random()*lrIncidentNames.length)];
@@ -2658,7 +2777,8 @@ function lrAfternoonIncident(){
   requestAnimationFrame(()=>card.classList.add('show'));
   lrAfternoonRain([icon,'✨','😎','🧀']);
   document.body.classList.add('lr-afternoon-disco');
-  setTimeout(()=>document.body.classList.remove('lr-afternoon-disco'),1100);
+  lrAfternoonFrenzy();
+  setTimeout(()=>document.body.classList.remove('lr-afternoon-disco'),4200);
   setTimeout(()=>card.remove(),2200);
   if(state.sound) playTone('plus',true);
 }
@@ -2794,6 +2914,9 @@ function bindEvents() {
   });
 
   if ($('garageCrateBtn')) $('garageCrateBtn').addEventListener('click', openTruckCrate);
+  $('garageOpenAllBtn').addEventListener('click', lrOpenAllCrates);
+  $('closeCrateAllResultsBtn').addEventListener('click', () => { closeDialog($('crateAllResultsDialog')); openDialog($('garageDialog')); });
+  $('closeCrateAllResultsX').addEventListener('click', () => { closeDialog($('crateAllResultsDialog')); openDialog($('garageDialog')); });
 
   $('rollFateBtn').addEventListener('click', rollFreightFate);
   $('skipFateBtn').addEventListener('click', skipFreightFate);
