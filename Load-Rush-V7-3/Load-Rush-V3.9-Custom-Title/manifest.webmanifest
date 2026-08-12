@@ -1,0 +1,24 @@
+{
+  "name": "Let it Rip: Load Rush",
+  "short_name": "Load Rush",
+  "description": "Load Rush consolidated debug build with a reliable hourly countdown, reminders, daily Freight Fate milestones, and stale-cache cleanup.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#efe9ff",
+  "theme_color": "#efe9ff",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
