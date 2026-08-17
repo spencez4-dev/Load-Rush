@@ -636,7 +636,7 @@ function superRigProgress(rigId) {
   return Math.min(SUPER_LOAD_GOAL, rigLoadCount(rigId));
 }
 
-// V7.27 — Super rigs use a permanent Rainbow Road-style aura instead of crowns.
+// V7.28 — Super rigs use a permanent Rainbow Road-style aura instead of crowns.
 // Keeping this purely cosmetic means all mastery/progression behavior stays unchanged.
 function rigIconMarkup(rig, context='race') {
   const superActive = isSuperRig(rig.id);
@@ -2906,7 +2906,7 @@ function lrRunPrestigeCutscene(rank,reward){
     <div class="lr-pc-stars" aria-hidden="true"></div>
     <div class="lr-pc-shake" aria-hidden="true"></div>
     <div class="lr-pc-confetti" aria-hidden="true"></div>
-    <div class="lr-pc-road" aria-hidden="true"><div class="lr-pc-rig">${(CHARACTERS.find(c=>c.id===state.selectedCharacter)||CHARACTERS[0]||{}).emoji||'🚚'}</div></div>
+    <div class="lr-pc-road" aria-hidden="true"><div class="lr-pc-rig">${escapeHtml((selectedRig()||RIGS[0]||{}).icon||'🚚')}</div></div>
     <section class="lr-pc-stage lr-pc-stage-1">
       <small>THE LAST 100 LEVELS</small>
       <strong>100 LEVELS.</strong>

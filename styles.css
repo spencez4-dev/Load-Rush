@@ -3178,7 +3178,7 @@ body.lr-afternoon-frenzy .count-button.plus{animation:lrFrenzyPlus .3s ease-in-o
 @media(max-width:620px){.crate-all-summary{grid-template-columns:repeat(2,1fr)}.crate-all-results-grid{grid-template-columns:repeat(2,1fr)}}
 
 
-/* V7.27 — Super Character Mastery: permanent Rainbow Road glow */
+/* V7.28 — Super Character Mastery: permanent Rainbow Road glow; no crowns */
 .rig-emoji-composite{
   position:relative;
   display:inline-block;
