@@ -3014,7 +3014,9 @@ function lrDoPrestige(){
  state.prestigeLevelBaseline=lifetimeLevel();
  state.lastPrestigeCutsceneRank=next;
  if('levelXp'in state)state.levelXp=0;
- save();
+ // V7.26 FIX: this app persists through saveState(), not save().
+ // The old save() call threw a ReferenceError and stopped execution before the cinematic.
+ saveState();
  try{render()}catch{}
  lrRenderPrestige();
  lrRunPrestigeCutscene(next,reward);
@@ -3024,7 +3026,7 @@ function lrInitPrestige(){
   // Migration for anyone who already prestiged before baseline tracking existed.
   if(lrPrestigeRank()>0 && !Number.isFinite(Number(state.prestigeLevelBaseline))){
     state.prestigeLevelBaseline=lifetimeLevel();
-    save();
+    saveState();
   }
   lrRenderPrestige();
   document.addEventListener('click',()=>setTimeout(lrRenderPrestige,80));
