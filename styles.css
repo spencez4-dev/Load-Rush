@@ -3198,23 +3198,37 @@ body.lr-afternoon-frenzy .count-button.plus{animation:lrFrenzyPlus .3s ease-in-o
 .super-crown{
   position:absolute;
   z-index:8;
-  left:50%;
-  top:-0.055em;
-  font-size:.29em;
+  /* Per-rig values come from SUPER_CROWN_FITS in app.js. */
+  left:var(--crown-x, 50%);
+  top:var(--crown-y, 4%);
+  width:var(--crown-size, 23%);
+  height:var(--crown-size, 23%);
+  font-size:var(--crown-size, 23%);
   line-height:1;
-  transform:translate(-50%,0) rotate(-3deg);
-  transform-origin:center bottom;
-  filter:drop-shadow(0 .025em .025em rgba(0,0,0,.24));
+  display:grid;
+  place-items:center;
+  transform:translate(-50%,-62%) rotate(var(--crown-rotate, 0deg));
+  transform-origin:50% 100%;
+  filter:drop-shadow(0 .025em .025em rgba(0,0,0,.28));
   pointer-events:none;
+  /* Keep the crown from affecting the composite's measured line box. */
+  contain:layout style;
 }
-/* Crown physically overlaps the emoji's top pixels so it reads as one crowned emoji. */
+
+/* Crown physically overlaps each emoji's head/cab instead of floating above the whole glyph. */
 .rig-emoji-composite.is-super .super-crown{
   animation:superCrownShine 2.6s ease-in-out infinite;
 }
 @keyframes superCrownShine{
-  0%,78%,100%{transform:translate(-50%,0) rotate(-3deg) scale(1)}
-  86%{transform:translate(-50%,-.025em) rotate(2deg) scale(1.12)}
-  92%{transform:translate(-50%,0) rotate(-2deg) scale(1.04)}
+  0%,78%,100%{
+    transform:translate(-50%,-62%) rotate(var(--crown-rotate, 0deg)) scale(1);
+  }
+  86%{
+    transform:translate(-50%,-70%) rotate(calc(var(--crown-rotate, 0deg) + 3deg)) scale(1.10);
+  }
+  92%{
+    transform:translate(-50%,-62%) rotate(calc(var(--crown-rotate, 0deg) - 1deg)) scale(1.04);
+  }
 }
 
 /* Preserve race emoji sizing even though vehicle now contains nested spans. */

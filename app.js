@@ -636,12 +636,56 @@ function superRigProgress(rigId) {
   return Math.min(SUPER_LOAD_GOAL, rigLoadCount(rigId));
 }
 
+// V7.25 — per-character Super Crown fitting.
+// Emoji artwork places the character's head in a different spot for every icon,
+// so a single universal crown position will never line up correctly.
+// Values are percentages of the emoji's own 1em box and are shared by race + garage views.
+const SUPER_CROWN_FITS = {
+  // Human / animal characters
+  'byler':          { x: 37, y: 18, size: 24, rotate: -7 },
+  'slopes':         { x: 43, y: 16, size: 23, rotate: -5 },
+  'grrr':           { x: 50, y: 12, size: 27, rotate: -2 },
+  'otter':          { x: 49, y: 10, size: 25, rotate:  0 },
+  'sherm':          { x: 50, y:  8, size: 26, rotate:  0 },
+  'shaun-white':    { x: 47, y: 15, size: 23, rotate: -4 },
+  'slotted-trotter':{ x: 45, y: 13, size: 22, rotate: -5 },
+  'vinny':          { x: 50, y:  7, size: 25, rotate:  0 },
+
+  // Vehicles / objects: crown sits over the visual cab/top rather than geometric center.
+  'starter-semi':   { x: 70, y:  5, size: 22, rotate:  4 },
+  'box-truck':      { x: 72, y:  6, size: 22, rotate:  4 },
+  'pickup':         { x: 66, y:  5, size: 22, rotate:  3 },
+  'tractor':        { x: 70, y:  6, size: 22, rotate:  4 },
+  'delivery-van':   { x: 63, y:  4, size: 22, rotate:  2 },
+  'taxi':           { x: 50, y:  4, size: 22, rotate:  0 },
+  'fire-engine':    { x: 67, y:  5, size: 21, rotate:  3 },
+  'ambulance':      { x: 63, y:  5, size: 21, rotate:  2 },
+  'interceptor':    { x: 51, y:  4, size: 21, rotate:  0 },
+  'bus':            { x: 52, y:  3, size: 21, rotate:  0 },
+  'trolley':        { x: 51, y:  3, size: 21, rotate:  0 },
+  'race-truck':     { x: 52, y:  5, size: 21, rotate:  0 },
+  'construction':   { x: 55, y:  2, size: 20, rotate:  0 },
+  'rocket':         { x: 50, y:  2, size: 22, rotate:  0 },
+  'ufo':            { x: 50, y:  0, size: 21, rotate:  0 },
+  'fromelts-boat':  { x: 59, y:  5, size: 22, rotate:  2 }
+};
+
+function superCrownFit(rigId) {
+  return SUPER_CROWN_FITS[rigId] || { x: 50, y: 4, size: 23, rotate: 0 };
+}
+
 function rigIconMarkup(rig, context='race') {
-  const superClass = isSuperRig(rig.id) ? ' is-super' : '';
-  const crown = isSuperRig(rig.id)
+  const superActive = isSuperRig(rig.id);
+  const superClass = superActive ? ' is-super' : '';
+  const fit = superCrownFit(rig.id);
+  const fitStyle = `--crown-x:${fit.x}%;--crown-y:${fit.y}%;--crown-size:${fit.size}%;--crown-rotate:${fit.rotate}deg;`;
+
+  // King Freight is already literally a crown, so don't stack a second crown on it.
+  const crown = superActive && rig.id !== 'crown'
     ? '<span class="super-crown" aria-hidden="true">👑</span>'
     : '';
-  return `<span class="rig-emoji-composite ${context}${superClass}" aria-label="${escapeHtml(rig.name)}">${crown}<span class="rig-emoji-base">${rig.icon}</span></span>`;
+
+  return `<span class="rig-emoji-composite ${context}${superClass}" data-rig-id="${escapeHtml(rig.id)}" style="${fitStyle}" aria-label="${escapeHtml(rig.name)}">${crown}<span class="rig-emoji-base">${rig.icon}</span></span>`;
 }
 
 function ownedRigIds() { const owned = new Set(Array.isArray(state.ownedRigs) ? state.ownedRigs : ['starter-semi']); owned.add('starter-semi'); return [...owned]; }
