@@ -636,56 +636,12 @@ function superRigProgress(rigId) {
   return Math.min(SUPER_LOAD_GOAL, rigLoadCount(rigId));
 }
 
-// V7.25 — per-character Super Crown fitting.
-// Emoji artwork places the character's head in a different spot for every icon,
-// so a single universal crown position will never line up correctly.
-// Values are percentages of the emoji's own 1em box and are shared by race + garage views.
-const SUPER_CROWN_FITS = {
-  // Human / animal characters
-  'byler':          { x: 37, y: 18, size: 24, rotate: -7 },
-  'slopes':         { x: 43, y: 16, size: 23, rotate: -5 },
-  'grrr':           { x: 50, y: 12, size: 27, rotate: -2 },
-  'otter':          { x: 49, y: 10, size: 25, rotate:  0 },
-  'sherm':          { x: 50, y:  8, size: 26, rotate:  0 },
-  'shaun-white':    { x: 47, y: 15, size: 23, rotate: -4 },
-  'slotted-trotter':{ x: 45, y: 13, size: 22, rotate: -5 },
-  'vinny':          { x: 50, y:  7, size: 25, rotate:  0 },
-
-  // Vehicles / objects: crown sits over the visual cab/top rather than geometric center.
-  'starter-semi':   { x: 70, y:  5, size: 22, rotate:  4 },
-  'box-truck':      { x: 72, y:  6, size: 22, rotate:  4 },
-  'pickup':         { x: 66, y:  5, size: 22, rotate:  3 },
-  'tractor':        { x: 70, y:  6, size: 22, rotate:  4 },
-  'delivery-van':   { x: 63, y:  4, size: 22, rotate:  2 },
-  'taxi':           { x: 50, y:  4, size: 22, rotate:  0 },
-  'fire-engine':    { x: 67, y:  5, size: 21, rotate:  3 },
-  'ambulance':      { x: 63, y:  5, size: 21, rotate:  2 },
-  'interceptor':    { x: 51, y:  4, size: 21, rotate:  0 },
-  'bus':            { x: 52, y:  3, size: 21, rotate:  0 },
-  'trolley':        { x: 51, y:  3, size: 21, rotate:  0 },
-  'race-truck':     { x: 52, y:  5, size: 21, rotate:  0 },
-  'construction':   { x: 55, y:  2, size: 20, rotate:  0 },
-  'rocket':         { x: 50, y:  2, size: 22, rotate:  0 },
-  'ufo':            { x: 50, y:  0, size: 21, rotate:  0 },
-  'fromelts-boat':  { x: 59, y:  5, size: 22, rotate:  2 }
-};
-
-function superCrownFit(rigId) {
-  return SUPER_CROWN_FITS[rigId] || { x: 50, y: 4, size: 23, rotate: 0 };
-}
-
+// V7.27 — Super rigs use a permanent Rainbow Road-style aura instead of crowns.
+// Keeping this purely cosmetic means all mastery/progression behavior stays unchanged.
 function rigIconMarkup(rig, context='race') {
   const superActive = isSuperRig(rig.id);
   const superClass = superActive ? ' is-super' : '';
-  const fit = superCrownFit(rig.id);
-  const fitStyle = `--crown-x:${fit.x}%;--crown-y:${fit.y}%;--crown-size:${fit.size}%;--crown-rotate:${fit.rotate}deg;`;
-
-  // King Freight is already literally a crown, so don't stack a second crown on it.
-  const crown = superActive && rig.id !== 'crown'
-    ? '<span class="super-crown" aria-hidden="true">👑</span>'
-    : '';
-
-  return `<span class="rig-emoji-composite ${context}${superClass}" data-rig-id="${escapeHtml(rig.id)}" style="${fitStyle}" aria-label="${escapeHtml(rig.name)}">${crown}<span class="rig-emoji-base">${rig.icon}</span></span>`;
+  return `<span class="rig-emoji-composite ${context}${superClass}" data-rig-id="${escapeHtml(rig.id)}" aria-label="${escapeHtml(rig.name)}"><span class="rig-emoji-base">${rig.icon}</span></span>`;
 }
 
 function ownedRigIds() { const owned = new Set(Array.isArray(state.ownedRigs) ? state.ownedRigs : ['starter-semi']); owned.add('starter-semi'); return [...owned]; }
@@ -993,7 +949,7 @@ function renderAll() {
   $('goalText').textContent = `${today} / ${state.dailyGoal}`;
 
   $('raceWinsValue').textContent = state.raceWins;
-  $('activeRigLabel').textContent = `Driving: ${rig.name}${isSuperRig(rig.id) ? ' 👑 SUPER' : ` · ${superRigProgress(rig.id)}/${SUPER_LOAD_GOAL} to Super`}`;
+  $('activeRigLabel').textContent = `Driving: ${rig.name}${isSuperRig(rig.id) ? ' 🌈 SUPER' : ` · ${superRigProgress(rig.id)}/${SUPER_LOAD_GOAL} to Super`}`;
 
   $('dailyGoalInput').value = state.dailyGoal;
   $('hourlyGoalInput').value = state.hourlyGoal;
@@ -1046,7 +1002,7 @@ function renderGarage() {
   if ($('garageCrateCount')) $('garageCrateCount').textContent = state.crateTokens || 0;
   if ($('garageCrateBtn')) $('garageCrateBtn').disabled = (state.crateTokens || 0) < 1;
   if ($('garageOpenAllBtn')) $('garageOpenAllBtn').disabled = (state.crateTokens || 0) < 1;
-  $('garageGrid').innerHTML = RIGS.map(rig => { const isUnlocked = isRigOwned(rig.id); const isSelected = active.id === rig.id; const rarityClass = rig.rarity.toLowerCase().replace(/\s+/g, '-'); return `<button class="rig-card ${isUnlocked ? 'unlocked' : 'locked'} ${isSelected ? 'selected' : ''}" type="button" data-rig-id="${rig.id}" ${isUnlocked ? '' : 'disabled'}><span class="rig-card-top"><span class="rig-icon">${rigIconMarkup(rig, 'garage')}</span><span class="rig-rarity rarity-${rarityClass}">${isSuperRig(rig.id) ? '👑 SUPER' : rig.rarity}</span></span><span class="rig-name">${rig.name}</span><span class="rig-type">${rig.type}</span><span class="rig-reward">${isUnlocked ? `✦ ${rig.reward}` : `🔒 ${rig.rule}`}</span><span class="rig-super-progress ${isSuperRig(rig.id) ? 'complete' : ''}"><span><i style="width:${Math.min(100,(superRigProgress(rig.id)/SUPER_LOAD_GOAL)*100)}%"></i></span><b>${isSuperRig(rig.id) ? 'SUPER UNLOCKED' : `${superRigProgress(rig.id)} / ${SUPER_LOAD_GOAL} loads to Super`}</b></span><span class="rig-rule">${isSelected ? 'Equipped' : isUnlocked ? 'Tap to equip' : 'Locked — earn it through the listed achievement'}</span></button>`; }).join('');
+  $('garageGrid').innerHTML = RIGS.map(rig => { const isUnlocked = isRigOwned(rig.id); const isSelected = active.id === rig.id; const rarityClass = rig.rarity.toLowerCase().replace(/\s+/g, '-'); return `<button class="rig-card ${isUnlocked ? 'unlocked' : 'locked'} ${isSelected ? 'selected' : ''}" type="button" data-rig-id="${rig.id}" ${isUnlocked ? '' : 'disabled'}><span class="rig-card-top"><span class="rig-icon">${rigIconMarkup(rig, 'garage')}</span><span class="rig-rarity rarity-${rarityClass}">${isSuperRig(rig.id) ? '🌈 SUPER' : rig.rarity}</span></span><span class="rig-name">${rig.name}</span><span class="rig-type">${rig.type}</span><span class="rig-reward">${isUnlocked ? `✦ ${rig.reward}` : `🔒 ${rig.rule}`}</span><span class="rig-super-progress ${isSuperRig(rig.id) ? 'complete' : ''}"><span><i style="width:${Math.min(100,(superRigProgress(rig.id)/SUPER_LOAD_GOAL)*100)}%"></i></span><b>${isSuperRig(rig.id) ? 'SUPER UNLOCKED' : `${superRigProgress(rig.id)} / ${SUPER_LOAD_GOAL} loads to Super`}</b></span><span class="rig-rule">${isSelected ? 'Equipped' : isUnlocked ? 'Tap to equip' : 'Locked — earn it through the listed achievement'}</span></button>`; }).join('');
   document.querySelectorAll('[data-rig-id]').forEach(button => button.addEventListener('click', () => { const rig = RIGS.find(item => item.id === button.dataset.rigId); if (!rig || !isRigOwned(rig.id)) return; state.selectedRig = rig.id; saveState(); renderAll(); renderGarage(); showToast(`${rig.name} equipped`); }));
 
   const landscapeGrid = $('landscapeGrid');
@@ -1997,7 +1953,7 @@ function addLoad(delta) {
     if (before < SUPER_LOAD_GOAL && state.rigLoadCounts[activeRigId] >= SUPER_LOAD_GOAL) {
       const mastered = selectedRig();
       setTimeout(() => {
-        flashMegaMessage(`👑 SUPER ${mastered.name.toUpperCase()}!`);
+        flashMegaMessage(`🌈 SUPER ${mastered.name.toUpperCase()}!`);
         showToast(`${mastered.name} mastered · 1,000 loads`);
         particleBurst($('vehicle'), 130, 2.5);
         playTone('plus', true);

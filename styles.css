@@ -3178,7 +3178,7 @@ body.lr-afternoon-frenzy .count-button.plus{animation:lrFrenzyPlus .3s ease-in-o
 @media(max-width:620px){.crate-all-summary{grid-template-columns:repeat(2,1fr)}.crate-all-results-grid{grid-template-columns:repeat(2,1fr)}}
 
 
-/* V7.22 — Super Character Mastery */
+/* V7.27 — Super Character Mastery: permanent Rainbow Road glow */
 .rig-emoji-composite{
   position:relative;
   display:inline-block;
@@ -3187,51 +3187,67 @@ body.lr-afternoon-frenzy .count-button.plus{animation:lrFrenzyPlus .3s ease-in-o
   line-height:1;
   vertical-align:middle;
   overflow:visible;
+  isolation:isolate;
 }
 .rig-emoji-base{
   position:absolute;
   inset:0;
+  z-index:2;
   display:grid;
   place-items:center;
   line-height:1;
 }
-.super-crown{
+
+/* Super no longer adds a crown. The reward is now a permanent rainbow aura
+   contained tightly inside the character's own 1em box. */
+.rig-emoji-composite.is-super::before{
+  content:"";
   position:absolute;
-  z-index:8;
-  /* Per-rig values come from SUPER_CROWN_FITS in app.js. */
-  left:var(--crown-x, 50%);
-  top:var(--crown-y, 4%);
-  width:var(--crown-size, 23%);
-  height:var(--crown-size, 23%);
-  font-size:var(--crown-size, 23%);
-  line-height:1;
-  display:grid;
-  place-items:center;
-  transform:translate(-50%,-62%) rotate(var(--crown-rotate, 0deg));
-  transform-origin:50% 100%;
-  filter:drop-shadow(0 .025em .025em rgba(0,0,0,.28));
+  z-index:0;
+  inset:10%;
+  border-radius:46%;
+  background:conic-gradient(
+    from 0deg,
+    #ff3b30,
+    #ff9500,
+    #ffd60a,
+    #34c759,
+    #00c7be,
+    #0a84ff,
+    #5e5ce6,
+    #bf5af2,
+    #ff375f,
+    #ff3b30
+  );
+  opacity:.78;
+  filter:blur(.13em) saturate(1.8) brightness(1.12);
+  transform:scale(.92) rotate(0deg);
+  animation:superRainbowCore 3.2s linear infinite;
   pointer-events:none;
-  /* Keep the crown from affecting the composite's measured line box. */
-  contain:layout style;
 }
 
-/* Crown physically overlaps each emoji's head/cab instead of floating above the whole glyph. */
-.rig-emoji-composite.is-super .super-crown{
-  animation:superCrownShine 2.6s ease-in-out infinite;
-}
-@keyframes superCrownShine{
-  0%,78%,100%{
-    transform:translate(-50%,-62%) rotate(var(--crown-rotate, 0deg)) scale(1);
-  }
-  86%{
-    transform:translate(-50%,-70%) rotate(calc(var(--crown-rotate, 0deg) + 3deg)) scale(1.10);
-  }
-  92%{
-    transform:translate(-50%,-62%) rotate(calc(var(--crown-rotate, 0deg) - 1deg)) scale(1.04);
-  }
+/* A tight animated drop-shadow makes the emoji itself look rainbow-lit,
+   rather than placing a giant halo around the whole race lane. */
+.rig-emoji-composite.is-super .rig-emoji-base{
+  animation:superRainbowInk 3.2s linear infinite;
 }
 
-/* Preserve race emoji sizing even though vehicle now contains nested spans. */
+@keyframes superRainbowCore{
+  from{ transform:scale(.92) rotate(0deg); filter:blur(.13em) saturate(1.8) brightness(1.12) hue-rotate(0deg); }
+  to{ transform:scale(.92) rotate(360deg); filter:blur(.13em) saturate(1.8) brightness(1.12) hue-rotate(360deg); }
+}
+
+@keyframes superRainbowInk{
+  0%{ filter:drop-shadow(0 0 .055em #ff375f) drop-shadow(0 0 .10em rgba(255,55,95,.72)); }
+  16%{ filter:drop-shadow(0 0 .055em #ff9f0a) drop-shadow(0 0 .10em rgba(255,159,10,.72)); }
+  33%{ filter:drop-shadow(0 0 .055em #ffd60a) drop-shadow(0 0 .10em rgba(255,214,10,.72)); }
+  50%{ filter:drop-shadow(0 0 .055em #32d74b) drop-shadow(0 0 .10em rgba(50,215,75,.72)); }
+  66%{ filter:drop-shadow(0 0 .055em #64d2ff) drop-shadow(0 0 .10em rgba(100,210,255,.72)); }
+  83%{ filter:drop-shadow(0 0 .055em #bf5af2) drop-shadow(0 0 .10em rgba(191,90,242,.72)); }
+  100%{ filter:drop-shadow(0 0 .055em #ff375f) drop-shadow(0 0 .10em rgba(255,55,95,.72)); }
+}
+
+/* Preserve race emoji sizing even though vehicle contains nested spans. */
 .vehicle > .rig-emoji-composite.race{
   display:block;
   width:1em;
@@ -3260,8 +3276,14 @@ body.lr-afternoon-frenzy .count-button.plus{animation:lrFrenzyPlus .3s ease-in-o
   display:block;
   height:100%;
   border-radius:inherit;
-  background:linear-gradient(90deg,#f59e0b,#facc15,#fff3a3);
+  background:linear-gradient(90deg,#ff375f,#ff9f0a,#ffd60a,#32d74b,#64d2ff,#bf5af2);
+  background-size:220% 100%;
+  animation:superProgressRainbow 3s linear infinite;
   transition:width .3s ease;
+}
+@keyframes superProgressRainbow{
+  from{background-position:0% 50%}
+  to{background-position:220% 50%}
 }
 .rig-super-progress b{
   display:block;
@@ -3271,13 +3293,8 @@ body.lr-afternoon-frenzy .count-button.plus{animation:lrFrenzyPlus .3s ease-in-o
   letter-spacing:.03em;
 }
 .rig-super-progress.complete b{
-  color:#d69b00;
+  color:#bf5af2;
   font-weight:1000;
-}
-
-/* Super rigs get a very subtle gold aura without changing gameplay. */
-.vehicle .rig-emoji-composite.is-super{
-  filter:drop-shadow(0 0 .11em rgba(255,197,45,.8));
 }
 
 /* V7.23 — Prestige XP multiplier */
