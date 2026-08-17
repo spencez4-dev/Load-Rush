@@ -3057,117 +3057,90 @@ body.lr-afternoon .road-world::after{content:'😎☀️';position:absolute;righ
 .road-world .vehicle .road-world .vehicle /* Prestige */
 .lr-prestige-box{margin:18px 0;padding:18px;border-radius:20px;border:1px solid rgba(120,120,140,.2);background:linear-gradient(145deg,rgba(255,255,255,.07),rgba(120,80,255,.06));box-shadow:0 14px 35px rgba(0,0,0,.08)}.lr-prestige-head{display:flex;align-items:center;justify-content:space-between;gap:14px}.lr-prestige-head span{font-size:9px;font-weight:1000;letter-spacing:.16em;opacity:.55}.lr-prestige-head h3{margin:3px 0 0;font-size:19px}.lr-prestige-emblem{display:grid;place-items:center;min-width:48px;height:48px;border-radius:50%;font-weight:1000;font-size:18px;background:linear-gradient(135deg,#ffd85a,#ff8a00);color:#2b2100}.lr-prestige-box p{font-size:11px;line-height:1.5;opacity:.7}.lr-prestige-progress{height:9px;border-radius:99px;overflow:hidden;background:rgba(127,127,140,.15)}.lr-prestige-progress i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#8a5cff,#ffb52e)}.lr-prestige-foot{display:flex;justify-content:space-between;margin-top:7px;font-size:10px;opacity:.7}.lr-prestige-btn{width:100%;margin-top:13px;padding:12px;border:0;border-radius:12px;font-weight:1000;letter-spacing:.08em;background:linear-gradient(135deg,#7c4dff,#ff9d22);color:#fff}.lr-prestige-btn:disabled{filter:grayscale(1);opacity:.42}/* V7.31 — Prestige I: VISIBLE Ascendant Rebirth Aura
    Aura layers deliberately sit ABOVE the road and BEHIND the emoji. */
+
+/* LOAD RUSH V7.32 — REFINED REBIRTH AURA
+   Noticeable Prestige I reward without the giant nuclear halo. */
 body.lr-prestige-aura .road-world .vehicle{
   isolation:isolate;
-  overflow:visible !important;
   filter:
-    drop-shadow(0 0 7px rgba(255,255,255,.98))
-    drop-shadow(0 0 15px rgba(188,105,255,.95))
-    drop-shadow(0 0 30px rgba(73,110,255,.82));
+    drop-shadow(0 0 5px rgba(198,135,255,.90))
+    drop-shadow(0 0 10px rgba(94,162,255,.48))
+    drop-shadow(0 9px 10px rgba(0,0,0,.25)) !important;
 }
-body.lr-prestige-aura .road-world .vehicle > .rig-emoji-composite,
-body.lr-prestige-aura .road-world .vehicle > .rig-emoji-base{
-  position:relative;
-  z-index:4;
-}
-body.lr-prestige-aura .road-world .vehicle::before,
-body.lr-prestige-aura .road-world .vehicle::after{
-  content:'';
-  position:absolute;
-  left:50%;
-  top:50%;
-  pointer-events:none;
-  border-radius:50%;
-  transform-origin:center;
-}
-/* Big luminous energy cloud. */
 body.lr-prestige-aura .road-world .vehicle::before{
-  z-index:1;
-  width:2.45em;
-  height:1.72em;
-  transform:translate(-50%,-50%);
+  content:"";
+  position:absolute;
+  left:50%;top:50%;
+  width:1.42em;height:1.42em;
+  border-radius:50%;
+  pointer-events:none;
+  z-index:-0;
+  transform:translate(-50%,-50%) scale(.90);
   background:
-    radial-gradient(ellipse at center,
-      rgba(255,255,255,.82) 0 5%,
-      rgba(219,162,255,.68) 12%,
-      rgba(148,80,255,.52) 28%,
-      rgba(68,116,255,.35) 48%,
-      rgba(31,230,255,.15) 63%,
+    radial-gradient(circle,
+      rgba(255,255,255,.18) 0 12%,
+      rgba(194,126,255,.22) 28%,
+      rgba(93,153,255,.16) 48%,
+      rgba(130,82,255,.07) 64%,
       transparent 76%);
   box-shadow:
-    0 0 .18em rgba(255,255,255,.95),
-    0 0 .48em rgba(202,112,255,.95),
-    0 0 .90em rgba(87,80,255,.82),
-    0 0 1.35em rgba(48,197,255,.46);
-  filter:blur(1.5px);
-  animation:lrP1CorePulse 1.35s ease-in-out infinite;
+    0 0 10px rgba(201,132,255,.38),
+    0 0 20px rgba(82,154,255,.20);
+  opacity:.78;
+  animation:lrP1RefinedPulse 2.8s ease-in-out infinite;
 }
-/* Rotating high-energy halo. */
 body.lr-prestige-aura .road-world .vehicle::after{
-  z-index:2;
-  width:2.65em;
-  height:2.05em;
-  transform:translate(-50%,-50%) rotate(0deg);
-  background:conic-gradient(
-    from 0deg,
-    rgba(90,227,255,.05),
-    rgba(90,227,255,.95),
-    rgba(145,77,255,.98),
-    rgba(255,72,220,.9),
-    rgba(255,255,255,.92),
-    rgba(90,227,255,.05)
-  );
-  -webkit-mask:radial-gradient(ellipse at center, transparent 0 57%, #000 61% 69%, transparent 73%);
-          mask:radial-gradient(ellipse at center, transparent 0 57%, #000 61% 69%, transparent 73%);
-  filter:drop-shadow(0 0 5px rgba(255,255,255,.9)) drop-shadow(0 0 12px rgba(163,75,255,.95));
-  opacity:.95;
-  animation:lrP1Orbit 2.4s linear infinite;
+  content:"";
+  position:absolute;
+  left:50%;top:50%;
+  width:1.58em;height:1.58em;
+  border-radius:50%;
+  pointer-events:none;
+  z-index:0;
+  transform:translate(-50%,-50%);
+  border:1.5px solid rgba(199,143,255,.32);
+  border-top-color:rgba(120,205,255,.58);
+  border-right-color:rgba(235,166,255,.42);
+  box-shadow:0 0 9px rgba(127,104,255,.20);
+  opacity:.55;
+  animation:lrP1RefinedOrbit 5.5s linear infinite;
 }
-@keyframes lrP1CorePulse{
-  0%,100%{opacity:.78;transform:translate(-50%,-50%) scale(.88)}
-  50%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}
+@keyframes lrP1RefinedPulse{
+  0%,100%{opacity:.62;transform:translate(-50%,-50%) scale(.86)}
+  50%{opacity:.88;transform:translate(-50%,-50%) scale(1.00)}
 }
-@keyframes lrP1Orbit{
-  from{transform:translate(-50%,-50%) rotate(0deg) scale(.96)}
-  50%{transform:translate(-50%,-50%) rotate(180deg) scale(1.06)}
-  to{transform:translate(-50%,-50%) rotate(360deg) scale(.96)}
+@keyframes lrP1RefinedOrbit{
+  from{transform:translate(-50%,-50%) rotate(0deg)}
+  to{transform:translate(-50%,-50%) rotate(360deg)}
 }
 body.lr-prestige-aura .road-world .vehicle.lr-prestige-aura-hit{
   filter:
-    drop-shadow(0 0 11px rgba(255,255,255,1))
-    drop-shadow(0 0 25px rgba(210,112,255,1))
-    drop-shadow(0 0 48px rgba(59,127,255,1)) !important;
+    drop-shadow(0 0 7px rgba(220,160,255,1))
+    drop-shadow(0 0 14px rgba(89,180,255,.65))
+    drop-shadow(0 9px 10px rgba(0,0,0,.25)) !important;
 }
 body.lr-prestige-aura .road-world .vehicle.lr-prestige-aura-hit::before{
-  animation:lrP1HitCore .72s cubic-bezier(.16,.8,.22,1) both;
+  animation:lrP1RefinedHit .62s cubic-bezier(.16,.8,.22,1) both;
 }
-body.lr-prestige-aura .road-world .vehicle.lr-prestige-aura-hit::after{
-  animation:lrP1HitRing .72s cubic-bezier(.12,.75,.18,1) both;
-}
-@keyframes lrP1HitCore{
-  0%{opacity:1;transform:translate(-50%,-50%) scale(.9)}
-  35%{opacity:1;transform:translate(-50%,-50%) scale(1.55)}
-  100%{opacity:.8;transform:translate(-50%,-50%) scale(.9)}
-}
-@keyframes lrP1HitRing{
-  0%{opacity:.95;transform:translate(-50%,-50%) rotate(0deg) scale(.78)}
-  55%{opacity:1;transform:translate(-50%,-50%) rotate(150deg) scale(1.48)}
-  100%{opacity:.8;transform:translate(-50%,-50%) rotate(300deg) scale(.96)}
+@keyframes lrP1RefinedHit{
+  0%{opacity:.72;transform:translate(-50%,-50%) scale(.88)}
+  42%{opacity:1;transform:translate(-50%,-50%) scale(1.18)}
+  100%{opacity:.68;transform:translate(-50%,-50%) scale(.90)}
 }
 .lr-p1-spark{
   position:absolute;
   z-index:18;
-  width:8px;height:8px;
+  width:5px;height:5px;
   border-radius:50%;
   pointer-events:none;
   background:#fff;
-  box-shadow:0 0 8px rgba(255,255,255,1),0 0 16px rgba(171,97,255,1),0 0 25px rgba(79,176,255,.8);
+  box-shadow:0 0 6px rgba(255,255,255,.9),0 0 11px rgba(150,105,255,.65);
   transform:translate(-50%,-50%);
-  animation:lrP1SparkFly .78s cubic-bezier(.12,.72,.15,1) forwards;
+  animation:lrP1SparkFly .62s cubic-bezier(.12,.72,.15,1) forwards;
 }
 @keyframes lrP1SparkFly{
   0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}
-  16%{opacity:1}
+  18%{opacity:.85}
   100%{opacity:0;transform:translate(calc(-50% + var(--sx)),calc(-50% + var(--sy))) scale(.05)}
 }
 

@@ -2999,7 +2999,7 @@ function lrPrestigeAuraBurst(){
 
   const wr=world.getBoundingClientRect(), vr=vehicle.getBoundingClientRect();
   const cx=vr.left+vr.width/2-wr.left, cy=vr.top+vr.height/2-wr.top;
-  for(let i=0;i<8;i++){
+  for(let i=0;i<5;i++){
     const a=(Math.PI*2*i/8)+(Math.random()*.32-.16);
     const d=32+Math.random()*34;
     const spark=document.createElement('i');
