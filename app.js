@@ -2016,7 +2016,7 @@ function addLoad(delta) {
     showToast(`Level ${newLevel}! Keep hauling toward the next truck.`);
   }
   saveState(); renderAll(); animateCount(delta); playTone(delta > 0 ? 'plus' : 'minus'); if (delta > 0) { showTruckSmoke(); triggerBrylerPower(); triggerLootCharacterPower(); lrMaybePrestigeRoadReward(); }
-  if (delta > 0) { const combo = comboStats(); particleBurst($('plusBtn'), combo.current >= 10 ? 70 : combo.current >= 5 ? 45 : undefined, combo.current >= 5 ? 1.8 : undefined); if (combo.current === 3) showToast('Combo active · 2× XP'); if (combo.current === 5) flashMegaMessage('HOT STREAK · 3× XP!'); if (combo.current === 10) flashMegaMessage('FREIGHT FRENZY · 5× XP!'); maybeAwardRace(); announceNewUnlocks(); if (todayNetLoads() === state.dailyGoal) { flashMegaMessage('SHIFT GOAL CRUSHED!'); particleBurst($('mainCount'), 100, 2.4); showToast('Daily load goal complete'); } if (shouldPromptFate()) setTimeout(promptFreightFate, 350); } else showToast('Subtracted from every live metric');
+  if (delta > 0) { lrPrestigeAuraBurst(); const combo = comboStats(); particleBurst($('plusBtn'), combo.current >= 10 ? 70 : combo.current >= 5 ? 45 : undefined, combo.current >= 5 ? 1.8 : undefined); if (combo.current === 3) showToast('Combo active · 2× XP'); if (combo.current === 5) flashMegaMessage('HOT STREAK · 3× XP!'); if (combo.current === 10) flashMegaMessage('FREIGHT FRENZY · 5× XP!'); maybeAwardRace(); announceNewUnlocks(); if (todayNetLoads() === state.dailyGoal) { flashMegaMessage('SHIFT GOAL CRUSHED!'); particleBurst($('mainCount'), 100, 2.4); showToast('Daily load goal complete'); } if (shouldPromptFate()) setTimeout(promptFreightFate, 350); } else showToast('Subtracted from every live metric');
 }
 
 function undoLast() {
@@ -2987,6 +2987,32 @@ function lrMaybePrestigeRoadReward(){
     if(event) setTimeout(()=>lrRunPrestigeAutoEvent(event),180);
   }
 }
+function lrPrestigeAuraBurst(){
+  if(lrPrestigeRank()<1) return;
+  const vehicle=document.getElementById('vehicle');
+  const world=document.getElementById('roadWorld');
+  if(!vehicle||!world) return;
+  vehicle.classList.remove('lr-prestige-aura-hit');
+  void vehicle.offsetWidth;
+  vehicle.classList.add('lr-prestige-aura-hit');
+  setTimeout(()=>vehicle.classList.remove('lr-prestige-aura-hit'),760);
+
+  const wr=world.getBoundingClientRect(), vr=vehicle.getBoundingClientRect();
+  const cx=vr.left+vr.width/2-wr.left, cy=vr.top+vr.height/2-wr.top;
+  for(let i=0;i<8;i++){
+    const a=(Math.PI*2*i/8)+(Math.random()*.32-.16);
+    const d=32+Math.random()*34;
+    const spark=document.createElement('i');
+    spark.className='lr-p1-spark';
+    spark.style.left=`${cx}px`;
+    spark.style.top=`${cy}px`;
+    spark.style.setProperty('--sx',`${Math.cos(a)*d}px`);
+    spark.style.setProperty('--sy',`${Math.sin(a)*d}px`);
+    world.appendChild(spark);
+    setTimeout(()=>spark.remove(),850);
+  }
+}
+
 function lrRenderPrestige(){
  let box=document.getElementById('lrPrestigeBox'),host=document.querySelector('#garageView,.garage-view,[data-view="garage"],.garage-section')||document.querySelector('main');if(!host)return;
  if(!box){box=document.createElement('section');box.id='lrPrestigeBox';box.className='lr-prestige-box';host.appendChild(box)}
