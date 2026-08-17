@@ -72,6 +72,7 @@ const RIGS = [
   { id: 'slopes', icon: '⛷️', name: 'Slopes', type: 'LOOT EXCLUSIVE', rarity: 'POWDER', weight: .55, reward: 'Ski-jump trick animation on every +', accent: '#dbeafe', rule: 'Loot box exclusive', unlocked: () => false },
   { id: 'grrr', icon: '🐅', name: 'GRRR', type: 'LOOT EXCLUSIVE', rarity: 'PREDATOR', weight: .42, reward: 'Tiger lunge attack on every +', accent: '#f97316', rule: 'Loot box exclusive', unlocked: () => false },
   { id: 'otter', icon: '🦦', name: 'Otter', type: 'LOOT EXCLUSIVE', rarity: 'SPLASH', weight: .65, reward: 'Water-swim chaos on every +', accent: '#38bdf8', rule: 'Loot box exclusive', unlocked: () => false },
+  { id: 'prestige-zebra', icon: '🦓', name: 'The Zebra', type: 'PRESTIGE', rarity: 'PRESTIGE VII', weight: 0, reward: 'Black-and-white prestige streak', accent: '#f8fafc', rule: 'Reach Prestige 7', unlocked: () => lrPrestigeRank() >= 7 },
   { id: 'byler', icon: '🏄‍♂️', name: 'Bryler', type: 'SURF TRUCK', rarity: 'SURF SIDE', weight: .02, reward: 'Ocean-wave road shimmer', accent: '#06b6d4', rule: 'Reach Level 250 + complete 250 hourly quests', unlocked: () => lifetimeLevel() >= 250 && state.raceWins >= 250 }
 ];
 
@@ -193,6 +194,53 @@ const FATE_EVENTS = [
     weight: .7,
     description: 'A mysterious executive calls only to say: “Outstanding work.”',
     objects: ['☎️','👔','✨']
+  },
+  {
+    id: 'classified-convoy',
+    name: 'Classified Convoy',
+    icon: '🕶️',
+    rarity: 'PRESTIGE',
+    weight: 2.4,
+    prestigeMin: 4,
+    description: 'Unmarked vehicles appear. Nobody asks questions.',
+    sceneClass: 'fate-nitro',
+    objects: ['🚓','🕶️','🚙','🚨']
+  },
+  {
+    id: 'reality-tear',
+    name: 'Reality Tear',
+    icon: '🌀',
+    rarity: 'PRESTIGE',
+    weight: 1.6,
+    prestigeMin: 6,
+    description: 'Dispatch accidentally opens a hole in spacetime.',
+    worldClass: 'fate-rainbow',
+    sceneClass: 'fate-spin',
+    objects: ['🌀','✨','🌀','⚡']
+  },
+  {
+    id: 'meteor-freight',
+    name: 'Meteor Freight',
+    icon: '☄️',
+    rarity: 'COSMIC',
+    weight: 1.1,
+    prestigeMin: 9,
+    description: 'The freight lane is now technically in outer space.',
+    worldClass: 'fate-rainbow',
+    sceneClass: 'fate-nitro',
+    objects: ['☄️','🌠','☄️','✨','🌠']
+  },
+  {
+    id: 'immortal-run',
+    name: 'Immortal Run',
+    icon: '♾️',
+    rarity: 'IMMORTAL',
+    weight: .55,
+    prestigeMin: 10,
+    description: 'The road has accepted that you cannot be stopped.',
+    worldClass: 'fate-rainbow',
+    sceneClass: 'fate-nitro',
+    objects: ['♾️','🔥','🌈','⚡','♾️']
   }
 ];
 
@@ -667,7 +715,8 @@ function lrRollBulkCrate() {
   state.openedCrates = (state.openedCrates || 0) + 1;
 
   const locked = RIGS.filter(rig => !isRigOwned(rig.id));
-  const rig = locked.length && Math.random() < .16 ? weightedCrateRig() : null;
+  const rigChance = lrPrestigeRank() >= 8 ? .25 : .16;
+  const rig = locked.length && Math.random() < rigChance ? weightedCrateRig() : null;
 
   if (rig) {
     state.ownedRigs = [...new Set([...ownedRigIds(), rig.id])];
@@ -768,7 +817,8 @@ function openTruckCrate() {
   setTimeout(() => {
     // Character drops are meaningful now, especially the three loot exclusives.
     const locked = RIGS.filter(rig => !isRigOwned(rig.id));
-    const rig = locked.length && Math.random() < .16 ? weightedCrateRig() : null;
+    const rigChance = lrPrestigeRank() >= 8 ? .25 : .16;
+  const rig = locked.length && Math.random() < rigChance ? weightedCrateRig() : null;
 
     stage.classList.remove('opening');
     stage.classList.add('revealed');
@@ -1237,7 +1287,8 @@ function maybeAwardRace() {
 
   state.hourlyRaceAwards[hourKey] = completedRaces;
   state.raceWins += newWins;
-  state.crateTokens = (state.crateTokens || 0) + newWins;
+  const royalBonus = lrPrestigeRank() >= 5 ? newWins : 0;
+  state.crateTokens = (state.crateTokens || 0) + newWins + royalBonus;
 
   // Keep only recent hour records so local storage never grows forever.
   const recentKeys = Object.keys(state.hourlyRaceAwards).sort().slice(-72);
@@ -1246,7 +1297,7 @@ function maybeAwardRace() {
   renderAll();
 
   celebrateRace();
-  showToast(`${newWins} race${newWins === 1 ? '' : 's'} complete · +${newWins} loot box${newWins === 1 ? '' : 'es'} · ${state.raceWins} total wins`);
+  showToast(`${newWins} race${newWins === 1 ? '' : 's'} complete · +${newWins + royalBonus} loot box${newWins + royalBonus === 1 ? '' : 'es'}${royalBonus ? ' (Freight Royalty bonus)' : ''} · ${state.raceWins} total wins`);
 }
 
 
@@ -1632,17 +1683,17 @@ function checkReminders() {
 }
 
 function weightedFateRoll() {
-  const total = FATE_EVENTS.reduce((sum, event) => sum + event.weight, 0);
+  const prestige = lrPrestigeRank();
+  const available = FATE_EVENTS.filter(event => prestige >= Number(event.prestigeMin || 0));
+  const total = available.reduce((sum, event) => sum + event.weight, 0);
   let roll = Math.random() * total;
 
-  for (const event of FATE_EVENTS) {
+  for (const event of available) {
     roll -= event.weight;
-    if (roll <= 0) {
-      return event;
-    }
+    if (roll <= 0) return event;
   }
 
-  return FATE_EVENTS[0];
+  return available[0] || FATE_EVENTS[0];
 }
 
 function shouldPromptFate() {
@@ -1964,7 +2015,7 @@ function addLoad(delta) {
   if (delta > 0 && newLevel > oldLevel) {
     showToast(`Level ${newLevel}! Keep hauling toward the next truck.`);
   }
-  saveState(); renderAll(); animateCount(delta); playTone(delta > 0 ? 'plus' : 'minus'); if (delta > 0) { showTruckSmoke(); triggerBrylerPower(); triggerLootCharacterPower(); }
+  saveState(); renderAll(); animateCount(delta); playTone(delta > 0 ? 'plus' : 'minus'); if (delta > 0) { showTruckSmoke(); triggerBrylerPower(); triggerLootCharacterPower(); lrMaybePrestigeRoadReward(); }
   if (delta > 0) { const combo = comboStats(); particleBurst($('plusBtn'), combo.current >= 10 ? 70 : combo.current >= 5 ? 45 : undefined, combo.current >= 5 ? 1.8 : undefined); if (combo.current === 3) showToast('Combo active · 2× XP'); if (combo.current === 5) flashMegaMessage('HOT STREAK · 3× XP!'); if (combo.current === 10) flashMegaMessage('FREIGHT FRENZY · 5× XP!'); maybeAwardRace(); announceNewUnlocks(); if (todayNetLoads() === state.dailyGoal) { flashMegaMessage('SHIFT GOAL CRUSHED!'); particleBurst($('mainCount'), 100, 2.4); showToast('Daily load goal complete'); } if (shouldPromptFate()) setTimeout(promptFreightFate, 350); } else showToast('Subtracted from every live metric');
 }
 
@@ -2885,14 +2936,67 @@ function lrPrestigeCycleLevel(){
 function lrPrestigeRank(){return Math.max(0,Number(state.prestige||0))}
 function lrPrestigeXpMultiplier(){return Math.max(1,lrPrestigeRank()+1)}
 function lrCanPrestige(){return lrPrestigeCycleLevel()>=100}
-function lrPrestigeRewardName(rank){const r=['Rebirth Aura','Overdrive','Weather Machine','Classified Road Events','Freight Royalty','Reality Failure','The Zebra','Lucky Freight','Cosmic Dispatch','Immortal'];return r[(rank-1)%r.length]||'Unknown'}
+const LR_PRESTIGE_REWARDS = [
+  null,
+  {name:'Rebirth Aura', desc:'Permanent violet prestige aura around the game world.'},
+  {name:'Overdrive', desc:'Every 10th load triggers a free Nitro Boost road burst.'},
+  {name:'Weather Machine', desc:'Random automatic Thunder Run weather can strike while logging loads.'},
+  {name:'Classified Road Events', desc:'Unlocks secret Prestige road events, including Classified Convoy.'},
+  {name:'Freight Royalty', desc:'Every completed Hourly Quest awards +1 extra loot box.'},
+  {name:'Reality Failure', desc:'Unlocks Reality Tear events and periodic reality-glitch road chaos.'},
+  {name:'The Zebra', desc:'Permanently unlocks The Zebra 🦓 in the Garage.'},
+  {name:'Lucky Freight', desc:'Loot-box character jackpot chance increases from 16% to 25%.'},
+  {name:'Cosmic Dispatch', desc:'Unlocks Meteor Freight and automatic cosmic road events.'},
+  {name:'Immortal', desc:'Permanent Immortal rainbow aura plus legendary Immortal Run events.'}
+];
+function lrPrestigeReward(rank){return LR_PRESTIGE_REWARDS[Math.min(10,Math.max(1,Number(rank)||1))]}
+function lrPrestigeRewardName(rank){return lrPrestigeReward(rank).name}
+function lrPrestigeRewardDescription(rank){return lrPrestigeReward(rank).desc}
+function lrPrestigeLoadNumber(){return Math.max(0,todayNetLoads())}
+function lrRunPrestigeAutoEvent(event){
+  if(!event || document.querySelector('.lr-prestige-ceremony')) return;
+  runFateScene(event);
+  flashMegaMessage(`${event.icon} ${event.name.toUpperCase()}!`);
+  showToast(`${event.rarity} · ${event.name}`);
+}
+function lrMaybePrestigeRoadReward(){
+  const p=lrPrestigeRank(), loads=lrPrestigeLoadNumber();
+  if(p < 2 || loads <= 0) return;
+  // P2 Overdrive: deterministic every 10 loads.
+  if(p >= 2 && loads % 10 === 0){
+    const nitro=FATE_EVENTS.find(e=>e.id==='nitro');
+    if(nitro) setTimeout(()=>lrRunPrestigeAutoEvent(nitro),180);
+    return;
+  }
+  // P3 Weather Machine: occasional automatic storm.
+  if(p >= 3 && Math.random() < .035){
+    const rain=FATE_EVENTS.find(e=>e.id==='rain');
+    if(rain) setTimeout(()=>lrRunPrestigeAutoEvent(rain),180);
+    return;
+  }
+  // P4 secret events, P6 reality tears, P9 cosmic events, P10 immortal runs.
+  let pool=[];
+  if(p>=4) pool.push('classified-convoy');
+  if(p>=6) pool.push('reality-tear');
+  if(p>=9) pool.push('meteor-freight');
+  if(p>=10) pool.push('immortal-run');
+  const chance=p>=10?.03:p>=9?.022:p>=6?.016:p>=4?.012:0;
+  if(pool.length && Math.random()<chance){
+    const id=pool[Math.floor(Math.random()*pool.length)];
+    const event=FATE_EVENTS.find(e=>e.id===id);
+    if(event) setTimeout(()=>lrRunPrestigeAutoEvent(event),180);
+  }
+}
 function lrRenderPrestige(){
  let box=document.getElementById('lrPrestigeBox'),host=document.querySelector('#garageView,.garage-view,[data-view="garage"],.garage-section')||document.querySelector('main');if(!host)return;
  if(!box){box=document.createElement('section');box.id='lrPrestigeBox';box.className='lr-prestige-box';host.appendChild(box)}
  const p=lrPrestigeRank(),ready=lrCanPrestige();
- box.innerHTML=`<div class="lr-prestige-head"><div><span>CAREER PRESTIGE</span><h3>${p?`P${p} • ${lrPrestigeRewardName(p)}`:'Prestige awaits'}</h3></div><div class="lr-prestige-emblem">${p?`P${p}`:'♛'}</div></div><p>Every 100 levels, restart the level climb and permanently raise your Prestige. Garage unlocks, lifetime stats, race records and history stay yours.</p><div class="lr-prestige-xp-boost">⚡ Permanent XP Boost: <strong>${lrPrestigeXpMultiplier()}×</strong></div><div class="lr-prestige-progress"><i style="width:${lrPrestigeCycleLevel()}%"></i></div><div class="lr-prestige-foot"><b>Level ${lrPrestigeCycleLevel()}/100</b><span>Next: ${lrPrestigeRewardName(p+1)}</span></div><button id="lrPrestigeBtn" class="lr-prestige-btn" ${ready?'':'disabled'}>${ready?'PRESTIGE NOW':'REACH LEVEL 100'}</button>`;
+ const currentReward=p?lrPrestigeRewardDescription(p):'Reach Level 100 to unlock your first permanent Prestige perk.';
+ const nextRank=Math.min(10,p+1);
+ box.innerHTML=`<div class="lr-prestige-head"><div><span>CAREER PRESTIGE</span><h3>${p?`P${p} • ${lrPrestigeRewardName(p)}`:'Prestige awaits'}</h3></div><div class="lr-prestige-emblem">${p?`P${p}`:'♛'}</div></div><p>${currentReward}</p><div class="lr-prestige-xp-boost">⚡ Permanent XP Boost: <strong>${lrPrestigeXpMultiplier()}×</strong></div><div class="lr-prestige-progress"><i style="width:${lrPrestigeCycleLevel()}%"></i></div><div class="lr-prestige-foot"><b>Level ${lrPrestigeCycleLevel()}/100</b><span>${p>=10?'ALL PRESTIGE REWARDS UNLOCKED':`Next: ${lrPrestigeRewardName(nextRank)} — ${lrPrestigeRewardDescription(nextRank)}`}</span></div><button id="lrPrestigeBtn" class="lr-prestige-btn" ${ready?'':'disabled'}>${ready?'PRESTIGE NOW':'REACH LEVEL 100'}</button>`;
  const btn=document.getElementById('lrPrestigeBtn');if(btn&&ready)btn.onclick=lrDoPrestige;
  document.body.classList.toggle('lr-prestige-aura',p>=1);
+ document.body.classList.toggle('lr-prestige-immortal',p>=10);
 }
 function lrRunPrestigeCutscene(rank,reward){
   const old=document.querySelector('.lr-prestige-ceremony');
