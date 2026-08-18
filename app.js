@@ -41,6 +41,7 @@ const DEFAULTS = {
   seenUnlocks: [],
   ownedRigs: ['starter-semi'],
   crateTokens: 0,
+  dailyGoalLootRewardDate: '',
   openedCrates: 0,
   rigLoadCounts: {},
   bonusXP: 0,
@@ -333,6 +334,11 @@ function migrateLegacyState(legacy) {
     hourlyGoal: Number(legacy.hourlyGoal) || DEFAULTS.hourlyGoal,
     minutesPerUpdate: Number(legacy.minutesPerUpdate) || DEFAULTS.minutesPerUpdate,
     raceWins: Math.max(0, Number(legacy.raceWins) || Number(legacy.totalRaceWins) || 0),
+    // V7.36 recovery: older daily-goal code accidentally awarded to `lootBoxes`,
+    // while the garage/open-all system actually spends `crateTokens`. Recover any
+    // stranded boxes once, then zero the obsolete field so they cannot duplicate.
+    crateTokens: Math.max(0, Number(legacy.crateTokens) || 0) + Math.max(0, Number(legacy.lootBoxes) || 0),
+    lootBoxes: 0,
     bonusXP: Math.max(Number(legacy.bonusXP) || 0, explicitXP - logXP),
     hourlyRaceAwards: legacy.hourlyRaceAwards && typeof legacy.hourlyRaceAwards === 'object' ? legacy.hourlyRaceAwards : {},
     completedHours: Array.isArray(legacy.completedHours)
@@ -400,7 +406,7 @@ function lrAwardDailyGoalLoot(){
   if (todayNetLoads() < Number(state.dailyGoal || 0)) return false;
 
   state.dailyGoalLootRewardDate = todayKey;
-  state.lootBoxes = Math.max(0, Number(state.lootBoxes || 0)) + 100;
+  state.crateTokens = Math.max(0, Number(state.crateTokens || 0)) + 100;
   saveState();
 
   try { renderAll(); } catch {}
@@ -2010,6 +2016,7 @@ function triggerLootCharacterPower(){
 
 function addLoad(delta) {
   const oldLevel = lifetimeLevel();
+  const dailyLoadsBefore = todayNetLoads();
   const entry = { delta, time: Date.now(), xp: delta };
   state.log.unshift(entry);
   const plusMessages = ['Load secured.','Driver updated.','Another one on the board.','Dispatch magic.','Momentum acquired.']; const minusMessages = ['Load removed from every score.','All metrics corrected.','Board, XP, race, and time corrected.']; const choices = delta > 0 ? plusMessages : minusMessages; $('statusLine').textContent = choices[Math.floor(Math.random() * choices.length)];
@@ -2039,8 +2046,8 @@ function addLoad(delta) {
     showToast(`Level ${newLevel}! Keep hauling toward the next truck.`);
   }
   saveState(); renderAll(); animateCount(delta); playTone(delta > 0 ? 'plus' : 'minus'); if (delta > 0) { showTruckSmoke(); triggerBrylerPower(); triggerLootCharacterPower(); lrMaybePrestigeRoadReward(); }
-  if (delta > 0) { lrPrestigeAuraBurst(); const combo = comboStats(); particleBurst($('plusBtn'), combo.current >= 10 ? 70 : combo.current >= 5 ? 45 : undefined, combo.current >= 5 ? 1.8 : undefined); if (combo.current === 3) showToast('Combo active · 2× XP'); if (combo.current === 5) flashMegaMessage('HOT STREAK · 3× XP!'); if (combo.current === 10) flashMegaMessage('FREIGHT FRENZY · 5× XP!'); maybeAwardRace(); announceNewUnlocks(); if (todayNetLoads() === state.dailyGoal) {
-    lrAwardDailyGoalLoot(); flashMegaMessage('SHIFT GOAL CRUSHED!'); particleBurst($('mainCount'), 100, 2.4); showToast('Daily load goal complete'); } if (shouldPromptFate()) setTimeout(promptFreightFate, 350); } else showToast('Subtracted from every live metric');
+  if (delta > 0) { lrPrestigeAuraBurst(); const combo = comboStats(); particleBurst($('plusBtn'), combo.current >= 10 ? 70 : combo.current >= 5 ? 45 : undefined, combo.current >= 5 ? 1.8 : undefined); if (combo.current === 3) showToast('Combo active · 2× XP'); if (combo.current === 5) flashMegaMessage('HOT STREAK · 3× XP!'); if (combo.current === 10) flashMegaMessage('FREIGHT FRENZY · 5× XP!'); maybeAwardRace(); announceNewUnlocks(); const dailyLoadsAfter = todayNetLoads(); const dailyGoal = Math.max(1, Number(state.dailyGoal) || DEFAULTS.dailyGoal); if (dailyLoadsBefore < dailyGoal && dailyLoadsAfter >= dailyGoal) {
+    const awarded = lrAwardDailyGoalLoot(); if (awarded) { flashMegaMessage('SHIFT GOAL CRUSHED · +100 LOOT BOXES!'); particleBurst($('mainCount'), 100, 2.4); showToast('Daily load goal complete · +100 loot boxes'); } } if (shouldPromptFate()) setTimeout(promptFreightFate, 350); } else showToast('Subtracted from every live metric');
 }
 
 function undoLast() {
@@ -3213,9 +3220,10 @@ function bindEvents() {
     state.fateFrequency = Math.max(1, Number($('fateFrequencySelect').value) || 10);
 
     saveState();
+    const awardedDailyGoal = lrAwardDailyGoalLoot();
     renderAll();
     closeDialog($('settingsDialog'));
-    showToast('Settings saved');
+    showToast(awardedDailyGoal ? 'Settings saved · daily goal complete · +100 loot boxes' : 'Settings saved');
   });
 
   $('soundToggle').addEventListener('click', async () => {
@@ -3476,6 +3484,8 @@ async function initialize() {
 
   renderBrandTitle();
   renderAll();
+  // If today was already completed in a broken prior build, recover the reward.
+  lrAwardDailyGoalLoot();
   renderReminders();
   startHourlyClock();
   checkReminders();
