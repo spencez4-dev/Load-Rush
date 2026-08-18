@@ -388,6 +388,29 @@ function reconcileProgressFromLog() {
   state.raceWins = Math.max(Number(state.raceWins) || 0, reconstructedWins);
 }
 
+
+function lrDailyGoalRewardKey(){
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function lrAwardDailyGoalLoot(){
+  const todayKey = lrDailyGoalRewardKey();
+  if (state.dailyGoalLootRewardDate === todayKey) return false;
+  if (todayNetLoads() < Number(state.dailyGoal || 0)) return false;
+
+  state.dailyGoalLootRewardDate = todayKey;
+  state.lootBoxes = Math.max(0, Number(state.lootBoxes || 0)) + 100;
+  saveState();
+
+  try { renderAll(); } catch {}
+  try { flashMegaMessage('DAILY GOAL CRUSHED · +100 LOOT BOXES!'); } catch {}
+  try { showToast('Daily goal reward: +100 loot boxes'); } catch {}
+  try { particleBurst($('plusBtn'), 100, 2.2); } catch {}
+
+  return true;
+}
+
 function saveState() {
   const clean = {
     ...state,
@@ -2016,7 +2039,8 @@ function addLoad(delta) {
     showToast(`Level ${newLevel}! Keep hauling toward the next truck.`);
   }
   saveState(); renderAll(); animateCount(delta); playTone(delta > 0 ? 'plus' : 'minus'); if (delta > 0) { showTruckSmoke(); triggerBrylerPower(); triggerLootCharacterPower(); lrMaybePrestigeRoadReward(); }
-  if (delta > 0) { lrPrestigeAuraBurst(); const combo = comboStats(); particleBurst($('plusBtn'), combo.current >= 10 ? 70 : combo.current >= 5 ? 45 : undefined, combo.current >= 5 ? 1.8 : undefined); if (combo.current === 3) showToast('Combo active · 2× XP'); if (combo.current === 5) flashMegaMessage('HOT STREAK · 3× XP!'); if (combo.current === 10) flashMegaMessage('FREIGHT FRENZY · 5× XP!'); maybeAwardRace(); announceNewUnlocks(); if (todayNetLoads() === state.dailyGoal) { flashMegaMessage('SHIFT GOAL CRUSHED!'); particleBurst($('mainCount'), 100, 2.4); showToast('Daily load goal complete'); } if (shouldPromptFate()) setTimeout(promptFreightFate, 350); } else showToast('Subtracted from every live metric');
+  if (delta > 0) { lrPrestigeAuraBurst(); const combo = comboStats(); particleBurst($('plusBtn'), combo.current >= 10 ? 70 : combo.current >= 5 ? 45 : undefined, combo.current >= 5 ? 1.8 : undefined); if (combo.current === 3) showToast('Combo active · 2× XP'); if (combo.current === 5) flashMegaMessage('HOT STREAK · 3× XP!'); if (combo.current === 10) flashMegaMessage('FREIGHT FRENZY · 5× XP!'); maybeAwardRace(); announceNewUnlocks(); if (todayNetLoads() === state.dailyGoal) {
+    lrAwardDailyGoalLoot(); flashMegaMessage('SHIFT GOAL CRUSHED!'); particleBurst($('mainCount'), 100, 2.4); showToast('Daily load goal complete'); } if (shouldPromptFate()) setTimeout(promptFreightFate, 350); } else showToast('Subtracted from every live metric');
 }
 
 function undoLast() {
