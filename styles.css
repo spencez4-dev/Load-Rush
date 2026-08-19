@@ -3470,3 +3470,139 @@ body.lr-afternoon-frenzy .count-button.plus{animation:lrFrenzyPlus .3s ease-in-o
 @keyframes lrPcConfetti{to{background-position:0 95px,20px 125px,50px 103px}}
 @media (prefers-reduced-motion:reduce){.lr-prestige-ceremony *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 \n\n/* V7.29 — real Prestige rewards */\nbody.lr-prestige-immortal .app-shell,\nbody.lr-prestige-immortal main {\n  animation: lrImmortalAura 5s linear infinite;\n}\n@keyframes lrImmortalAura {\n  0% { filter: drop-shadow(0 0 7px rgba(255,70,70,.28)); }\n  20% { filter: drop-shadow(0 0 9px rgba(255,190,70,.32)); }\n  40% { filter: drop-shadow(0 0 10px rgba(80,255,130,.30)); }\n  60% { filter: drop-shadow(0 0 10px rgba(70,180,255,.32)); }\n  80% { filter: drop-shadow(0 0 10px rgba(180,90,255,.32)); }\n  100% { filter: drop-shadow(0 0 7px rgba(255,70,70,.28)); }\n}\n
+
+/* LOAD RUSH V7.36 — HOT SHIFT + PR CHASE */
+.lr-motivation-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+  margin:16px 0;
+}
+.lr-motivation-card{
+  position:relative;
+  overflow:hidden;
+  padding:18px;
+  border-radius:22px;
+  border:1px solid color-mix(in srgb,var(--border) 80%,transparent);
+  background:
+    linear-gradient(145deg,color-mix(in srgb,var(--surface) 96%,transparent),color-mix(in srgb,var(--surface-strong) 92%,transparent));
+  box-shadow:0 12px 34px rgba(0,0,0,.10);
+}
+.lr-motivation-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .35s ease;
+  background:linear-gradient(115deg,transparent 0 34%,rgba(255,255,255,.10) 48%,transparent 62%);
+}
+.lr-hot-card.is-hot{
+  border-color:rgba(255,111,44,.58);
+  box-shadow:0 0 0 1px rgba(255,151,67,.15),0 15px 42px rgba(255,86,35,.16);
+}
+.lr-hot-card.is-hot::before{
+  opacity:1;
+  animation:lrHotSweep 3.4s linear infinite;
+}
+.lr-pr-card.is-record{
+  border-color:rgba(250,204,21,.58);
+  box-shadow:0 0 0 1px rgba(250,204,21,.13),0 15px 42px rgba(250,180,20,.14);
+}
+@keyframes lrHotSweep{
+  from{transform:translateX(-90%)}
+  to{transform:translateX(90%)}
+}
+.lr-motive-kicker{
+  position:relative;
+  z-index:1;
+  font-size:.74rem;
+  font-weight:950;
+  letter-spacing:.12em;
+  color:var(--accent);
+}
+.lr-hot-card.is-hot .lr-motive-kicker{color:#ff7b32}
+.lr-pr-card.is-record .lr-motive-kicker{color:#f5c542}
+.lr-motive-title{
+  position:relative;
+  z-index:1;
+  margin-top:5px;
+  font-size:1.08rem;
+  font-weight:950;
+  letter-spacing:-.02em;
+}
+.lr-motive-number{
+  position:relative;
+  z-index:1;
+  margin-top:9px;
+  font-size:clamp(2.2rem,6vw,3.5rem);
+  line-height:.95;
+  font-weight:1000;
+  letter-spacing:-.06em;
+}
+.lr-motive-caption,.lr-mini-label{
+  position:relative;
+  z-index:1;
+  font-size:.72rem;
+  font-weight:800;
+  opacity:.62;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+.lr-motive-track{
+  position:relative;
+  z-index:1;
+  height:8px;
+  margin-top:14px;
+  overflow:hidden;
+  border-radius:999px;
+  background:color-mix(in srgb,var(--text) 10%,transparent);
+}
+.lr-motive-track span{
+  display:block;
+  height:100%;
+  width:0;
+  border-radius:inherit;
+  background:linear-gradient(90deg,var(--accent),var(--accent-2));
+  transition:width .55s cubic-bezier(.2,.8,.2,1);
+}
+.lr-hot-card.is-hot .lr-motive-track span{
+  background:linear-gradient(90deg,#ff5a36,#ffad42,#ffe16a);
+}
+.lr-pr-card.is-record .lr-motive-track span{
+  background:linear-gradient(90deg,#f4b41a,#ffe66d);
+}
+.lr-motive-foot{
+  position:relative;
+  z-index:1;
+  margin-top:10px;
+  font-size:.82rem;
+  font-weight:750;
+  opacity:.72;
+}
+.lr-pr-row{
+  position:relative;
+  z-index:1;
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  align-items:end;
+  gap:12px;
+  margin-top:13px;
+}
+.lr-pr-row > div:not(.lr-pr-arrow){
+  display:flex;
+  flex-direction:column;
+}
+.lr-pr-row strong{
+  font-size:2rem;
+  line-height:1;
+  font-weight:1000;
+}
+.lr-pr-arrow{
+  padding-bottom:2px;
+  font-size:1.35rem;
+  opacity:.45;
+}
+@media (max-width:760px){
+  .lr-motivation-grid{grid-template-columns:1fr}
+}

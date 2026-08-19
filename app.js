@@ -974,6 +974,209 @@ function formatDuration(minutes) {
     : `${remainder} min`;
 }
 
+
+// LOAD RUSH V7.36 — HOT SHIFT + LIVE PERSONAL RECORD CHASE
+const LR_SHIFT_LENGTH_HOURS = 8;
+
+function lrPositiveEntriesForDate(dateKeyValue){
+  return state.log
+    .filter(entry => {
+      const d = new Date(entry.time);
+      return todayKey(d) === dateKeyValue && Number(entry.delta) > 0;
+    })
+    .sort((a,b) => Number(a.time) - Number(b.time));
+}
+
+function lrHistoricalDailyTotals(){
+  const currentKey = todayKey();
+  const totals = {};
+  for (const entry of state.log){
+    const key = todayKey(new Date(entry.time));
+    if (key === currentKey) continue;
+    totals[key] = (totals[key] || 0) + Number(entry.delta || 0);
+  }
+  return Object.entries(totals)
+    .map(([key,total]) => ({key, total: Math.max(0,total)}))
+    .filter(row => row.total > 0)
+    .sort((a,b) => b.total - a.total);
+}
+
+function lrHotShiftStats(now = Date.now()){
+  const entries = todaysEntries()
+    .filter(entry => Number(entry.delta) > 0)
+    .sort((a,b) => Number(a.time) - Number(b.time));
+
+  if (!entries.length) return {active:false, reason:'no-entries'};
+
+  const today = todayNetLoads();
+  const first = Number(entries[0].time);
+  const elapsedHours = Math.max(0.08, (now - first) / 3600000);
+  const shiftProgress = Math.min(1, elapsedHours / LR_SHIFT_LENGTH_HOURS);
+  const expectedByNow = Math.max(1, Number(state.dailyGoal || 1) * shiftProgress);
+  const paceRatio = today / expectedByNow;
+  const rawProjection = Math.round((today / elapsedHours) * LR_SHIFT_LENGTH_HOURS);
+  const projection = Math.max(today, Math.min(rawProjection, Math.max(today + 500, Number(state.dailyGoal || 0) * 4)));
+  const minutesElapsed = elapsedHours * 60;
+
+  // Don't declare a HOT SHIFT off the first handful of clicks.
+  const active = minutesElapsed >= 45 &&
+    today >= Math.max(20, Number(state.dailyGoal || 0) * .18) &&
+    paceRatio >= 1.10 &&
+    projection > Number(state.dailyGoal || 0);
+
+  let tier = 'HOT SHIFT';
+  if (paceRatio >= 1.65) tier = 'UNHOLY PACE';
+  else if (paceRatio >= 1.42) tier = 'CAREER PACE';
+  else if (paceRatio >= 1.24) tier = 'ELITE PACE';
+  else if (paceRatio >= 1.10) tier = 'COOKING';
+
+  const aheadBy = Math.max(0, Math.round(today - expectedByNow));
+  const endAt = new Date(first + LR_SHIFT_LENGTH_HOURS * 3600000);
+
+  return {
+    active, tier, today, elapsedHours, expectedByNow, paceRatio,
+    projection, aheadBy, first, endAt
+  };
+}
+
+function lrPersonalRecordStats(){
+  const today = todayNetLoads();
+  const history = lrHistoricalDailyTotals();
+
+  if (!history.length){
+    return {
+      hasHistory:false,
+      today,
+      target:Number(state.dailyGoal || 0),
+      gap:Math.max(0, Number(state.dailyGoal || 0)-today),
+      rank:1,
+      totalDays:1
+    };
+  }
+
+  const best = history[0].total;
+  const higher = history.filter(row => row.total > today);
+  const nextTarget = higher.length ? higher[higher.length - 1] : null;
+  const rank = higher.length + 1;
+
+  if (!nextTarget){
+    const stretch = Math.max(10, Math.ceil(best * .05));
+    return {
+      hasHistory:true, isNewPR:today > best, tiedPR:today === best,
+      today, best, target:best + stretch, gap:Math.max(0,best + stretch - today),
+      rank:1, totalDays:history.length + 1
+    };
+  }
+
+  return {
+    hasHistory:true, isNewPR:false, tiedPR:false,
+    today, best, target:nextTarget.total,
+    gap:Math.max(0,nextTarget.total - today),
+    rank, totalDays:history.length + 1
+  };
+}
+
+function lrEnsureMotivationPanel(){
+  let panel = document.getElementById('lrMotivationPanel');
+  if (panel) return panel;
+
+  panel = document.createElement('section');
+  panel.id = 'lrMotivationPanel';
+  panel.className = 'lr-motivation-grid';
+  panel.innerHTML = `
+    <article id="lrHotShiftCard" class="lr-motivation-card lr-hot-card">
+      <div class="lr-motive-kicker">🔥 HOT SHIFT</div>
+      <div class="lr-motive-title" id="lrHotShiftTitle">Building pace…</div>
+      <div class="lr-motive-number" id="lrHotProjection">—</div>
+      <div class="lr-motive-caption">projected finish</div>
+      <div class="lr-motive-track"><span id="lrHotTrack"></span></div>
+      <div class="lr-motive-foot" id="lrHotShiftFoot">Keep stacking loads.</div>
+    </article>
+    <article id="lrPRCard" class="lr-motivation-card lr-pr-card">
+      <div class="lr-motive-kicker">🏆 LIVE PERSONAL RECORD CHASE</div>
+      <div class="lr-motive-title" id="lrPRTitle">Loading history…</div>
+      <div class="lr-pr-row">
+        <div><span class="lr-mini-label">TODAY</span><strong id="lrPRToday">0</strong></div>
+        <div class="lr-pr-arrow">→</div>
+        <div><span class="lr-mini-label">TARGET</span><strong id="lrPRTarget">—</strong></div>
+      </div>
+      <div class="lr-motive-track"><span id="lrPRTrack"></span></div>
+      <div class="lr-motive-foot" id="lrPRFoot">Finding your next record.</div>
+    </article>
+  `;
+
+  const raceCard = document.querySelector('.race-card, #raceCard, .hourly-card');
+  const mainCard = document.querySelector('.hero-card, .main-card, main .card');
+  const host = raceCard || mainCard;
+  if (host && host.parentNode) host.parentNode.insertBefore(panel, host.nextSibling);
+  else {
+    const main = document.querySelector('main') || document.body;
+    main.appendChild(panel);
+  }
+  return panel;
+}
+
+function lrRenderMotivation(){
+  lrEnsureMotivationPanel();
+
+  const hot = lrHotShiftStats();
+  const hotCard = document.getElementById('lrHotShiftCard');
+  const hotTitle = document.getElementById('lrHotShiftTitle');
+  const hotProjection = document.getElementById('lrHotProjection');
+  const hotTrack = document.getElementById('lrHotTrack');
+  const hotFoot = document.getElementById('lrHotShiftFoot');
+
+  if (hot && hotProjection){
+    hotProjection.textContent = hot.projection || '—';
+    const goal = Math.max(1, Number(state.dailyGoal || 1));
+    hotTrack.style.width = `${Math.min(100,(Number(hot.projection||0)/goal)*100)}%`;
+
+    if (hot.active){
+      hotCard.classList.add('is-hot');
+      hotTitle.textContent = hot.tier;
+      hotFoot.textContent = `${hot.aheadBy} ahead of goal pace · ${Math.round(hot.paceRatio*100)}% of pace · protect the projection.`;
+    } else {
+      hotCard.classList.remove('is-hot');
+      hotTitle.textContent = 'BUILD THE SHIFT';
+      hotFoot.textContent = hot.elapsedHours
+        ? `${Math.max(0,Math.round(hot.aheadBy))} ahead of goal pace · hit 110% pace to ignite HOT SHIFT.`
+        : 'Start stacking loads to establish today’s pace.';
+    }
+  }
+
+  const pr = lrPersonalRecordStats();
+  const prCard = document.getElementById('lrPRCard');
+  const prTitle = document.getElementById('lrPRTitle');
+  const prToday = document.getElementById('lrPRToday');
+  const prTarget = document.getElementById('lrPRTarget');
+  const prTrack = document.getElementById('lrPRTrack');
+  const prFoot = document.getElementById('lrPRFoot');
+
+  if (pr && prToday){
+    prToday.textContent = pr.today;
+    prTarget.textContent = pr.target;
+    prTrack.style.width = `${Math.min(100,(pr.today/Math.max(1,pr.target))*100)}%`;
+
+    if (!pr.hasHistory){
+      prCard.classList.remove('is-record');
+      prTitle.textContent = 'FIRST RECORD ON DECK';
+      prFoot.textContent = `${pr.gap} loads to set the benchmark.`;
+    } else if (pr.isNewPR){
+      prCard.classList.add('is-record');
+      prTitle.textContent = 'NEW ALL-TIME PR';
+      prFoot.textContent = `You passed the old record of ${pr.best}. Next flex target: ${pr.target}.`;
+    } else if (pr.tiedPR){
+      prCard.classList.add('is-record');
+      prTitle.textContent = 'ALL-TIME RECORD TIED';
+      prFoot.textContent = `One more load makes this your best day ever.`;
+    } else {
+      prCard.classList.remove('is-record');
+      prTitle.textContent = `HUNTING #${pr.rank} ALL-TIME`;
+      prFoot.textContent = `${pr.gap} loads to pass ${pr.target} and move up the board.`;
+    }
+  }
+}
+
 function renderAll() {
   if (state.lastFateMilestoneDate && state.lastFateMilestoneDate !== todayKey()) {
     state.lastFateMilestone = 0;
@@ -1045,6 +1248,8 @@ function renderAll() {
   applyTheme();
   renderLog();
   renderGarage();
+
+  try { lrRenderMotivation(); } catch (error) { console.warn('Motivation panel', error); }
 }
 
 function renderLog() {
@@ -3502,3 +3707,9 @@ async function initialize() {
 initialize().catch(error => {
   console.error('Initialization failed:', error);
 });
+
+
+// Keep projection honest even when the user stops clicking.
+setInterval(() => {
+  try { lrRenderMotivation(); } catch {}
+}, 30000);
