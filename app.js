@@ -1177,6 +1177,74 @@ function lrRenderMotivation(){
   }
 }
 
+
+let lrMicroMotivationTimer = null;
+
+function lrEnsureMicroMotivation(){
+  let hud = document.getElementById('lrMicroMotivation');
+  if (hud) return hud;
+  hud = document.createElement('div');
+  hud.id = 'lrMicroMotivation';
+  hud.className = 'lr-micro-motivation';
+  hud.innerHTML = `
+    <div class="lr-micro-top">
+      <span class="lr-micro-kicker">SHIFT STATUS</span>
+      <span class="lr-micro-pace" id="lrMicroPace">—</span>
+    </div>
+    <div class="lr-micro-row">
+      <span class="lr-micro-label">Projected</span>
+      <span class="lr-micro-value lr-micro-hot" id="lrMicroProjection">—</span>
+    </div>
+    <div class="lr-micro-row">
+      <span class="lr-micro-label">PR chase</span>
+      <span class="lr-micro-value lr-micro-pr" id="lrMicroPR">—</span>
+    </div>`;
+  document.body.appendChild(hud);
+  return hud;
+}
+
+function lrPositionMicroMotivation(){
+  const hud = lrEnsureMicroMotivation();
+  const plus = $('plusBtn');
+  if (!plus) return;
+  const rect = plus.getBoundingClientRect();
+  const hudWidth = hud.offsetWidth || 220;
+  const hudHeight = hud.offsetHeight || 80;
+  let left = rect.left + rect.width / 2 - hudWidth / 2;
+  let top = rect.top - hudHeight - 10;
+  left = Math.max(10, Math.min(window.innerWidth - hudWidth - 10, left));
+  if (top < 10) top = rect.bottom + 10;
+  hud.style.left = `${left}px`;
+  hud.style.top = `${top}px`;
+}
+
+function lrShowMicroMotivation(){
+  const hud = lrEnsureMicroMotivation();
+  const hot = lrHotShiftStats();
+  const pr = lrPersonalRecordStats();
+
+  document.getElementById('lrMicroPace').textContent = hot?.active ? hot.tier : 'BUILDING';
+  document.getElementById('lrMicroProjection').textContent = hot?.projection ? `${hot.projection} loads` : '—';
+
+  const prEl = document.getElementById('lrMicroPR');
+  if (!pr?.hasHistory) prEl.textContent = `${pr?.gap ?? 0} to benchmark`;
+  else if (pr.isNewPR) prEl.textContent = 'NEW ALL-TIME PR';
+  else if (pr.tiedPR) prEl.textContent = '1 to new PR';
+  else prEl.textContent = `${pr.gap} to #${pr.rank}`;
+
+  lrPositionMicroMotivation();
+  clearTimeout(lrMicroMotivationTimer);
+  hud.classList.remove('show');
+  void hud.offsetWidth;
+  hud.classList.add('show');
+  lrMicroMotivationTimer = setTimeout(() => hud.classList.remove('show'), 3000);
+}
+
+window.addEventListener('resize', () => {
+  const hud = document.getElementById('lrMicroMotivation');
+  if (hud?.classList.contains('show')) lrPositionMicroMotivation();
+});
+
 function renderAll() {
   if (state.lastFateMilestoneDate && state.lastFateMilestoneDate !== todayKey()) {
     state.lastFateMilestone = 0;
@@ -1349,7 +1417,7 @@ function animateCount(delta) {
   void count.offsetWidth;
   count.classList.add(delta > 0 ? 'bump' : 'drop');
 
-  if (delta > 0) {
+  if (delta > 0) { lrShowMicroMotivation();
     const plus = $('plusBtn');
     plus.classList.remove('flash');
     void plus.offsetWidth;
