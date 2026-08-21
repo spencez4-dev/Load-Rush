@@ -1,0 +1,1 @@
+V8.4: Prestige panel physically moved to the bottom of document body. Diamond Hauler and Ascended Hauler removed completely. Zenyatta is now the terminal/rarest character, Prestige-only with loot weight 0 and enhanced luxury rarity styling.

@@ -74,11 +74,9 @@ const RIGS = [
   { id: 'grrr', icon: '🐅', name: 'GRRR', type: 'LOOT EXCLUSIVE', rarity: 'PREDATOR', weight: .42, reward: 'Tiger lunge attack on every +', accent: '#f97316', rule: 'Loot box exclusive', unlocked: () => false },
   { id: 'otter', icon: '🦦', name: 'Otter', type: 'LOOT EXCLUSIVE', rarity: 'SPLASH', weight: .65, reward: 'Water-swim chaos on every +', accent: '#38bdf8', rule: 'Loot box exclusive', unlocked: () => false },
   { id: 'genuine-fire', icon: '🔥', name: 'Genuine Fire', type: 'PRESTIGE EXCLUSIVE', rarity: 'PRESTIGE V', weight: 0, reward: 'Every + detonates a full-screen inferno', accent: '#ff6a00', rule: 'Reach Prestige 5 · Cannot drop from loot boxes', unlocked: () => lrPrestigeRank() >= 5 },
-  { id: 'zenyatta', icon: '🧘', name: 'Zenyatta', type: 'PRESTIGE EXCLUSIVE', rarity: 'PRESTIGE X', weight: 0, reward: 'Every + erupts in full-screen blue flame', accent: '#38bdf8', rule: 'Reach Prestige 10 · Cannot drop from loot boxes', unlocked: () => lrPrestigeRank() >= 10 },
+  { id: 'zenyatta', icon: '🧘', name: 'Zenyatta', type: 'ULTIMATE PRESTIGE', rarity: 'ZENYATTA', weight: 0, reward: 'Rarest character in Load Rush · every + erupts in full-screen blue flame', accent: '#38bdf8', rule: 'Reach Prestige 10 · Prestige only · never available from loot boxes', unlocked: () => lrPrestigeRank() >= 10 },
   { id: 'byler', icon: '🏄‍♂️', name: 'Bryler', type: 'SURF TRUCK', rarity: 'SURF SIDE', weight: .02, reward: 'Ocean-wave road shimmer', accent: '#06b6d4', rule: 'Reach Level 250 + complete 250 hourly quests', unlocked: () => lifetimeLevel() >= 250 && state.raceWins >= 250 }
 ,
-  { id: 'diamond-hauler', icon: '💎', name: 'Diamond Hauler', type: 'MONSTER', rarity: 'ASCENDED', weight: 0, reward: 'Crystalline prestige wake', accent: '#7dd3fc', rule: 'Move 25,000 lifetime loads', unlocked: () => lrLifetimeLoads() >= 25000 },
-  { id: 'ascended-hauler', icon: '🌌', name: 'Ascended Hauler', type: 'ASCENSION', rarity: 'ASCENDED', weight: 0, reward: 'The final Long Haul reward', accent: '#c084fc', rule: 'Reach Prestige 25', unlocked: () => lrPrestigeRank() >= 25 }
 ];
 
 
@@ -1005,12 +1003,6 @@ const LR_MONSTER_REWARDS = [
     description:'Leave Earth. Unlock the lunar freight world.',
     value:()=>lrPrestigeRank(), target:10, unit:'Prestige',
     unlocked:()=>lrPrestigeRank()>=10
-  },
-  {
-    id:'diamond-hauler', icon:'💎', name:'DIAMOND HAULER',
-    description:'A Monster-class rig earned only through lifetime volume.',
-    value:()=>lrLifetimeLoads(), target:25000, unit:'loads',
-    unlocked:()=>lrLifetimeLoads()>=25000
   },
   {
     id:'ascension', icon:'🌌', name:'LOAD RUSH: ASCENSION',
@@ -3555,7 +3547,8 @@ function lrRenderPrestige(){
  const p=lrPrestigeRank(),ready=lrCanPrestige();
  const currentReward=p?lrPrestigeRewardDescription(p):'Reach Level 100 to unlock your first permanent Prestige perk.';
  const nextRank=Math.min(10,p+1);
- box.innerHTML=`<div class="lr-prestige-head"><div><span>CAREER PRESTIGE</span><h3>${p?`P${p} • ${lrPrestigeRewardName(p)}`:'Prestige awaits'}</h3></div><div class="lr-prestige-emblem">${p?`P${p}`:'♛'}</div></div><p>${currentReward}</p><div class="lr-prestige-xp-boost">⚡ Permanent XP Boost: <strong>${lrPrestigeXpMultiplier()}×</strong></div><div class="lr-prestige-progress"><i style="width:${lrPrestigeCycleLevel()}%"></i></div><div class="lr-prestige-foot"><b>Level ${lrPrestigeCycleLevel()}/100</b><span>${p>=10?'ALL PRESTIGE REWARDS UNLOCKED':`Next: ${lrPrestigeRewardName(nextRank)} — ${lrPrestigeRewardDescription(nextRank)}`}</span></div><button id="lrPrestigeBtn" class="lr-prestige-btn" ${ready?'':'disabled'}>${ready?'PRESTIGE NOW':'REACH LEVEL 100'}</button>`;
+ if (box.parentElement !== document.body || document.body.lastElementChild !== box) document.body.appendChild(box);
+  box.innerHTML=`<div class="lr-prestige-head"><div><span>CAREER PRESTIGE</span><h3>${p?`P${p} • ${lrPrestigeRewardName(p)}`:'Prestige awaits'}</h3></div><div class="lr-prestige-emblem">${p?`P${p}`:'♛'}</div></div><p>${currentReward}</p><div class="lr-prestige-xp-boost">⚡ Permanent XP Boost: <strong>${lrPrestigeXpMultiplier()}×</strong></div><div class="lr-prestige-progress"><i style="width:${lrPrestigeCycleLevel()}%"></i></div><div class="lr-prestige-foot"><b>Level ${lrPrestigeCycleLevel()}/100</b><span>${p>=10?'ALL PRESTIGE REWARDS UNLOCKED':`Next: ${lrPrestigeRewardName(nextRank)} — ${lrPrestigeRewardDescription(nextRank)}`}</span></div><button id="lrPrestigeBtn" class="lr-prestige-btn" ${ready?'':'disabled'}>${ready?'PRESTIGE NOW':'REACH LEVEL 100'}</button>`;
  const btn=document.getElementById('lrPrestigeBtn');if(btn&&ready)btn.onclick=lrDoPrestige;
  document.body.classList.toggle('lr-prestige-aura',p>=1);
  document.body.classList.toggle('lr-prestige-immortal',p>=10);

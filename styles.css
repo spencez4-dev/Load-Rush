@@ -3753,8 +3753,27 @@ body.lr-ascended-account .lr-long-haul{
 .lr-rarity-genuine-fire{background:linear-gradient(120deg,#450a0a,#dc2626 28%,#f97316 52%,#fde047 68%,#991b1b);box-shadow:0 0 15px rgba(249,115,22,.32),inset 0 1px rgba(255,255,255,.3)!important}
 .lr-rarity-zenyatta{background:linear-gradient(120deg,#172554,#1d4ed8 30%,#06b6d4 55%,#bae6fd 70%,#312e81);box-shadow:0 0 15px rgba(56,189,248,.3),inset 0 1px rgba(255,255,255,.3)!important}
 .lr-rarity-byler{background:linear-gradient(120deg,#0e7490,#22d3ee 35%,#fbbf24 58%,#fb7185 78%,#7c3aed)}
-.lr-rarity-diamond-hauler{background:linear-gradient(120deg,#334155,#e0f2fe 30%,#7dd3fc 48%,#ddd6fe 68%,#475569);color:#0f172a!important;text-shadow:0 1px 4px rgba(255,255,255,.65)!important;box-shadow:0 0 18px rgba(125,211,252,.38),inset 0 1px rgba(255,255,255,.55)!important}
-.lr-rarity-ascended-hauler{background:linear-gradient(120deg,#1e103d,#7c3aed 28%,#ec4899 48%,#22d3ee 68%,#4c1d95);box-shadow:0 0 20px rgba(192,132,252,.42),inset 0 1px rgba(255,255,255,.35)!important}
 .rig-card:hover .rig-rarity[class*="lr-rarity-"],
 .rig-card.selected .rig-rarity[class*="lr-rarity-"]{animation:lrLuxuryRarityShimmer 2.8s ease infinite}
 @keyframes lrLuxuryRarityShimmer{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+
+/* V8.4 — Zenyatta is the terminal rarity */
+.lr-rarity-zenyatta{
+  background:linear-gradient(115deg,#050b2d 0%,#172554 18%,#1d4ed8 38%,#22d3ee 55%,#e0f2fe 67%,#7c3aed 82%,#11194d 100%)!important;
+  background-size:260% 260%!important;
+  color:#fff!important;
+  border-color:rgba(125,211,252,.62)!important;
+  box-shadow:0 0 9px rgba(34,211,238,.42),0 0 22px rgba(59,130,246,.28),inset 0 1px 0 rgba(255,255,255,.45)!important;
+  animation:lrZenyattaLuxury 3.2s ease-in-out infinite!important;
+}
+@keyframes lrZenyattaLuxury{
+  0%,100%{background-position:0% 50%;filter:brightness(1)}
+  50%{background-position:100% 50%;filter:brightness(1.16)}
+}
+/* Prestige progression belongs at the very end of the app. */
+body > #lrPrestigeBox{
+  position:relative!important;
+  order:initial!important;
+  width:min(1180px,calc(100% - 28px));
+  margin:34px auto 28px!important;
+}
