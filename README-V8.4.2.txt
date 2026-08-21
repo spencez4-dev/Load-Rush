@@ -1,0 +1,1 @@
+Critical loot fix: weight-0 prestige/gameplay-exclusive rigs are excluded from all single and bulk loot-box candidate pools. Genuine Fire requires P5 and Zenyatta requires P10. Accidental ownership from the previous bug is automatically revoked on load when the prestige requirement is not met.

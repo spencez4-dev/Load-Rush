@@ -740,18 +740,38 @@ function rigIconMarkup(rig, context='race') {
 function ownedRigIds() { const owned = new Set(Array.isArray(state.ownedRigs) ? state.ownedRigs : ['starter-semi']); owned.add('starter-semi'); return [...owned]; }
 function isRigOwned(rigId) { const rig = RIGS.find(item => item.id === rigId); return Boolean(rig && (ownedRigIds().includes(rigId) || rig.unlocked())); }
 function unlockedRigIds() { return RIGS.filter(rig => isRigOwned(rig.id)).map(rig => rig.id); }
-function initializeUnlockTracking() { state.ownedRigs = ownedRigIds(); if (!Number.isFinite(Number(state.crateTokens))) state.crateTokens = 0; if (!Number.isFinite(Number(state.bonusXP))) state.bonusXP = 0; if (!Number.isFinite(Number(state.openedCrates))) state.openedCrates = 0; if (!Array.isArray(state.seenUnlocks) || state.seenUnlocks.length === 0) state.seenUnlocks = unlockedRigIds(); if (!isRigOwned(state.selectedRig)) state.selectedRig = 'starter-semi'; saveState(); }
+
+function lrRepairPrestigeExclusiveOwnership(){
+  const requirements = {'genuine-fire':5,'zenyatta':10};
+  const prestige = lrPrestigeRank();
+  const owned = new Set(Array.isArray(state.ownedRigs) ? state.ownedRigs : []);
+  let changed = false;
+  for (const [id, required] of Object.entries(requirements)) {
+    if (prestige < required && owned.delete(id)) changed = true;
+  }
+  if (changed) {
+    state.ownedRigs = [...owned];
+    if (requirements[state.selectedRig] && prestige < requirements[state.selectedRig]) state.selectedRig = 'starter-semi';
+    if (Array.isArray(state.seenUnlocks)) state.seenUnlocks = state.seenUnlocks.filter(id => !(requirements[id] && prestige < requirements[id]));
+  }
+  return changed;
+}
+
+function initializeUnlockTracking() { lrRepairPrestigeExclusiveOwnership(); state.ownedRigs = ownedRigIds(); if (!Number.isFinite(Number(state.crateTokens))) state.crateTokens = 0; if (!Number.isFinite(Number(state.bonusXP))) state.bonusXP = 0; if (!Number.isFinite(Number(state.openedCrates))) state.openedCrates = 0; if (!Array.isArray(state.seenUnlocks) || state.seenUnlocks.length === 0) state.seenUnlocks = unlockedRigIds(); if (!isRigOwned(state.selectedRig)) state.selectedRig = 'starter-semi'; saveState(); }
 function announceNewUnlocks() { const seen = new Set(Array.isArray(state.seenUnlocks) ? state.seenUnlocks : []); const fresh = RIGS.filter(rig => rig.unlocked() && !seen.has(rig.id)); if (!fresh.length) return; fresh.forEach(rig => seen.add(rig.id)); state.seenUnlocks = [...seen]; saveState(); const rig = fresh[fresh.length - 1]; flashMegaMessage(rig.id === 'byler' ? 'SURF SIDE: BYLER!' : `NEW TRUCK: ${rig.name.toUpperCase()}!`); showToast(`${rig.rarity} gameplay unlock · ${rig.reward}`); }
 function weightedCrateRig() {
-  const locked = RIGS.filter(rig => !isRigOwned(rig.id));
+  // Loot boxes may ONLY roll rigs with a positive loot weight.
+  // Prestige/gameplay exclusives use weight 0 and are never eligible.
+  const locked = RIGS.filter(rig => !isRigOwned(rig.id) && Number(rig.weight) > 0);
   if (!locked.length) return null;
-  const total = locked.reduce((sum, rig) => sum + rig.weight, 0);
+  const total = locked.reduce((sum, rig) => sum + Number(rig.weight), 0);
+  if (!(total > 0)) return null;
   let roll = Math.random() * total;
   for (const rig of locked) {
-    roll -= rig.weight;
-    if (roll <= 0) return rig;
+    roll -= Number(rig.weight);
+    if (roll < 0) return rig;
   }
-  return locked[locked.length - 1];
+  return null;
 }
 
 
@@ -759,7 +779,7 @@ function lrRollBulkCrate() {
   state.crateTokens = Math.max(0, (Number(state.crateTokens) || 0) - 1);
   state.openedCrates = (state.openedCrates || 0) + 1;
 
-  const locked = RIGS.filter(rig => !isRigOwned(rig.id));
+  const locked = RIGS.filter(rig => !isRigOwned(rig.id) && Number(rig.weight) > 0);
   const rigChance = lrPrestigeRank() >= 8 ? .25 : .16;
   const rig = locked.length && Math.random() < rigChance ? weightedCrateRig() : null;
 
@@ -861,7 +881,7 @@ function openTruckCrate() {
 
   setTimeout(() => {
     // Character drops are meaningful now, especially the three loot exclusives.
-    const locked = RIGS.filter(rig => !isRigOwned(rig.id));
+    const locked = RIGS.filter(rig => !isRigOwned(rig.id) && Number(rig.weight) > 0);
     const rigChance = lrPrestigeRank() >= 8 ? .25 : .16;
   const rig = locked.length && Math.random() < rigChance ? weightedCrateRig() : null;
 
