@@ -1,0 +1,1 @@
+V8.1: Dynamic final-10 daily-goal countdown takeover + 10-second LOAD RUSHHHHHHHH reward cinematic on goal completion. Existing once-per-day +100 loot-box grant retained.

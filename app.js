@@ -44,7 +44,8 @@ const DEFAULTS = {
   openedCrates: 0,
   rigLoadCounts: {},
   bonusXP: 0,
-  lastRecapDate: ''
+  lastRecapDate: '',
+  monsterTheme: 'auto'
 };
 
 const RIGS = [
@@ -74,21 +75,30 @@ const RIGS = [
   { id: 'otter', icon: '🦦', name: 'Otter', type: 'LOOT EXCLUSIVE', rarity: 'SPLASH', weight: .65, reward: 'Water-swim chaos on every +', accent: '#38bdf8', rule: 'Loot box exclusive', unlocked: () => false },
   { id: 'prestige-zebra', icon: '🦓', name: 'The Zebra', type: 'PRESTIGE', rarity: 'PRESTIGE VII', weight: 0, reward: 'Black-and-white prestige streak', accent: '#f8fafc', rule: 'Reach Prestige 7', unlocked: () => lrPrestigeRank() >= 7 },
   { id: 'byler', icon: '🏄‍♂️', name: 'Bryler', type: 'SURF TRUCK', rarity: 'SURF SIDE', weight: .02, reward: 'Ocean-wave road shimmer', accent: '#06b6d4', rule: 'Reach Level 250 + complete 250 hourly quests', unlocked: () => lifetimeLevel() >= 250 && state.raceWins >= 250 }
+,
+  { id: 'diamond-hauler', icon: '💎', name: 'Diamond Hauler', type: 'MONSTER', rarity: 'ASCENDED', weight: 0, reward: 'Crystalline prestige wake', accent: '#7dd3fc', rule: 'Move 25,000 lifetime loads', unlocked: () => lrLifetimeLoads() >= 25000 },
+  { id: 'ascended-hauler', icon: '🌌', name: 'Ascended Hauler', type: 'ASCENSION', rarity: 'ASCENDED', weight: 0, reward: 'The final Long Haul reward', accent: '#c084fc', rule: 'Reach Prestige 25', unlocked: () => lrPrestigeRank() >= 25 }
 ];
 
 
 
 const LANDSCAPES = [
-  { id: 'alpine', name: 'Alpine Route', icon: '🏔️', rarity: 'SIGNATURE', accent: '#5ca66f', goal: 0, description: 'A polished mountain corridor built for the Hourly Quest.' }
+  { id: 'alpine', name: 'Alpine Route', icon: '🏔️', rarity: 'SIGNATURE', accent: '#5ca66f', description: 'The original Load Rush route.', unlocked: () => true },
+  { id: 'golden-road', name: 'Golden Road', icon: '✨', rarity: 'MONSTER', accent: '#f6c453', description: 'Prestige V reward. The whole route turns championship gold.', unlocked: () => lrPrestigeRank() >= 5 },
+  { id: 'space-freight', name: 'Space Freight', icon: '🌙', rarity: 'MONSTER', accent: '#8b9cff', description: 'Prestige X reward. Freight leaves Earth.', unlocked: () => lrPrestigeRank() >= 10 },
+  { id: 'ascended', name: 'Ascended Highway', icon: '🌌', rarity: 'ASCENDED', accent: '#d17cff', description: 'Prestige XXV. You finished the Long Haul.', unlocked: () => lrPrestigeRank() >= 25 }
 ];
 
 function selectedLandscape() {
-  if (state.selectedLandscape !== 'alpine') state.selectedLandscape = 'alpine';
-  return LANDSCAPES[0];
+  const id = state.monsterTheme && state.monsterTheme !== 'auto'
+    ? state.monsterTheme
+    : (lrPrestigeRank() >= 25 ? 'ascended' : lrPrestigeRank() >= 10 ? 'space-freight' : lrPrestigeRank() >= 5 ? 'golden-road' : 'alpine');
+  const landscape = LANDSCAPES.find(item => item.id === id && item.unlocked()) || LANDSCAPES[0];
+  return landscape;
 }
 
 function isLandscapeUnlocked(landscape) {
-  return state.raceWins >= landscape.goal;
+  return landscape && typeof landscape.unlocked === 'function' ? landscape.unlocked() : true;
 }
 
 function applyLandscape() {
@@ -96,6 +106,7 @@ function applyLandscape() {
   const landscape = selectedLandscape();
   if (!world) return;
   world.dataset.landscape = landscape.id;
+  document.body.dataset.monsterTheme = landscape.id;
   world.setAttribute('aria-label', `Hourly quest race through ${landscape.name}`);
   document.documentElement.style.setProperty('--landscape-accent', landscape.accent);
 }
@@ -975,6 +986,157 @@ function formatDuration(minutes) {
 }
 
 
+
+// LOAD RUSH V8.0 — THE LONG HAUL / MONSTER REWARDS
+function lrLifetimeLoads(){
+  return Math.max(0, state.log.reduce((sum, entry) => sum + Math.max(0, Number(entry.delta) || 0), 0));
+}
+
+const LR_MONSTER_REWARDS = [
+  {
+    id:'golden-road', icon:'✨', name:'THE GOLDEN ROAD',
+    description:'Permanent championship-gold route theme.',
+    value:()=>lrPrestigeRank(), target:5, unit:'Prestige',
+    unlocked:()=>lrPrestigeRank()>=5
+  },
+  {
+    id:'space-freight', icon:'🌙', name:'SPACE FREIGHT',
+    description:'Leave Earth. Unlock the lunar freight world.',
+    value:()=>lrPrestigeRank(), target:10, unit:'Prestige',
+    unlocked:()=>lrPrestigeRank()>=10
+  },
+  {
+    id:'diamond-hauler', icon:'💎', name:'DIAMOND HAULER',
+    description:'A Monster-class rig earned only through lifetime volume.',
+    value:()=>lrLifetimeLoads(), target:25000, unit:'loads',
+    unlocked:()=>lrLifetimeLoads()>=25000
+  },
+  {
+    id:'ascension', icon:'🌌', name:'LOAD RUSH: ASCENSION',
+    description:'The ultimate account trophy. Prestige XXV.',
+    value:()=>lrPrestigeRank(), target:25, unit:'Prestige',
+    unlocked:()=>lrPrestigeRank()>=25
+  }
+];
+
+function lrClosestMonsterReward(){
+  const locked = LR_MONSTER_REWARDS.filter(r => !r.unlocked());
+  if (!locked.length) return LR_MONSTER_REWARDS[LR_MONSTER_REWARDS.length - 1];
+  return locked
+    .map(r => ({...r, pct:Math.min(1,r.value()/Math.max(1,r.target))}))
+    .sort((a,b) => b.pct - a.pct)[0];
+}
+
+function lrEnsureLongHaul(){
+  let panel = document.getElementById('lrLongHaul');
+  if (panel) return panel;
+  panel = document.createElement('section');
+  panel.id = 'lrLongHaul';
+  panel.className = 'lr-long-haul';
+  panel.innerHTML = `
+    <div class="lr-long-head">
+      <div>
+        <div class="lr-long-kicker">🏔️ THE LONG HAUL</div>
+        <div class="lr-long-title">ASCENSION</div>
+      </div>
+      <div class="lr-long-prestige" id="lrLongPrestige">P0 / P25</div>
+    </div>
+    <div class="lr-long-bar"><span id="lrAscensionBar"></span></div>
+    <div class="lr-long-sub" id="lrAscensionSub">25 Prestiges remaining</div>
+
+    <div class="lr-monster-divider"></div>
+
+    <div class="lr-monster-row">
+      <div class="lr-monster-icon" id="lrMonsterIcon">✨</div>
+      <div class="lr-monster-copy">
+        <div class="lr-monster-label">NEXT MONSTER REWARD</div>
+        <div class="lr-monster-name" id="lrMonsterName">THE GOLDEN ROAD</div>
+        <div class="lr-monster-desc" id="lrMonsterDesc"></div>
+      </div>
+      <div class="lr-monster-count" id="lrMonsterCount"></div>
+    </div>
+    <div class="lr-long-bar lr-monster-bar"><span id="lrMonsterBar"></span></div>
+
+    <div class="lr-long-actions" id="lrMonsterActions">
+      <button type="button" class="lr-theme-chip" data-theme="auto">AUTO</button>
+      <button type="button" class="lr-theme-chip" data-theme="alpine">🏔️</button>
+      <button type="button" class="lr-theme-chip" data-theme="golden-road">✨</button>
+      <button type="button" class="lr-theme-chip" data-theme="space-freight">🌙</button>
+      <button type="button" class="lr-theme-chip" data-theme="ascended">🌌</button>
+    </div>
+  `;
+
+  const main = document.querySelector('main') || document.body;
+  const firstCard = main.querySelector('.card, .hero-card, .main-card');
+  if (firstCard && firstCard.parentNode) firstCard.parentNode.insertBefore(panel, firstCard.nextSibling);
+  else main.prepend(panel);
+
+  panel.querySelectorAll('.lr-theme-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.theme;
+      if (id !== 'auto') {
+        const landscape = LANDSCAPES.find(x => x.id === id);
+        if (!landscape || !landscape.unlocked()) {
+          showToast('That Monster world is still locked.');
+          return;
+        }
+      }
+      state.monsterTheme = id;
+      saveState();
+      applyLandscape();
+      lrRenderLongHaul();
+      showToast(id === 'auto' ? 'Monster world: Auto' : `Equipped ${selectedLandscape().name}`);
+    });
+  });
+  return panel;
+}
+
+function lrRenderLongHaul(){
+  const panel = lrEnsureLongHaul();
+  const p = lrPrestigeRank();
+  const ascPct = Math.min(100,(p/25)*100);
+  panel.querySelector('#lrLongPrestige').textContent = `P${p} / P25`;
+  panel.querySelector('#lrAscensionBar').style.width = `${ascPct}%`;
+  panel.querySelector('#lrAscensionSub').textContent =
+    p >= 25 ? 'ASCENDED · THE LONG HAUL IS COMPLETE' : `${25-p} Prestiges remaining`;
+
+  const reward = lrClosestMonsterReward();
+  const value = reward.value();
+  const pct = Math.min(100,(value/Math.max(1,reward.target))*100);
+  panel.querySelector('#lrMonsterIcon').textContent = reward.icon;
+  panel.querySelector('#lrMonsterName').textContent = reward.name;
+  panel.querySelector('#lrMonsterDesc').textContent = reward.description;
+  panel.querySelector('#lrMonsterCount').textContent = `${Math.min(value,reward.target).toLocaleString()} / ${reward.target.toLocaleString()}`;
+  panel.querySelector('#lrMonsterBar').style.width = `${pct}%`;
+
+  panel.querySelectorAll('.lr-theme-chip').forEach(btn => {
+    const id = btn.dataset.theme;
+    btn.classList.toggle('active', (state.monsterTheme || 'auto') === id);
+    if (id === 'auto' || id === 'alpine') {
+      btn.disabled = false;
+      return;
+    }
+    const landscape = LANDSCAPES.find(x => x.id === id);
+    btn.disabled = !landscape?.unlocked();
+  });
+
+  document.body.classList.toggle('lr-ascended-account',p>=25);
+}
+
+function lrMonsterUnlockCheck(){
+  state.seenMonsterRewards = Array.isArray(state.seenMonsterRewards) ? state.seenMonsterRewards : [];
+  for (const reward of LR_MONSTER_REWARDS){
+    if (!reward.unlocked() || state.seenMonsterRewards.includes(reward.id)) continue;
+    state.seenMonsterRewards.push(reward.id);
+    saveState();
+    setTimeout(() => {
+      flashMegaMessage(`${reward.icon} MONSTER REWARD UNLOCKED`);
+      showToast(`${reward.name} unlocked`);
+      try { particleBurst($('plusBtn'), 90, 2.4); } catch {}
+    }, 250);
+  }
+}
+
 // LOAD RUSH V7.36 — HOT SHIFT + LIVE PERSONAL RECORD CHASE
 const LR_SHIFT_LENGTH_HOURS = 8;
 
@@ -1245,6 +1407,48 @@ window.addEventListener('resize', () => {
   if (hud?.classList.contains('show')) lrPositionMicroMotivation();
 });
 
+
+let lrGoalCountdownTimer=null,lrGoalRewardTimer=null,lrGoalCinematicRunning=false;
+function lrEnsureGoalCountdownOverlay(){
+  let o=document.getElementById('lrGoalCountdownOverlay');if(o)return o;
+  o=document.createElement('div');o.id='lrGoalCountdownOverlay';o.className='lr-goal-countdown-overlay';
+  o.innerHTML=`<div class="lr-gc-bg"></div><div class="lr-gc-content"><div class="lr-gc-kicker">DAILY GOAL ENDGAME</div><div id="lrGcNumber" class="lr-gc-number">9</div><div id="lrGcCopy" class="lr-gc-copy">NINE MORE TO GO</div><div id="lrGcSub" class="lr-gc-sub">DO NOT FUMBLE THIS.</div></div>`;
+  document.body.appendChild(o);return o;
+}
+const LR_GC_COPY={10:['TEN MORE TO GO','THE COUNTDOWN HAS BEGUN.'],9:['NINE MORE TO GO','WE ARE OFFICIALLY IN THE ENDGAME.'],8:['EIGHT MORE TO GO','KEEP YOUR FOOT ON THE GAS.'],7:['SEVEN MORE TO GO','NO COASTING NOW.'],6:['SIX MORE TO GO','THE DAILY GOAL CAN SMELL FEAR.'],5:['FIVE. MORE. TO. GO.','HALFWAY THROUGH THE FINAL TEN.'],4:['FOUR MORE TO GO','THIS IS GETTING STUPID.'],3:['THREE MORE TO GO','DO NOT TOUCH ANYTHING EXCEPT +.'],2:['TWO MORE TO GO','THE FREIGHT GODS ARE WATCHING.'],1:['ONE. MORE. LOAD.','FINISH THE JOB.']};
+function lrShowFinalTenCountdown(remaining){
+  if(remaining<1||remaining>10||lrGoalCinematicRunning)return;
+  const o=lrEnsureGoalCountdownOverlay(),c=LR_GC_COPY[remaining];
+  o.dataset.remaining=remaining;o.style.setProperty('--lvl',11-remaining);
+  document.getElementById('lrGcNumber').textContent=remaining;
+  document.getElementById('lrGcCopy').textContent=c[0];document.getElementById('lrGcSub').textContent=c[1];
+  o.classList.remove('show');void o.offsetWidth;o.classList.add('show');
+  try{particleBurst($('plusBtn'),Math.min(95,20+(11-remaining)*7),1.2+(11-remaining)*.08)}catch{}
+  clearTimeout(lrGoalCountdownTimer);lrGoalCountdownTimer=setTimeout(()=>o.classList.remove('show'),1300+(11-remaining)*100);
+}
+function lrEnsureGoalRewardCinematic(){
+  let o=document.getElementById('lrGoalRewardCinematic');if(o)return o;
+  o=document.createElement('div');o.id='lrGoalRewardCinematic';o.className='lr-goal-reward-cinematic';
+  o.innerHTML=`<div class="lr-gr-bg"></div><div class="lr-gr-road"></div><div class="lr-gr-content"><div id="lrGrPhase" class="lr-gr-phase">DAILY GOAL COMPLETE</div><div id="lrGrMega" class="lr-gr-mega">LOAD RUSHHHHHHHH</div><div class="lr-gr-reward">📦 <strong>+100 LOOT BOXES</strong></div><div id="lrGrSub" class="lr-gr-sub">SHIFT OBJECTIVE DESTROYED.</div></div><button id="lrGrSkip" class="lr-gr-skip">SKIP</button>`;
+  document.body.appendChild(o);document.getElementById('lrGrSkip').onclick=lrFinishGoalRewardCinematic;return o;
+}
+function lrFinishGoalRewardCinematic(){clearTimeout(lrGoalRewardTimer);const o=document.getElementById('lrGoalRewardCinematic');if(o)o.className='lr-goal-reward-cinematic';lrGoalCinematicRunning=false;}
+function lrRunGoalRewardCinematic(){
+  if(lrGoalCinematicRunning)return;lrGoalCinematicRunning=true;
+  const o=lrEnsureGoalRewardCinematic(),p=document.getElementById('lrGrPhase'),m=document.getElementById('lrGrMega'),s=document.getElementById('lrGrSub');
+  o.className='lr-goal-reward-cinematic show';p.textContent=`DAILY GOAL ${state.dailyGoal} / ${state.dailyGoal}`;m.textContent='LOAD RUSHHHHHHHH';s.textContent='SHIFT OBJECTIVE DESTROYED.';
+  try{particleBurst($('plusBtn'),150,3)}catch{}
+  setTimeout(()=>{if(!lrGoalCinematicRunning)return;o.classList.add('phase2');p.textContent='ABSOLUTE SCENES';s.textContent='ONE HUNDRED BOXES HAVE ENTERED THE CHAT.'},2200);
+  setTimeout(()=>{if(!lrGoalCinematicRunning)return;o.classList.add('phase3');m.textContent='100 LOOT BOXES';s.textContent='DAILY GOAL JACKPOT UNLOCKED.'},4700);
+  setTimeout(()=>{if(!lrGoalCinematicRunning)return;o.classList.add('phase4');p.textContent='THE LONG HAUL CONTINUES';m.textContent='HAVE A DAY.';s.textContent='COME BACK TOMORROW AND DO IT AGAIN.'},7300);
+  lrGoalRewardTimer=setTimeout(lrFinishGoalRewardCinematic,10000);
+}
+function lrHandleDailyGoalEndgame(previousTotal,newTotal,awarded){
+  const goal=Math.max(1,Number(state.dailyGoal)||100);
+  if(previousTotal<goal&&newTotal>=goal){if(awarded)lrRunGoalRewardCinematic();return;}
+  const remaining=goal-newTotal;if(remaining>=1&&remaining<=10)lrShowFinalTenCountdown(remaining);
+}
+
 function renderAll() {
   if (state.lastFateMilestoneDate && state.lastFateMilestoneDate !== todayKey()) {
     state.lastFateMilestone = 0;
@@ -1318,6 +1522,8 @@ function renderAll() {
   renderGarage();
 
   try { lrRenderMotivation(); } catch (error) { console.warn('Motivation panel', error); }
+
+  try { lrRenderLongHaul(); lrMonsterUnlockCheck(); } catch (error) { console.warn('Long Haul', error); }
 }
 
 function renderLog() {
@@ -2294,6 +2500,7 @@ function triggerLootCharacterPower(){
 }
 
 function addLoad(delta) {
+  const lrGoalPreviousTotal = todayNetLoads();
   const oldLevel = lifetimeLevel();
   const entry = { delta, time: Date.now(), xp: delta };
   state.log.unshift(entry);
@@ -2326,7 +2533,10 @@ function addLoad(delta) {
   saveState(); renderAll(); animateCount(delta); playTone(delta > 0 ? 'plus' : 'minus'); if (delta > 0) { showTruckSmoke(); triggerBrylerPower(); triggerLootCharacterPower(); lrMaybePrestigeRoadReward(); }
   if (delta > 0) { lrPrestigeAuraBurst(); const combo = comboStats(); particleBurst($('plusBtn'), combo.current >= 10 ? 70 : combo.current >= 5 ? 45 : undefined, combo.current >= 5 ? 1.8 : undefined); if (combo.current === 3) showToast('Combo active · 2× XP'); if (combo.current === 5) flashMegaMessage('HOT STREAK · 3× XP!'); if (combo.current === 10) flashMegaMessage('FREIGHT FRENZY · 5× XP!'); maybeAwardRace(); announceNewUnlocks(); if (todayNetLoads() >= state.dailyGoal) {
     const awardedDailyLoot = lrAwardDailyGoalLoot();
-    if (awardedDailyLoot) { flashMegaMessage('SHIFT GOAL CRUSHED!'); particleBurst($('mainCount'), 100, 2.4); showToast('Daily load goal complete · +100 loot boxes'); }
+    if (awardedDailyLoot) { particleBurst($('mainCount'), 100, 2.4); }
+    lrHandleDailyGoalEndgame(lrGoalPreviousTotal,todayNetLoads(),awardedDailyLoot);
+  } else {
+    lrHandleDailyGoalEndgame(lrGoalPreviousTotal,todayNetLoads(),false);
   } if (shouldPromptFate()) setTimeout(promptFreightFate, 350); } else showToast('Subtracted from every live metric');
 }
 
