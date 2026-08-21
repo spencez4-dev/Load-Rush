@@ -1,0 +1,1 @@
+V8.3: bespoke luxury gradient rarity badges for every later-added character: Sherm, Shaun White, Slotted Trotter, Vinny, Fromelt's Boat, Slopes, GRRR, Otter, Genuine Fire, Zenyatta, Bryler, Diamond Hauler, and Ascended Hauler. No unlock logic changed.

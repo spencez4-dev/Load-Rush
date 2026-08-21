@@ -73,7 +73,8 @@ const RIGS = [
   { id: 'slopes', icon: '⛷️', name: 'Slopes', type: 'LOOT EXCLUSIVE', rarity: 'POWDER', weight: .55, reward: 'Ski-jump trick animation on every +', accent: '#dbeafe', rule: 'Loot box exclusive', unlocked: () => false },
   { id: 'grrr', icon: '🐅', name: 'GRRR', type: 'LOOT EXCLUSIVE', rarity: 'PREDATOR', weight: .42, reward: 'Tiger lunge attack on every +', accent: '#f97316', rule: 'Loot box exclusive', unlocked: () => false },
   { id: 'otter', icon: '🦦', name: 'Otter', type: 'LOOT EXCLUSIVE', rarity: 'SPLASH', weight: .65, reward: 'Water-swim chaos on every +', accent: '#38bdf8', rule: 'Loot box exclusive', unlocked: () => false },
-  { id: 'prestige-zebra', icon: '🦓', name: 'The Zebra', type: 'PRESTIGE', rarity: 'PRESTIGE VII', weight: 0, reward: 'Black-and-white prestige streak', accent: '#f8fafc', rule: 'Reach Prestige 7', unlocked: () => lrPrestigeRank() >= 7 },
+  { id: 'genuine-fire', icon: '🔥', name: 'Genuine Fire', type: 'PRESTIGE EXCLUSIVE', rarity: 'PRESTIGE V', weight: 0, reward: 'Every + detonates a full-screen inferno', accent: '#ff6a00', rule: 'Reach Prestige 5 · Cannot drop from loot boxes', unlocked: () => lrPrestigeRank() >= 5 },
+  { id: 'zenyatta', icon: '🧘', name: 'Zenyatta', type: 'PRESTIGE EXCLUSIVE', rarity: 'PRESTIGE X', weight: 0, reward: 'Every + erupts in full-screen blue flame', accent: '#38bdf8', rule: 'Reach Prestige 10 · Cannot drop from loot boxes', unlocked: () => lrPrestigeRank() >= 10 },
   { id: 'byler', icon: '🏄‍♂️', name: 'Bryler', type: 'SURF TRUCK', rarity: 'SURF SIDE', weight: .02, reward: 'Ocean-wave road shimmer', accent: '#06b6d4', rule: 'Reach Level 250 + complete 250 hourly quests', unlocked: () => lifetimeLevel() >= 250 && state.raceWins >= 250 }
 ,
   { id: 'diamond-hauler', icon: '💎', name: 'Diamond Hauler', type: 'MONSTER', rarity: 'ASCENDED', weight: 0, reward: 'Crystalline prestige wake', accent: '#7dd3fc', rule: 'Move 25,000 lifetime loads', unlocked: () => lrLifetimeLoads() >= 25000 },
@@ -1566,7 +1567,7 @@ function renderGarage() {
   if ($('garageCrateCount')) $('garageCrateCount').textContent = state.crateTokens || 0;
   if ($('garageCrateBtn')) $('garageCrateBtn').disabled = (state.crateTokens || 0) < 1;
   if ($('garageOpenAllBtn')) $('garageOpenAllBtn').disabled = (state.crateTokens || 0) < 1;
-  $('garageGrid').innerHTML = RIGS.map(rig => { const isUnlocked = isRigOwned(rig.id); const isSelected = active.id === rig.id; const rarityClass = rig.rarity.toLowerCase().replace(/\s+/g, '-'); return `<button class="rig-card ${isUnlocked ? 'unlocked' : 'locked'} ${isSelected ? 'selected' : ''}" type="button" data-rig-id="${rig.id}" ${isUnlocked ? '' : 'disabled'}><span class="rig-card-top"><span class="rig-icon">${rigIconMarkup(rig, 'garage')}</span><span class="rig-rarity rarity-${rarityClass}">${isSuperRig(rig.id) ? '🌈 SUPER' : rig.rarity}</span></span><span class="rig-name">${rig.name}</span><span class="rig-type">${rig.type}</span><span class="rig-reward">${isUnlocked ? `✦ ${rig.reward}` : `🔒 ${rig.rule}`}</span><span class="rig-super-progress ${isSuperRig(rig.id) ? 'complete' : ''}"><span><i style="width:${Math.min(100,(superRigProgress(rig.id)/SUPER_LOAD_GOAL)*100)}%"></i></span><b>${isSuperRig(rig.id) ? 'SUPER UNLOCKED' : `${superRigProgress(rig.id)} / ${SUPER_LOAD_GOAL} loads to Super`}</b></span><span class="rig-rule">${isSelected ? 'Equipped' : isUnlocked ? 'Tap to equip' : 'Locked — earn it through the listed achievement'}</span></button>`; }).join('');
+  $('garageGrid').innerHTML = RIGS.map(rig => { const isUnlocked = isRigOwned(rig.id); const isSelected = active.id === rig.id; const rarityClass = rig.rarity.toLowerCase().replace(/\s+/g, '-'); return `<button class="rig-card ${isUnlocked ? 'unlocked' : 'locked'} ${isSelected ? 'selected' : ''}" type="button" data-rig-id="${rig.id}" ${isUnlocked ? '' : 'disabled'}><span class="rig-card-top"><span class="rig-icon">${rigIconMarkup(rig, 'garage')}</span><span class="rig-rarity rarity-${rarityClass} lr-rarity-${rig.id}">${isSuperRig(rig.id) ? '🌈 SUPER' : rig.rarity}</span></span><span class="rig-name">${rig.name}</span><span class="rig-type">${rig.type}</span><span class="rig-reward">${isUnlocked ? `✦ ${rig.reward}` : `🔒 ${rig.rule}`}</span><span class="rig-super-progress ${isSuperRig(rig.id) ? 'complete' : ''}"><span><i style="width:${Math.min(100,(superRigProgress(rig.id)/SUPER_LOAD_GOAL)*100)}%"></i></span><b>${isSuperRig(rig.id) ? 'SUPER UNLOCKED' : `${superRigProgress(rig.id)} / ${SUPER_LOAD_GOAL} loads to Super`}</b></span><span class="rig-rule">${isSelected ? 'Equipped' : isUnlocked ? 'Tap to equip' : 'Locked — earn it through the listed achievement'}</span></button>`; }).join('');
   document.querySelectorAll('[data-rig-id]').forEach(button => button.addEventListener('click', () => { const rig = RIGS.find(item => item.id === button.dataset.rigId); if (!rig || !isRigOwned(rig.id)) return; state.selectedRig = rig.id; saveState(); renderAll(); renderGarage(); showToast(`${rig.name} equipped`); }));
 
   const landscapeGrid = $('landscapeGrid');
@@ -2499,6 +2500,19 @@ function triggerLootCharacterPower(){
   triggerOtterPower();
 }
 
+
+function lrPrestigeCharacterBlast(){
+  const rig=selectedRig();
+  if(!rig || !['genuine-fire','zenyatta'].includes(rig.id)) return;
+  const blue=rig.id==='zenyatta';
+  const layer=document.createElement('div');
+  layer.className=`lr-prestige-character-blast ${blue?'lr-blue-blast':'lr-fire-blast'}`;
+  layer.innerHTML=`<div class="lr-pcb-core">${rig.icon}</div><div class="lr-pcb-flames">${Array.from({length:26},(_,i)=>`<i style="--i:${i};--x:${Math.random()*100}%;--d:${(.55+Math.random()*.65).toFixed(2)}s"></i>`).join('')}</div>`;
+  document.body.appendChild(layer);
+  requestAnimationFrame(()=>layer.classList.add('go'));
+  setTimeout(()=>layer.remove(),1050);
+}
+
 function addLoad(delta) {
   const lrGoalPreviousTotal = todayNetLoads();
   const oldLevel = lifetimeLevel();
@@ -2511,6 +2525,7 @@ function addLoad(delta) {
     entry.xp = Math.max(1, (combo.multiplier || 1) * prestigeMultiplier);
   }
   if (delta > 0) {
+    lrPrestigeCharacterBlast();
     const activeRigId = selectedRig().id;
     state.rigLoadCounts ||= {};
     const before = rigLoadCount(activeRigId);
@@ -3463,12 +3478,12 @@ const LR_PRESTIGE_REWARDS = [
   {name:'Overdrive', desc:'Every 10th load triggers a free Nitro Boost road burst.'},
   {name:'Weather Machine', desc:'Random automatic Thunder Run weather can strike while logging loads.'},
   {name:'Classified Road Events', desc:'Unlocks secret Prestige road events, including Classified Convoy.'},
-  {name:'Freight Royalty', desc:'Every completed Hourly Quest awards +1 extra loot box.'},
+  {name:'Genuine Fire', desc:'Unlocks 🔥 Genuine Fire — Prestige-exclusive and impossible to pull from loot boxes. Every + detonates the screen.'},
   {name:'Reality Failure', desc:'Unlocks Reality Tear events and periodic reality-glitch road chaos.'},
   {name:'The Zebra', desc:'Permanently unlocks The Zebra 🦓 in the Garage.'},
   {name:'Lucky Freight', desc:'Loot-box character jackpot chance increases from 16% to 25%.'},
   {name:'Cosmic Dispatch', desc:'Unlocks Meteor Freight and automatic cosmic road events.'},
-  {name:'Immortal', desc:'Permanent Immortal rainbow aura plus legendary Immortal Run events.'}
+  {name:'Zenyatta', desc:'Unlocks 🧘 Zenyatta — Prestige-exclusive and impossible to pull from loot boxes. Every + erupts in blue flame.'}
 ];
 function lrPrestigeReward(rank){return LR_PRESTIGE_REWARDS[Math.min(10,Math.max(1,Number(rank)||1))]}
 function lrPrestigeRewardName(rank){return lrPrestigeReward(rank).name}
@@ -3536,7 +3551,7 @@ function lrPrestigeAuraBurst(){
 
 function lrRenderPrestige(){
  let box=document.getElementById('lrPrestigeBox'),host=document.querySelector('#garageView,.garage-view,[data-view="garage"],.garage-section')||document.querySelector('main');if(!host)return;
- if(!box){box=document.createElement('section');box.id='lrPrestigeBox';box.className='lr-prestige-box';host.appendChild(box)}
+ if(!box){box=document.createElement('section');box.id='lrPrestigeBox';box.className='lr-prestige-box';host.appendChild(box)} else if(box.parentElement===host){host.appendChild(box)}
  const p=lrPrestigeRank(),ready=lrCanPrestige();
  const currentReward=p?lrPrestigeRewardDescription(p):'Reach Level 100 to unlock your first permanent Prestige perk.';
  const nextRank=Math.min(10,p+1);

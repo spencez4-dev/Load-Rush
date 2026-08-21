@@ -3716,3 +3716,45 @@ body.lr-ascended-account .lr-long-haul{
 .lr-goal-countdown-overlay{position:fixed;inset:0;z-index:25000;display:flex;align-items:center;justify-content:center;overflow:hidden;pointer-events:none;opacity:0;visibility:hidden;background:rgba(7,4,18,.88);color:#fff;transition:.12s}
 .lr-goal-countdown-overlay.show{opacity:1;visibility:visible}.lr-gc-bg{position:absolute;inset:-35%;background:conic-gradient(transparent,#8d59ff,transparent,#39d7ff,transparent,#ff4ea3,transparent);opacity:calc(.25 + var(--lvl)*.045);animation:lrGcSpin calc(6s - var(--lvl)*.35s) linear infinite}.lr-gc-content{position:relative;z-index:2;text-align:center;width:95vw;animation:lrGcSlam .7s cubic-bezier(.12,.9,.16,1) both}.lr-gc-kicker{font-size:clamp(.75rem,2vw,1.1rem);font-weight:1000;letter-spacing:.22em;opacity:.7}.lr-gc-number{font-size:clamp(11rem,40vw,33rem);line-height:.7;font-weight:1000;letter-spacing:-.1em;text-shadow:0 0 calc(12px + var(--lvl)*3px) #9d65ff,0 0 calc(20px + var(--lvl)*6px) rgba(53,211,255,.55)}.lr-gc-copy{margin-top:26px;font-size:clamp(2rem,7vw,6rem);font-weight:1000;letter-spacing:-.06em;line-height:.9}.lr-gc-sub{margin-top:12px;font-size:clamp(.9rem,2.3vw,1.5rem);font-weight:900;letter-spacing:.08em;opacity:.82}.lr-goal-countdown-overlay[data-remaining="1"]{background:rgba(24,1,10,.94);animation:lrGcPulse .28s ease-in-out infinite alternate}@keyframes lrGcSpin{to{transform:rotate(360deg)}}@keyframes lrGcPulse{to{box-shadow:inset 0 0 150px rgba(255,48,95,.75)}}@keyframes lrGcSlam{0%{opacity:0;transform:scale(2.4) rotate(-7deg)}40%{opacity:1;transform:scale(.9) rotate(2deg)}65%{transform:scale(1.08)}100%{transform:scale(1)}}
 .lr-goal-reward-cinematic{position:fixed;inset:0;z-index:30000;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#05030d;color:#fff;opacity:0;visibility:hidden;transition:.3s;isolation:isolate}.lr-goal-reward-cinematic.show{opacity:1;visibility:visible}.lr-gr-bg{position:absolute;inset:-25%;z-index:0;background:conic-gradient(from 30deg,#271052,#09152f,#0d4e60,#691c6f,#271052);animation:lrGrSpin 13s linear infinite}.lr-gr-road{position:absolute;left:-15%;right:-15%;bottom:-10%;height:40%;z-index:1;transform:perspective(600px) rotateX(58deg);background:repeating-linear-gradient(90deg,transparent 0 13%,rgba(255,255,255,.7) 13.5% 14%,transparent 14.5% 27%),linear-gradient(90deg,#151522,#2d2d41,#151522)}.lr-gr-content{position:relative;z-index:3;text-align:center;width:95vw}.lr-gr-phase{font-size:clamp(.8rem,2vw,1.3rem);font-weight:1000;letter-spacing:.22em;opacity:.72}.lr-gr-mega{margin-top:14px;font-size:clamp(4rem,13vw,11rem);font-weight:1000;line-height:.82;letter-spacing:-.075em;background:linear-gradient(90deg,#fff,#ffe058,#ff5f8f,#8d7dff,#4eeaff,#fff);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:lrGrGrad 2s linear infinite,lrGrBounce .48s ease-in-out infinite alternate}.lr-gr-reward{display:inline-flex;gap:12px;align-items:center;margin-top:34px;padding:14px 22px;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);font-size:clamp(1rem,3vw,2rem);font-weight:1000;transform:scale(.75);opacity:.35;transition:.5s}.phase2 .lr-gr-reward,.phase3 .lr-gr-reward{transform:scale(1);opacity:1}.phase3 .lr-gr-reward{box-shadow:0 0 40px rgba(255,211,74,.5)}.lr-gr-sub{margin-top:18px;font-size:clamp(.9rem,2vw,1.35rem);font-weight:900;letter-spacing:.08em;opacity:.75}.lr-gr-skip{position:absolute;right:18px;top:18px;z-index:5;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.28);color:#fff;border-radius:999px;padding:8px 13px;font-size:.7rem;font-weight:900;cursor:pointer}.phase4 .lr-gr-mega{background:linear-gradient(90deg,#fff,#9fffdc,#8fdcff,#d3a3ff,#fff);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}@keyframes lrGrSpin{to{transform:rotate(360deg)}}@keyframes lrGrGrad{to{background-position:300% 0}}@keyframes lrGrBounce{from{transform:scale(.985) rotate(-.5deg)}to{transform:scale(1.025) rotate(.5deg)}}
+
+/* V8.2 — Prestige exclusives */
+.lr-prestige-character-blast{position:fixed;inset:0;z-index:24000;pointer-events:none;overflow:hidden;opacity:0;mix-blend-mode:screen}
+.lr-prestige-character-blast.go{opacity:1;animation:lrPcbFlash .9s ease-out forwards}
+.lr-pcb-core{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.3);font-size:min(24vw,220px);filter:drop-shadow(0 0 28px currentColor);animation:lrPcbCore .75s cubic-bezier(.12,.9,.18,1) forwards}
+.lr-pcb-flames i{position:absolute;left:var(--x);bottom:-14vh;width:clamp(22px,5vw,75px);height:clamp(80px,24vh,280px);border-radius:60% 60% 25% 25%;transform-origin:50% 100%;animation:lrPcbFlame var(--d) ease-out forwards}
+.lr-fire-blast{background:radial-gradient(circle at center,rgba(255,236,100,.82),rgba(255,84,0,.48) 34%,rgba(120,0,0,.16) 70%,transparent)}
+.lr-fire-blast .lr-pcb-core{color:#ff8a00}
+.lr-fire-blast .lr-pcb-flames i{background:linear-gradient(to top,#ff2600,#ff8a00,#fff09a,transparent);box-shadow:0 0 35px #ff4d00}
+.lr-blue-blast{background:radial-gradient(circle at center,rgba(210,250,255,.86),rgba(27,164,255,.48) 34%,rgba(16,40,130,.18) 70%,transparent)}
+.lr-blue-blast .lr-pcb-core{color:#4fdcff}
+.lr-blue-blast .lr-pcb-flames i{background:linear-gradient(to top,#073cff,#00a8ff,#9ff7ff,transparent);box-shadow:0 0 38px #00a8ff}
+@keyframes lrPcbFlash{0%{opacity:0}12%{opacity:1}65%{opacity:.88}100%{opacity:0}}
+@keyframes lrPcbCore{0%{transform:translate(-50%,-50%) scale(.25) rotate(-12deg);opacity:0}32%{transform:translate(-50%,-50%) scale(1.15) rotate(4deg);opacity:1}100%{transform:translate(-50%,-50%) scale(.82);opacity:0}}
+@keyframes lrPcbFlame{0%{transform:translateY(20vh) scale(.4) rotate(-8deg);opacity:0}20%{opacity:.95}100%{transform:translateY(-115vh) scale(1.7) rotate(12deg);opacity:0}}
+#lrPrestigeBox{order:9999;margin-top:28px!important}
+
+/* V8.3 — BESPOKE LUXURY RARITY BADGES
+   Later-added characters get their own identity instead of default white pills. */
+.rig-rarity[class*="lr-rarity-"]{
+  color:#fff;
+  border:1px solid rgba(255,255,255,.24);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 4px 14px rgba(0,0,0,.18);
+  text-shadow:0 1px 5px rgba(0,0,0,.38);
+  background-size:220% 220%;
+}
+.lr-rarity-sherm{background:linear-gradient(120deg,#2a0a4d,#7c3aed 42%,#d8b4fe 70%,#4c1d95)}
+.lr-rarity-shaun-white{background:linear-gradient(120deg,#4b5563,#f8fafc 46%,#94a3b8 58%,#e2e8f0);color:#111827!important;text-shadow:0 1px 3px rgba(255,255,255,.6)!important}
+.lr-rarity-slotted-trotter{background:linear-gradient(120deg,#052e16,#16a34a 45%,#86efac 68%,#14532d)}
+.lr-rarity-vinny{background:linear-gradient(120deg,#082f49,#0369a1 38%,#38bdf8 68%,#1e3a8a)}
+.lr-rarity-fromelts-boat{background:linear-gradient(120deg,#083344,#0891b2 40%,#67e8f9 67%,#155e75)}
+.lr-rarity-slopes{background:linear-gradient(120deg,#64748b,#dbeafe 38%,#7dd3fc 62%,#818cf8);color:#0f172a!important;text-shadow:0 1px 3px rgba(255,255,255,.5)!important}
+.lr-rarity-grrr{background:linear-gradient(120deg,#451a03,#f97316 38%,#facc15 55%,#111827 72%,#ea580c)}
+.lr-rarity-otter{background:linear-gradient(120deg,#164e63,#06b6d4 38%,#5eead4 60%,#2563eb)}
+.lr-rarity-genuine-fire{background:linear-gradient(120deg,#450a0a,#dc2626 28%,#f97316 52%,#fde047 68%,#991b1b);box-shadow:0 0 15px rgba(249,115,22,.32),inset 0 1px rgba(255,255,255,.3)!important}
+.lr-rarity-zenyatta{background:linear-gradient(120deg,#172554,#1d4ed8 30%,#06b6d4 55%,#bae6fd 70%,#312e81);box-shadow:0 0 15px rgba(56,189,248,.3),inset 0 1px rgba(255,255,255,.3)!important}
+.lr-rarity-byler{background:linear-gradient(120deg,#0e7490,#22d3ee 35%,#fbbf24 58%,#fb7185 78%,#7c3aed)}
+.lr-rarity-diamond-hauler{background:linear-gradient(120deg,#334155,#e0f2fe 30%,#7dd3fc 48%,#ddd6fe 68%,#475569);color:#0f172a!important;text-shadow:0 1px 4px rgba(255,255,255,.65)!important;box-shadow:0 0 18px rgba(125,211,252,.38),inset 0 1px rgba(255,255,255,.55)!important}
+.lr-rarity-ascended-hauler{background:linear-gradient(120deg,#1e103d,#7c3aed 28%,#ec4899 48%,#22d3ee 68%,#4c1d95);box-shadow:0 0 20px rgba(192,132,252,.42),inset 0 1px rgba(255,255,255,.35)!important}
+.rig-card:hover .rig-rarity[class*="lr-rarity-"],
+.rig-card.selected .rig-rarity[class*="lr-rarity-"]{animation:lrLuxuryRarityShimmer 2.8s ease infinite}
+@keyframes lrLuxuryRarityShimmer{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
