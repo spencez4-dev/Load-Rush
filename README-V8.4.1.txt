@@ -1,0 +1,1 @@
+Fix: The Long Haul / Ascension / Golden Road panel shown in the screenshot is now physically appended to the bottom of the document. Prestige progression remains at the bottom as well. Diamond and Ascended Haulers remain removed; Zenyatta remains the rarest character.

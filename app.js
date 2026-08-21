@@ -1085,7 +1085,12 @@ function lrEnsureLongHaul(){
 }
 
 function lrRenderLongHaul(){
-  const panel = lrEnsureLongHaul();
+  const lrLongHaulPanel = lrEnsureLongHaul();
+  if (lrLongHaulPanel.parentElement !== document.body || document.body.lastElementChild !== lrLongHaulPanel) {
+    document.body.appendChild(lrLongHaulPanel);
+  }
+
+  const panel = lrLongHaulPanel;
   const p = lrPrestigeRank();
   const ascPct = Math.min(100,(p/25)*100);
   panel.querySelector('#lrLongPrestige').textContent = `P${p} / P25`;

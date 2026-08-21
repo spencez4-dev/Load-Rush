@@ -3777,3 +3777,17 @@ body > #lrPrestigeBox{
   width:min(1180px,calc(100% - 28px));
   margin:34px auto 28px!important;
 }
+
+/* V8.4.1 — ENDGAME UI ACTUALLY AT THE BOTTOM */
+body > #lrLongHaul{
+  position:relative!important;
+  width:min(1180px,calc(100% - 28px))!important;
+  margin:34px auto 12px!important;
+  order:initial!important;
+}
+body > #lrPrestigeBox{
+  position:relative!important;
+  width:min(1180px,calc(100% - 28px))!important;
+  margin:12px auto 32px!important;
+  order:initial!important;
+}
